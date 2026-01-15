@@ -1,7 +1,14 @@
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Employee {
@@ -39,11 +46,11 @@ export class Employee {
   @IsEnum(EmployeeSituation)
   situation: EmployeeSituation;
 
-  @Column({ type: 'varchar', length: 15 })
-  @IsString()
-  phone_number: string;
+  @ManyToOne(() => Employee, (employee) => employee.subordinates)
+  @JoinColumn({ name: 'boss' })
+  boss?: Employee;
 
-  @Column({ type: 'varchar', length: 100 })
-  @IsString()
-  address: string;
+  @OneToMany(() => Employee, (employee) => employee.boss)
+  @JoinColumn({ name: 'subordinates' })
+  subordinates: Employee[];
 }
