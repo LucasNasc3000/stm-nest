@@ -4,9 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { GetDateObjectDateSearch } from 'src/utils/get-date-object-date-search';
 import { Like, Repository } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
+import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
+import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
 
@@ -16,6 +20,19 @@ export class SupplyRealTimeService {
     @InjectRepository(SupplyRealTime)
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
   ) {}
+
+  async FindById(id: string) {
+    const supplyRealTimeFindById =
+      await this.supplyRealTimeRepository.findOneBy({
+        id,
+      });
+
+    if (!supplyRealTimeFindById) {
+      throw new NotFoundException('Insumo não encontrado');
+    }
+
+    return supplyRealTimeFindById;
+  }
 
   async FindBySupplier(paginationBySupplierDTO: PaginationBySupplierDTO) {
     const { limit, offset, value } = paginationBySupplierDTO;
@@ -99,5 +116,122 @@ export class SupplyRealTimeService {
     }
 
     return [total, ...supplyFindByCategory];
+  }
+
+  async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
+    const { limit, offset, value } = paginationByPriceDTO;
+
+    const [supplyFindByPrice, total] =
+      await this.supplyRealTimeRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          price: value,
+        },
+      });
+
+    if (!supplyFindByPrice) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (supplyFindByPrice.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return [total, ...supplyFindByPrice];
+  }
+
+  async FindByWeightPerUnit(weightPerUnit: string) {
+    const supplyRealTimeFindByWeighPerUnit =
+      await this.supplyRealTimeRepository.findOneBy({
+        weightPerUnit,
+      });
+
+    if (!supplyRealTimeFindByWeighPerUnit) {
+      throw new NotFoundException('Insumo não encontrado');
+    }
+
+    return supplyRealTimeFindByWeighPerUnit;
+  }
+
+  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+    const { limit, offset, value } = paginationByEmployeeDTO;
+
+    const [supplyRealTimeFindByEmployee, total] =
+      await this.supplyRealTimeRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          employee: {
+            id: value,
+          },
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            name: true,
+            email: true,
+            situation: true,
+            role: true,
+            boss: true,
+          },
+        },
+      });
+
+    if (!supplyRealTimeFindByEmployee) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (supplyRealTimeFindByEmployee.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return [total, ...supplyRealTimeFindByEmployee];
+  }
+
+  async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
+    const { limit, offset, value } = paginatioByExpDateDTO;
+
+    const stringToDate = GetDateObjectDateSearch(value);
+    const initialDate = stringToDate[0];
+    const finalDate = stringToDate[1];
+
+    const appointmentFindByDate = await this.supplyRealTimeRepository
+      .createQueryBuilder('supply_real_time')
+      .where(
+        'supply_real_time.expiration_date BETWEEN :initialDate AND :finalDate',
+        {
+          initialDate,
+          finalDate,
+        },
+      )
+      .take(limit)
+      .skip(offset)
+      .getMany();
+
+    if (!appointmentFindByDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (appointmentFindByDate.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return appointmentFindByDate;
   }
 }

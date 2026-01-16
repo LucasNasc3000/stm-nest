@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm';
 import { SupplyRealTime } from './supply-realtime.entity';
 
-@Entity()
+@Entity({ name: 'supply_history' })
 export class SupplyHistory extends SupplyRealTime {
   @Column({ type: 'varchar', length: 50 })
   reason: string;

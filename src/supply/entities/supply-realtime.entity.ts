@@ -1,7 +1,7 @@
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'supply_real_time' })
 export class SupplyRealTime {
   @PrimaryGeneratedColumn('uuid')
   id: string;
