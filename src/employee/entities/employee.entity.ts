@@ -4,11 +4,13 @@ import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -56,4 +58,10 @@ export class Employee {
 
   @OneToMany(() => SupplyRealTime, (supply) => supply.employee)
   supplies: SupplyRealTime[];
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }

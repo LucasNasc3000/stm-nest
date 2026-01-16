@@ -21,6 +21,8 @@ export class SupplyRealTimeService {
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
   ) {}
 
+  async Create() {}
+
   async FindById(id: string) {
     const supplyRealTimeFindById =
       await this.supplyRealTimeRepository.findOneBy({
@@ -209,7 +211,7 @@ export class SupplyRealTimeService {
     const initialDate = stringToDate[0];
     const finalDate = stringToDate[1];
 
-    const appointmentFindByDate = await this.supplyRealTimeRepository
+    const supplyFindByExpDate = await this.supplyRealTimeRepository
       .createQueryBuilder('supply_real_time')
       .where(
         'supply_real_time.expiration_date BETWEEN :initialDate AND :finalDate',
@@ -222,16 +224,16 @@ export class SupplyRealTimeService {
       .skip(offset)
       .getMany();
 
-    if (!appointmentFindByDate) {
+    if (!supplyFindByExpDate) {
       throw new InternalServerErrorException(
         'Erro desconhecido ao tentar pesquisar por insumos',
       );
     }
 
-    if (appointmentFindByDate.length < 1) {
+    if (supplyFindByExpDate.length < 1) {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return appointmentFindByDate;
+    return supplyFindByExpDate;
   }
 }

@@ -1,5 +1,12 @@
 import { Employee } from 'src/employee/entities/employee.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity({ name: 'supply_real_time' })
 export class SupplyRealTime {
@@ -15,8 +22,8 @@ export class SupplyRealTime {
   @Column({ type: 'integer' })
   quantity: number;
 
-  @Column({ type: 'numeric', precision: 10, scale: 2 })
-  totalweight: string;
+  @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_weight' })
+  totalWeight: string;
 
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'weight_per_unit' })
   weightPerUnit: string;
@@ -24,7 +31,7 @@ export class SupplyRealTime {
   @Column({ type: 'varchar', length: 150 })
   supplier: string;
 
-  @Column({ type: 'timestamp', nullable: true, name: 'expiration_date' })
+  @Column({ type: 'date', nullable: true, name: 'expiration_date' })
   expirationDate: Date;
 
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
@@ -36,9 +43,15 @@ export class SupplyRealTime {
   @Column({ type: 'integer', name: 'minimun_quantity' })
   minimunQuantity: number;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true, name: 'low_stock' })
   lowStock: number;
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
