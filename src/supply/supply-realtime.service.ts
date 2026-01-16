@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetDateObjectDateSearch } from 'src/utils/get-date-object-date-search';
 import { Like, Repository } from 'typeorm';
+import { CreateSupplyRealtimeDTO } from './dto/create-supply-realtime.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
@@ -21,7 +22,16 @@ export class SupplyRealTimeService {
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
   ) {}
 
-  async Create() {}
+  async Create(createSupplyRealTimeDTO: CreateSupplyRealtimeDTO) {
+    const supplyRealTimeCreate = this.supplyRealTimeRepository.create(
+      createSupplyRealTimeDTO,
+    );
+
+    const newSupplyRealTime =
+      await this.supplyRealTimeRepository.save(supplyRealTimeCreate);
+
+    return newSupplyRealTime;
+  }
 
   async FindById(id: string) {
     const supplyRealTimeFindById =
