@@ -1,6 +1,7 @@
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
   Entity,
@@ -51,6 +52,8 @@ export class Employee {
   boss?: Employee;
 
   @OneToMany(() => Employee, (employee) => employee.boss)
-  @JoinColumn({ name: 'subordinates' })
   subordinates: Employee[];
+
+  @OneToMany(() => SupplyRealTime, (supply) => supply.employee)
+  supplies: SupplyRealTime[];
 }
