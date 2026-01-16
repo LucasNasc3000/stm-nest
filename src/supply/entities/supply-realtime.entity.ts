@@ -40,9 +40,6 @@ export class SupplyRealTime {
   })
   employee: Employee;
 
-  @Column({ type: 'integer', name: 'minimun_quantity' })
-  minimunQuantity: number;
-
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
   lowStock: number;
 

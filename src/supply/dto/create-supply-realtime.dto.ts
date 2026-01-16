@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsInt,
   IsNotEmpty,
   IsNumberString,
@@ -62,4 +63,32 @@ export class CreateSupplyRealtimeDTO {
     message: 'campo "fornecedor" deve ter no máximo 125 caracteres',
   })
   readonly supplier: string;
+
+  @IsNotEmpty({
+    message: 'campo "fornecedor" não preenchido',
+  })
+  @IsDateString()
+  readonly expirationDate: string;
+
+  @IsNotEmpty({
+    message: 'campo "Quantidade mínima" não preenchido',
+  })
+  @IsInt({
+    message: 'campo "Quantidade mínima" deve ser um número inteiro',
+  })
+  @IsPositive({
+    message: 'campo "Quantidade mínima" deve ser maior que zero',
+  })
+  readonly lowStock: number;
+
+  @IsNotEmpty({
+    message: 'Campo "preço" não preenchido',
+  })
+  @IsString({
+    message: 'O campo "preço" deve estar no formato de texto',
+  })
+  @IsNumberString({
+    no_symbols: true,
+  })
+  readonly price: string;
 }
