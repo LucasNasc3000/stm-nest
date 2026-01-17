@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 
-export class UpdatePriceSupplyRealTimeDTO {
+export class UpdatePriceSupplyRealtimeDTO {
   @IsNotEmpty({
     message: 'Campo "preço unitário" não preenchido',
   })
@@ -10,6 +10,5 @@ export class UpdatePriceSupplyRealTimeDTO {
   @IsNumberString({
     no_symbols: true,
   })
-  readonly weightPerUnit: string;
-  price: string;
+  readonly price: string;
 }

@@ -17,7 +17,6 @@ import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
-import { UpdatePriceSupplyRealTimeDTO } from './dto/update-price-supply-realtime.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
@@ -140,9 +139,9 @@ export class SupplyService {
     return this.supplyRealTimeRepository.save(supplyUpdate);
   }
 
-  async UpdatePrices(
+  async UpdatePrice(
     supplyId: UrlUuidDTO,
-    updatePriceSupplyRealtimeDTO: UpdatePriceSupplyRealTimeDTO,
+    updatePriceSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
   ) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {

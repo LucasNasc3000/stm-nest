@@ -38,7 +38,7 @@ export class UpdateSupplyRealtimeDTO {
 
   @IsOptional()
   @IsString({
-    message: 'O campo "preço" deve estar no formato de texto',
+    message: 'O campo "peso total" deve estar no formato de texto',
   })
   @IsNumberString({
     no_symbols: true,
@@ -47,7 +47,7 @@ export class UpdateSupplyRealtimeDTO {
 
   @IsOptional()
   @IsString({
-    message: 'O campo "preço unitário" deve estar no formato de texto',
+    message: 'O campo "peso unitário" deve estar no formato de texto',
   })
   @IsNumberString({
     no_symbols: true,
@@ -84,23 +84,4 @@ export class UpdateSupplyRealtimeDTO {
     no_symbols: true,
   })
   readonly price?: string;
-
-  @IsOptional()
-  @IsString({
-    message: 'campo "nome" deve estar em formato de texto',
-  })
-  @Length(0, 50, {
-    message: 'campo "nome" deve ter no máximo 50 caracteres',
-  })
-  readonly reason?: string;
-
-  @IsOptional()
-  @IsString({
-    message:
-      'O campo "preço total por registro" deve estar no formato de texto',
-  })
-  @IsNumberString({
-    no_symbols: true,
-  })
-  readonly totalWeightPerRegister?: string;
 }
