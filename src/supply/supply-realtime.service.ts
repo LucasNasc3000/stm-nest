@@ -2,9 +2,12 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { EmployeeService } from 'src/employee/employee.service';
 import { GetDateObjectDateSearch } from 'src/utils/get-date-object-date-search';
 import { Like, Repository } from 'typeorm';
 import { CreateSupplyRealtimeDTO } from './dto/create-supply-realtime.dto';
@@ -23,12 +26,35 @@ export class SupplyRealTimeService {
   constructor(
     @InjectRepository(SupplyRealTime)
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
+    private readonly employeesService: EmployeeService,
   ) {}
 
-  async Create(createSupplyRealTimeDTO: CreateSupplyRealtimeDTO) {
-    const supplyRealTimeCreate = this.supplyRealTimeRepository.create(
-      createSupplyRealTimeDTO,
+  async Create(
+    createSupplyRealTimeDTO: CreateSupplyRealtimeDTO,
+    tokenPayloadDTO: TokenPayloadDTO,
+  ) {
+    const findEmployee = await this.employeesService.FindById(
+      tokenPayloadDTO.sub,
     );
+
+    if (!findEmployee) {
+      throw new UnauthorizedException('Funcionário não encontrado');
+    }
+
+    const data = {
+      category: createSupplyRealTimeDTO.category,
+      name: createSupplyRealTimeDTO.name,
+      quantity: createSupplyRealTimeDTO.quantity,
+      totalWeight: createSupplyRealTimeDTO.totalWeight,
+      weightPerUnit: createSupplyRealTimeDTO.weightPerUnit,
+      supplier: createSupplyRealTimeDTO.supplier,
+      expirationDate: createSupplyRealTimeDTO.expirationDate,
+      employee: findEmployee,
+      lowStock: createSupplyRealTimeDTO.lowStock,
+      price: createSupplyRealTimeDTO.price,
+    };
+
+    const supplyRealTimeCreate = this.supplyRealTimeRepository.create(data);
 
     const newSupplyRealTime =
       await this.supplyRealTimeRepository.save(supplyRealTimeCreate);
