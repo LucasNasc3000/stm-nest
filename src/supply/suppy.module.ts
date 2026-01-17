@@ -3,14 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from 'src/employee/employee.module';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
-import { SupplyRealTimeService } from './supply-realtime.service';
+import { SupplyController } from './supply.controller';
+import { SupplyService } from './supply.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([SupplyRealTime, SupplyHistory]),
     EmployeeModule,
   ],
-  controllers: [],
-  providers: [SupplyRealTimeService],
+  controllers: [SupplyController],
+  providers: [SupplyService],
 })
 export class SupplyModule {}

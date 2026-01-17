@@ -10,7 +10,7 @@ import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { GetDateObjectDateSearch } from 'src/utils/get-date-object-date-search';
 import { Like, Repository } from 'typeorm';
-import { CreateSupplyRealtimeDTO } from './dto/create-supply-realtime.dto';
+import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
@@ -18,19 +18,23 @@ import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { UpdatePriceSupplyRealTimeDTO } from './dto/update-price-supply-realtime.dto';
-import { UpdateSupplyRealTimeDTO } from './dto/update-supply-realtime.dto';
+import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
+import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
 
 @Injectable()
-export class SupplyRealTimeService {
+export class SupplyService {
   constructor(
     @InjectRepository(SupplyRealTime)
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
+
+    @InjectRepository(SupplyHistory)
+    private readonly supplyHistoryRepository: Repository<SupplyHistory>,
     private readonly employeesService: EmployeeService,
   ) {}
 
   async Create(
-    createSupplyRealTimeDTO: CreateSupplyRealtimeDTO,
+    createSupplyDTO: CreateSupplyDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
     const findEmployee = await this.employeesService.FindById(
@@ -41,30 +45,65 @@ export class SupplyRealTimeService {
       throw new UnauthorizedException('Funcionário não encontrado');
     }
 
-    const data = {
-      category: createSupplyRealTimeDTO.category,
-      name: createSupplyRealTimeDTO.name,
-      quantity: createSupplyRealTimeDTO.quantity,
-      totalWeight: createSupplyRealTimeDTO.totalWeight,
-      weightPerUnit: createSupplyRealTimeDTO.weightPerUnit,
-      supplier: createSupplyRealTimeDTO.supplier,
-      expirationDate: createSupplyRealTimeDTO.expirationDate,
-      employee: findEmployee,
-      lowStock: createSupplyRealTimeDTO.lowStock,
-      price: createSupplyRealTimeDTO.price,
-    };
+    const queryRunnerSRT =
+      this.supplyRealTimeRepository.manager.connection.createQueryRunner();
 
-    const supplyRealTimeCreate = this.supplyRealTimeRepository.create(data);
+    const queryRunnerSH =
+      this.supplyHistoryRepository.manager.connection.createQueryRunner();
 
-    const newSupplyRealTime =
-      await this.supplyRealTimeRepository.save(supplyRealTimeCreate);
+    try {
+      const data = {
+        category: createSupplyDTO.category,
+        name: createSupplyDTO.name,
+        quantity: createSupplyDTO.quantity,
+        totalWeight: createSupplyDTO.totalWeight,
+        weightPerUnit: createSupplyDTO.weightPerUnit,
+        supplier: createSupplyDTO.supplier,
+        expirationDate: createSupplyDTO.expirationDate,
+        employee: findEmployee,
+        lowStock: createSupplyDTO.lowStock,
+        price: createSupplyDTO.price,
+      };
 
-    return newSupplyRealTime;
+      const supplyRealTimeCreate = queryRunnerSRT.manager.create(
+        SupplyRealTime,
+        data,
+      );
+
+      const newSupplyRealTime =
+        await queryRunnerSRT.manager.save(supplyRealTimeCreate);
+
+      const supplyHistoryData = {
+        ...data,
+        reason: createSupplyDTO.reason,
+        totalWeightPerRegister: createSupplyDTO.totalWeightPerRegister,
+      };
+
+      const supplyHistoryCreate = queryRunnerSH.manager.create(
+        SupplyHistory,
+        supplyHistoryData,
+      );
+
+      const newSupplyHistory =
+        await queryRunnerSH.manager.save(supplyHistoryCreate);
+
+      return {
+        supplyRealTime: newSupplyRealTime,
+        supplyHistory: newSupplyHistory,
+      };
+    } catch (error) {
+      await queryRunnerSRT.rollbackTransaction();
+      await queryRunnerSH.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunnerSRT.release();
+      await queryRunnerSH.release();
+    }
   }
 
   async Update(
     supplyId: UrlUuidDTO,
-    updateSupplyRealtimeDTO: UpdateSupplyRealTimeDTO,
+    updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
   ) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
