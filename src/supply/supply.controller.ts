@@ -25,6 +25,7 @@ export class SupplyController {
 
   @Patch()
   @SetRoutePolicy(EmployeeRole.UPDATE)
+  @SetRoutePolicy(EmployeeRole.SUPPLIES)
   Update(
     @Param('id') id: UrlUuidDTO,
     @Body() updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
@@ -35,6 +36,7 @@ export class SupplyController {
   @Patch()
   @SetRoutePolicy(EmployeeRole.UPDATE)
   @SetRoutePolicy(EmployeeRole.EDIT_PRICES)
+  @SetRoutePolicy(EmployeeRole.SUPPLIES)
   UpdatePrice(
     @Param('id') id: UrlUuidDTO,
     @Body() updateSupplyRealtimePriceDTO: UpdatePriceSupplyRealtimeDTO,
