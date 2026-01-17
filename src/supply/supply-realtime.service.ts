@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { GetDateObjectDateSearch } from 'src/utils/get-date-object-date-search';
 import { Like, Repository } from 'typeorm';
 import { CreateSupplyRealtimeDTO } from './dto/create-supply-realtime.dto';
@@ -13,6 +14,8 @@ import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
+import { UpdatePriceSupplyRealTimeDTO } from './dto/update-price-supply-realtime.dto';
+import { UpdateSupplyRealTimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
 
 @Injectable()
@@ -31,6 +34,73 @@ export class SupplyRealTimeService {
       await this.supplyRealTimeRepository.save(supplyRealTimeCreate);
 
     return newSupplyRealTime;
+  }
+
+  async Update(
+    supplyId: UrlUuidDTO,
+    updateSupplyRealtimeDTO: UpdateSupplyRealTimeDTO,
+  ) {
+    const findSupply = await this.supplyRealTimeRepository.findOne({
+      where: {
+        id: supplyId.id,
+      },
+    });
+
+    if (!findSupply) {
+      throw new NotFoundException('Insumo não encontrado');
+    }
+
+    const allowedData = {
+      category: updateSupplyRealtimeDTO.category,
+      name: updateSupplyRealtimeDTO.name,
+      quantity: updateSupplyRealtimeDTO.quantity,
+      totalWeight: updateSupplyRealtimeDTO.totalWeight,
+      weightPerUnit: updateSupplyRealtimeDTO.weightPerUnit,
+      supplier: updateSupplyRealtimeDTO.supplier,
+      expirationDate: updateSupplyRealtimeDTO.expirationDate,
+      lowStock: updateSupplyRealtimeDTO.lowStock,
+    };
+
+    const supplyUpdate = await this.supplyRealTimeRepository.preload({
+      id: supplyId.id,
+      ...allowedData,
+    });
+
+    if (!supplyUpdate) {
+      throw new InternalServerErrorException(
+        `Erro ao tentar atualizar insumo: ${findSupply.name}`,
+      );
+    }
+
+    return this.supplyRealTimeRepository.save(supplyUpdate);
+  }
+
+  async UpdatePrices(
+    supplyId: UrlUuidDTO,
+    updatePriceSupplyRealtimeDTO: UpdatePriceSupplyRealTimeDTO,
+  ) {
+    const findSupply = await this.supplyRealTimeRepository.findOne({
+      where: {
+        id: supplyId.id,
+      },
+    });
+
+    if (!findSupply) {
+      throw new NotFoundException('Insumo não encontrado');
+    }
+
+    const supplyUpdate = await this.supplyRealTimeRepository.preload({
+      id: supplyId.id,
+      price: updatePriceSupplyRealtimeDTO.price,
+    });
+
+    if (!supplyUpdate) {
+      throw new InternalServerErrorException(
+        `Erro ao tentar atualizar preço do insumo: ${findSupply.name}`,
+      );
+    }
+
+    return this.supplyRealTimeRepository.save(supplyUpdate);
   }
 
   async FindById(id: string) {

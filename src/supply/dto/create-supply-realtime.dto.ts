@@ -21,6 +21,17 @@ export class CreateSupplyRealtimeDTO {
   readonly name: string;
 
   @IsNotEmpty({
+    message: 'campo "categoria" não preenchido',
+  })
+  @IsString({
+    message: 'campo "categoria" deve estar em formato de texto',
+  })
+  @Length(0, 100, {
+    message: 'campo "categoria" deve ter no máximo 100 caracteres',
+  })
+  readonly category: string;
+
+  @IsNotEmpty({
     message: 'campo "quantidade" não preenchido',
   })
   @IsInt({
