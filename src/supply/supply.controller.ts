@@ -14,6 +14,8 @@ import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
+import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
@@ -100,5 +102,21 @@ export class SupplyController {
     searchByWeightPerUnitDto: SearchByWeightPerUnitDTO,
   ) {
     return this.supplyService.FindByWeightPerUnit(searchByWeightPerUnitDto);
+  }
+
+  @Get('search/employee/')
+  @SetRoutePolicy(EmployeeRole.READ)
+  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
+    return this.supplyService.FindByEmployee(paginationByEmployeeDto);
+  }
+
+  @Get('search/expirationDate/')
+  @SetRoutePolicy(EmployeeRole.READ)
+  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  FindByExpirationDate(
+    @Query() paginationByExpDateDto: PaginationByExpDateDTO,
+  ) {
+    return this.supplyService.FindByExpirationDate(paginationByExpDateDto);
   }
 }

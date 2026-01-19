@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, Max, Min } from 'class-validator';
+import { IsDateString, IsInt, Max, Min } from 'class-validator';
 
 export class PaginationByExpDateDTO {
   @IsInt({
@@ -23,5 +23,6 @@ export class PaginationByExpDateDTO {
   @Type(() => Number)
   offset: number;
 
+  @IsDateString()
   value: string;
 }
