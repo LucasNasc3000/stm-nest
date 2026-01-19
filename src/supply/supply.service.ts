@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
-import { GetDateObjectDateSearch } from 'src/utils/get-date-object-date-search';
 import { Like, Repository } from 'typeorm';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -17,6 +16,8 @@ import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
+
+import { SearchByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
@@ -167,11 +168,21 @@ export class SupplyService {
     return this.supplyRealTimeRepository.save(supplyUpdate);
   }
 
-  async FindById(id: string) {
-    const supplyRealTimeFindById =
-      await this.supplyRealTimeRepository.findOneBy({
-        id,
-      });
+  async FindById(id: UrlUuidDTO) {
+    const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
+      where: {
+        id: id.id,
+      },
+      relations: {
+        employee: true,
+      },
+      select: {
+        employee: {
+          id: true,
+          email: true,
+        },
+      },
+    });
 
     if (!supplyRealTimeFindById) {
       throw new NotFoundException('Insumo não encontrado');
@@ -192,6 +203,15 @@ export class SupplyService {
         },
         where: {
           supplier: Like(`${value}%`),
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
         },
       });
 
@@ -221,6 +241,15 @@ export class SupplyService {
         where: {
           name: Like(`${value}%`),
         },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
       });
 
     if (!supplyFindByName) {
@@ -248,6 +277,15 @@ export class SupplyService {
         },
         where: {
           category: Like(`${value}%`),
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
         },
       });
 
@@ -277,6 +315,15 @@ export class SupplyService {
         where: {
           price: value,
         },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
       });
 
     if (!supplyFindByPrice) {
@@ -292,10 +339,24 @@ export class SupplyService {
     return [total, ...supplyFindByPrice];
   }
 
-  async FindByWeightPerUnit(weightPerUnit: string) {
+  async FindByWeightPerUnit(weightPerUnit: SearchByWeightPerUnitDTO) {
     const supplyRealTimeFindByWeighPerUnit =
-      await this.supplyRealTimeRepository.findOneBy({
-        weightPerUnit,
+      await this.supplyRealTimeRepository.findOne({
+        where: {
+          weightPerUnit: weightPerUnit.weightPerUnit,
+        },
+        order: {
+          id: 'desc',
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
       });
 
     if (!supplyRealTimeFindByWeighPerUnit) {
@@ -326,11 +387,7 @@ export class SupplyService {
         select: {
           employee: {
             id: true,
-            name: true,
             email: true,
-            situation: true,
-            role: true,
-            boss: true,
           },
         },
       });
@@ -351,22 +408,28 @@ export class SupplyService {
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
     const { limit, offset, value } = paginatioByExpDateDTO;
 
-    const stringToDate = GetDateObjectDateSearch(value);
-    const initialDate = stringToDate[0];
-    const finalDate = stringToDate[1];
-
-    const supplyFindByExpDate = await this.supplyRealTimeRepository
-      .createQueryBuilder('supply_real_time')
-      .where(
-        'supply_real_time.expiration_date BETWEEN :initialDate AND :finalDate',
-        {
-          initialDate,
-          finalDate,
+    const supplyFindByExpDate =
+      await this.supplyRealTimeRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
         },
-      )
-      .take(limit)
-      .skip(offset)
-      .getMany();
+        where: {
+          employee: {
+            id: value,
+          },
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
 
     if (!supplyFindByExpDate) {
       throw new InternalServerErrorException(
