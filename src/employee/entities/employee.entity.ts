@@ -1,6 +1,7 @@
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
@@ -49,7 +50,9 @@ export class Employee {
   @IsEnum(EmployeeSituation)
   situation: EmployeeSituation;
 
-  @ManyToOne(() => Employee, (employee) => employee.subordinates)
+  @ManyToOne(() => Employee, (employee) => employee.subordinates, {
+    onDelete: 'RESTRICT',
+  })
   @JoinColumn({ name: 'boss' })
   boss?: Employee;
 
@@ -58,6 +61,9 @@ export class Employee {
 
   @OneToMany(() => SupplyRealTime, (supply) => supply.employee)
   supplies: SupplyRealTime[];
+
+  @OneToMany(() => SupplyHistory, (supply) => supply.employee)
+  suppliesHistory: SupplyHistory[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

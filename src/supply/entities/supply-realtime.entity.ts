@@ -4,9 +4,11 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { SupplyHistory } from './supply-history.entity';
 
 @Entity({ name: 'supply_real_time' })
 export class SupplyRealTime {
@@ -45,6 +47,9 @@ export class SupplyRealTime {
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealtime)
+  supplyHistory: SupplyHistory[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

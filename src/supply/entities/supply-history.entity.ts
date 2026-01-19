@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { SupplyRealTime } from './supply-realtime.entity';
 
 @Entity({ name: 'supply_history' })
 export class SupplyHistory {
@@ -56,6 +57,16 @@ export class SupplyHistory {
     name: 'total_weight_per_register',
   })
   totalWeightPerRegister: string;
+
+  @ManyToOne(() => Employee, (employee) => employee.suppliesHistory, {
+    onDelete: 'RESTRICT',
+  })
+  registeredBy: Employee;
+
+  @ManyToOne(() => SupplyRealTime, (supply) => supply.supplyHistory, {
+    onDelete: 'RESTRICT',
+  })
+  supplyRealtime: SupplyRealTime;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
