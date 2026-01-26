@@ -100,6 +100,10 @@ export class SupplyService {
       const newSupplyHistory =
         await queryRunner.manager.save(supplyHistoryCreate);
 
+      if (!supplyHistoryCreate || !newSupplyHistory) {
+        throw new InternalServerErrorException('Erro ao cadastrar insumo');
+      }
+
       return {
         supplyRealTime: newSupplyRealTime,
         supplyHistory: newSupplyHistory,

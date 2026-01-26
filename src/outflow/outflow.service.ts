@@ -154,6 +154,12 @@ export class OutflowService {
 
       const newOutflow = await queryRunner.manager.save(Outflow, outflowCreate);
 
+      if (!outflowCreate || !newOutflow) {
+        throw new InternalServerErrorException(
+          `Erro ao cadastrar saída de ${createOutflowDTO.name}`,
+        );
+      }
+
       return {
         ...newOutflow,
       };
