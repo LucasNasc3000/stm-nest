@@ -9,12 +9,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
+import { PaginationByDateDTO } from './dto/pagination-date.dto';
+import { PaginationByHourDTO } from './dto/pagination-hour.dto';
+import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { Outflow } from './entities/outflow.entity';
 
 @Injectable()
@@ -179,5 +183,139 @@ export class OutflowService {
     const sub = supply.quantity - outflow.unities;
 
     if (sub > 0 && sub <= supply.lowStock) return 'Low_stock';
+  }
+
+  async FindById(id: UrlUuidDTO) {
+    const outflowFindById = await this.outflowRepository.findOne({
+      where: {
+        id: id.id,
+      },
+      relations: {
+        employee: true,
+      },
+      select: {
+        employee: {
+          id: true,
+          email: true,
+        },
+      },
+    });
+
+    if (!outflowFindById) {
+      throw new NotFoundException('Saída não encontrada');
+    }
+
+    return outflowFindById;
+  }
+
+  async FindByDate(paginationByDate: PaginationByDateDTO) {
+    const { limit, offset, value } = paginationByDate;
+
+    const [outflowFindByDate, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          date: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByDate.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByDate];
+  }
+
+  async FindByHour(paginationByHour: PaginationByHourDTO) {
+    const { limit, offset, value } = paginationByHour;
+
+    const [outflowFindByHour, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          hour: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByHour) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByHour.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByHour];
+  }
+
+  async FindByUnities(paginationByUnities: PaginationByUnitiesDTO) {
+    const { limit, offset, value } = paginationByUnities;
+
+    const [outflowFindByUnities, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          unities: +value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByUnities) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByUnities.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByUnities];
   }
 }
