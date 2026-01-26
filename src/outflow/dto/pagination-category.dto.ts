@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
 
-export class PaginationByReasonDTO {
+export class PaginationByCategoryDTO {
   @IsInt({
     message: 'Limite precisa ser um numero inteiro',
   })
@@ -24,13 +24,13 @@ export class PaginationByReasonDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'campo "motivo" não preenchido',
+    message: 'campo "categoria" não preenchido',
   })
   @IsString({
-    message: 'campo "motivo" deve estar em formato de texto',
+    message: 'campo "categoria" deve estar em formato de texto',
   })
-  @Length(0, 50, {
-    message: 'campo "motivo" deve ter no máximo 150 caracteres',
+  @Length(0, 150, {
+    message: 'campo "categoria" deve ter no máximo 150 caracteres',
   })
   value: string;
 }

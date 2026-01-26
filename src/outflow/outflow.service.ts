@@ -16,9 +16,11 @@ import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
+import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
+import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { Outflow } from './entities/outflow.entity';
@@ -282,6 +284,80 @@ export class OutflowService {
     }
 
     return [total, ...outflowFindByHour];
+  }
+
+  async FindByName(paginationByName: PaginationByNameDTO) {
+    const { limit, offset, value } = paginationByName;
+
+    const [outflowFindByName, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          name: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByName) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByName.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByName];
+  }
+
+  async FindByCategory(paginationByCategory: PaginationByCategoryDTO) {
+    const { limit, offset, value } = paginationByCategory;
+
+    const [outflowFindByCategory, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          category: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByCategory) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByCategory.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByCategory];
   }
 
   async FindByUnities(paginationByUnities: PaginationByUnitiesDTO) {
