@@ -7,7 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { EmployeeService } from 'src/employee/employee.service';
+import { Employee } from 'src/employee/entities/employee.entity';
 import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
+import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { Outflow } from './entities/outflow.entity';
@@ -56,6 +58,34 @@ export class OutflowService {
     await queryRunner.startTransaction();
 
     try {
+      const doesEmployeeReallyExists = await queryRunner.manager.findOne(
+        Employee,
+        {
+          where: {
+            id: tokenPayloadDTO.sub,
+          },
+        },
+      );
+
+      if (!doesEmployeeReallyExists) {
+        throw new UnauthorizedException('Funcionário não encontrado');
+      }
+
+      const doesSupplyReallyExists = await queryRunner.manager.findOne(
+        SupplyRealTime,
+        {
+          where: {
+            name: createOutflowDTO.name,
+            category: createOutflowDTO.category,
+          },
+        },
+      );
+
+      if (!doesSupplyReallyExists) {
+        throw new NotFoundException(
+          `Ocorreu um erro interno ou o insumo ${createOutflowDTO.name} não está cadastrado`,
+        );
+      }
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(
