@@ -17,7 +17,9 @@ import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
+import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
+import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { Outflow } from './entities/outflow.entity';
 
@@ -317,5 +319,81 @@ export class OutflowService {
     }
 
     return [total, ...outflowFindByUnities];
+  }
+
+  async FindByReason(paginationByReason: PaginationByReasonDTO) {
+    const { limit, offset, value } = paginationByReason;
+
+    const [outflowFindByReason, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          reason: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByReason) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByReason.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByReason];
+  }
+
+  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+    const { limit, offset, value } = paginationByEmployeeDTO;
+
+    const [outflowFindByEmployee, total] =
+      await this.outflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          employee: {
+            id: value,
+          },
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!outflowFindByEmployee) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por saídas',
+      );
+    }
+
+    if (outflowFindByEmployee.length < 1) {
+      throw new NotFoundException('Saídas não encontradas');
+    }
+
+    return [total, ...outflowFindByEmployee];
   }
 }
