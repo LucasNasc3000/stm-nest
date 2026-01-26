@@ -1,4 +1,5 @@
 import { Employee } from 'src/employee/entities/employee.entity';
+import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
   CreateDateColumn,
@@ -36,6 +37,16 @@ export class Outflow {
     nullable: true,
   })
   employee: Employee;
+
+  @ManyToOne(
+    () => SupplyRealTime,
+    (supplyRealTime) => supplyRealTime.outflows,
+    {
+      onDelete: 'RESTRICT',
+      nullable: true,
+    },
+  )
+  supplyRealTime: SupplyRealTime;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

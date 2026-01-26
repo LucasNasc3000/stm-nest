@@ -56,13 +56,13 @@ export class CreateOutflowDTO {
   readonly reason: string;
 
   @IsNotEmpty({
-    message: 'campo "Quantidade mínima" não preenchido',
+    message: 'campo "unidades" não preenchido',
   })
   @IsInt({
-    message: 'campo "Quantidade mínima" deve ser um número inteiro',
+    message: 'campo "unidades" deve ser um número inteiro',
   })
   @IsPositive({
-    message: 'campo "Quantidade mínima" deve ser maior que zero',
+    message: 'campo "unidades" deve ser maior que zero',
   })
-  readonly lowStock: number;
+  readonly unities: number;
 }

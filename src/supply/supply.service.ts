@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
-import { Like, Repository } from 'typeorm';
+import { DataSource, Like, Repository } from 'typeorm';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -16,7 +17,6 @@ import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
-
 import { SearchByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyHistory } from './entities/supply-history.entity';
@@ -27,10 +27,9 @@ export class SupplyService {
   constructor(
     @InjectRepository(SupplyRealTime)
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
-
-    @InjectRepository(SupplyHistory)
-    private readonly supplyHistoryRepository: Repository<SupplyHistory>,
     private readonly employeesService: EmployeeService,
+    private dataSource: DataSource,
+    private readonly logger: Logger,
   ) {}
 
   async Create(
@@ -45,11 +44,9 @@ export class SupplyService {
       throw new UnauthorizedException('Funcionário não encontrado');
     }
 
-    const queryRunnerSRT =
-      this.supplyRealTimeRepository.manager.connection.createQueryRunner();
-
-    const queryRunnerSH =
-      this.supplyHistoryRepository.manager.connection.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
       const data = {
@@ -65,13 +62,15 @@ export class SupplyService {
         price: createSupplyDTO.price,
       };
 
-      const supplyRealTimeCreate = queryRunnerSRT.manager.create(
+      const supplyRealTimeCreate = queryRunner.manager.create(
         SupplyRealTime,
         data,
       );
 
-      const newSupplyRealTime =
-        await queryRunnerSRT.manager.save(supplyRealTimeCreate);
+      const newSupplyRealTime = await queryRunner.manager.save(
+        SupplyRealTime,
+        supplyRealTimeCreate,
+      );
 
       const supplyHistoryData = {
         ...data,
@@ -79,25 +78,23 @@ export class SupplyService {
         totalWeightPerRegister: createSupplyDTO.totalWeightPerRegister,
       };
 
-      const supplyHistoryCreate = queryRunnerSH.manager.create(
+      const supplyHistoryCreate = queryRunner.manager.create(
         SupplyHistory,
         supplyHistoryData,
       );
 
       const newSupplyHistory =
-        await queryRunnerSH.manager.save(supplyHistoryCreate);
+        await queryRunner.manager.save(supplyHistoryCreate);
 
       return {
         supplyRealTime: newSupplyRealTime,
         supplyHistory: newSupplyHistory,
       };
     } catch (error) {
-      await queryRunnerSRT.rollbackTransaction();
-      await queryRunnerSH.rollbackTransaction();
-      throw error;
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Erro ao criar insumo: ${error.message}`);
     } finally {
-      await queryRunnerSRT.release();
-      await queryRunnerSH.release();
+      await queryRunner.release();
     }
   }
 

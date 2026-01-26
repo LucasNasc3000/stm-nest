@@ -1,4 +1,5 @@
 import { Employee } from 'src/employee/entities/employee.entity';
+import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
   Column,
   CreateDateColumn,
@@ -52,6 +53,9 @@ export class SupplyRealTime {
 
   @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealtime)
   supplyHistory: SupplyHistory[];
+
+  @OneToMany(() => Outflow, (outflow) => outflow.supplyRealTime)
+  outflows: Outflow[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
