@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
+import { Employee } from 'src/employee/entities/employee.entity';
 import { DataSource, Like, Repository } from 'typeorm';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -49,6 +50,19 @@ export class SupplyService {
     await queryRunner.startTransaction();
 
     try {
+      const doesEmployeeReallyExists = await queryRunner.manager.findOne(
+        Employee,
+        {
+          where: {
+            id: tokenPayloadDTO.sub,
+          },
+        },
+      );
+
+      if (!doesEmployeeReallyExists) {
+        throw new UnauthorizedException('Funcionário não encontrado');
+      }
+
       const data = {
         category: createSupplyDTO.category,
         name: createSupplyDTO.name,
@@ -57,7 +71,7 @@ export class SupplyService {
         weightPerUnit: createSupplyDTO.weightPerUnit,
         supplier: createSupplyDTO.supplier,
         expirationDate: createSupplyDTO.expirationDate,
-        employee: findEmployee,
+        employee: doesEmployeeReallyExists,
         lowStock: createSupplyDTO.lowStock,
         price: createSupplyDTO.price,
       };
