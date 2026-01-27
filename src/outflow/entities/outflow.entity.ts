@@ -20,10 +20,10 @@ export class Outflow {
   @Column({ type: 'time', precision: 0 })
   hour: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 50 })
   name: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 50 })
   category: string;
 
   @Column({ type: 'varchar', length: 50 })

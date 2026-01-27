@@ -14,10 +14,10 @@ export class SupplyHistory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 50 })
   category: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 50 })
   name: string;
 
   @Column({ type: 'integer' })
@@ -29,7 +29,7 @@ export class SupplyHistory {
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'weight_per_unit' })
   weightPerUnit: string;
 
-  @Column({ type: 'varchar', length: 150 })
+  @Column({ type: 'varchar', length: 100 })
   supplier: string;
 
   @Column({ type: 'date', nullable: true, name: 'expiration_date' })
