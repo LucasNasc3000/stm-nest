@@ -4,9 +4,11 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ProductIngredient } from './product-ingredient.entity';
 
 @Entity()
 export class Product {
@@ -20,7 +22,7 @@ export class Product {
   category: string;
 
   @Column({ type: 'integer' })
-  quantity: number;
+  unities: number;
 
   @Column({ type: 'date', nullable: true, name: 'expiration_date' })
   expirationDate: Date;
@@ -30,6 +32,9 @@ export class Product {
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @OneToMany(() => ProductIngredient, (recipe) => recipe.product)
+  recipe: ProductIngredient[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
