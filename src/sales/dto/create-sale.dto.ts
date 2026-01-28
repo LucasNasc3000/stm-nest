@@ -1,10 +1,12 @@
 import {
   IsDateString,
   IsNotEmpty,
+  IsNumberString,
   IsString,
   Length,
   Matches,
 } from 'class-validator';
+import { SaleItemsDTO } from './sale-items.dto';
 
 export class CreateSaleDTO {
   @IsNotEmpty({
@@ -41,4 +43,17 @@ export class CreateSaleDTO {
     message: 'campo "endereço" deve ter no máximo 125 caracteres',
   })
   readonly address: string;
+
+  @IsNotEmpty({
+    message: 'Campo "preço" não preenchido',
+  })
+  @IsString({
+    message: 'O campo "preço" deve estar no formato de texto',
+  })
+  @IsNumberString({
+    no_symbols: true,
+  })
+  readonly price: string;
+
+  readonly saleItems: SaleItemsDTO[];
 }
