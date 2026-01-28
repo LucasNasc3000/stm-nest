@@ -1,6 +1,6 @@
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
-import { ProductIngredient } from 'src/sales/entities/product-ingredient.entity';
+import { ProductIngredient } from 'src/sale/entities/product-ingredient.entity';
 import {
   Column,
   CreateDateColumn,

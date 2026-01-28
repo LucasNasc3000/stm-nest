@@ -168,6 +168,8 @@ export class OutflowService {
         );
       }
 
+      await queryRunner.commitTransaction();
+
       return {
         ...newOutflow,
       };

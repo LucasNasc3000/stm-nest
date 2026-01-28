@@ -104,6 +104,8 @@ export class SupplyService {
         throw new InternalServerErrorException('Erro ao cadastrar insumo');
       }
 
+      await queryRunner.commitTransaction();
+
       return {
         supplyRealTime: newSupplyRealTime,
         supplyHistory: newSupplyHistory,
