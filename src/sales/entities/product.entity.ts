@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ProductIngredient } from './product-ingredient.entity';
+import { SaleItems } from './sale-items.entity';
 
 @Entity()
 export class Product {
@@ -24,7 +25,7 @@ export class Product {
   @Column({ type: 'integer' })
   unities: number;
 
-  @Column({ type: 'date', nullable: true, name: 'expiration_date' })
+  @Column({ type: 'date', name: 'expiration_date' })
   expirationDate: Date;
 
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
@@ -35,6 +36,9 @@ export class Product {
 
   @OneToMany(() => ProductIngredient, (recipe) => recipe.product)
   recipe: ProductIngredient[];
+
+  @OneToMany(() => SaleItems, (sale) => sale.product)
+  sales: SaleItems[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

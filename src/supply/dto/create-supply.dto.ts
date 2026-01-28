@@ -15,8 +15,8 @@ export class CreateSupplyDTO {
   @IsString({
     message: 'campo "nome" deve estar em formato de texto',
   })
-  @Length(0, 125, {
-    message: 'campo "nome" deve ter no máximo 125 caracteres',
+  @Length(0, 50, {
+    message: 'campo "nome" deve ter no máximo 50 caracteres',
   })
   readonly name: string;
 
@@ -26,8 +26,8 @@ export class CreateSupplyDTO {
   @IsString({
     message: 'campo "categoria" deve estar em formato de texto',
   })
-  @Length(0, 100, {
-    message: 'campo "categoria" deve ter no máximo 100 caracteres',
+  @Length(0, 50, {
+    message: 'campo "categoria" deve ter no máximo 50 caracteres',
   })
   readonly category: string;
 
@@ -70,8 +70,8 @@ export class CreateSupplyDTO {
   @IsString({
     message: 'campo "fornecedor" deve estar em formato de texto',
   })
-  @Length(0, 125, {
-    message: 'campo "fornecedor" deve ter no máximo 125 caracteres',
+  @Length(0, 100, {
+    message: 'campo "fornecedor" deve ter no máximo 100 caracteres',
   })
   readonly supplier: string;
 

@@ -28,7 +28,7 @@ export class CreateOutflowDTO {
   @IsString({
     message: 'campo "nome" deve estar em formato de texto',
   })
-  @Length(0, 125, {
+  @Length(0, 50, {
     message: 'campo "nome" deve ter no máximo 125 caracteres',
   })
   readonly name: string;
@@ -39,7 +39,7 @@ export class CreateOutflowDTO {
   @IsString({
     message: 'campo "categoria" deve estar em formato de texto',
   })
-  @Length(0, 100, {
+  @Length(0, 50, {
     message: 'campo "categoria" deve ter no máximo 100 caracteres',
   })
   readonly category: string;

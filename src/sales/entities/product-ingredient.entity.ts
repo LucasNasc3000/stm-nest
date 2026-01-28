@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Product } from './product.entity';
 
 @Entity({ name: 'product_ingredient' })
 export class ProductIngredient {
@@ -18,10 +19,10 @@ export class ProductIngredient {
   })
   supplyRealTime: SupplyRealTime;
 
-  @ManyToOne(() => SupplyRealTime, (supplyRealTime) => supplyRealTime.recipes, {
+  @ManyToOne(() => Product, (product) => product.recipe, {
     onDelete: 'RESTRICT',
   })
-  product: SupplyRealTime;
+  product: Product;
 
   @Column({ type: 'integer' })
   quantity: number;

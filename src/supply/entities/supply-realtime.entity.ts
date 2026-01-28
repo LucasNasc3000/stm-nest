@@ -37,12 +37,11 @@ export class SupplyRealTime {
   @Column({ type: 'varchar', length: 100 })
   supplier: string;
 
-  @Column({ type: 'date', nullable: true, name: 'expiration_date' })
+  @Column({ type: 'date', name: 'expiration_date' })
   expirationDate: Date;
 
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
     onDelete: 'RESTRICT',
-    nullable: true,
   })
   employee: Employee;
 
