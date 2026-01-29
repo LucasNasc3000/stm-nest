@@ -11,7 +11,9 @@ import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
+import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Repository } from 'typeorm';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { ProductIngredient } from './entities/product-ingredient.entity';
@@ -245,6 +247,35 @@ export class SaleService {
           if (!updateSupply || updateSupply.affected < 1) {
             throw new InternalServerErrorException(
               `Erro ao atualizar insumo ${supplyExists.name} da receita do produto ${item.product}`,
+            );
+          }
+
+          const getDateAndHour = ReturnDateAndTimeForeignFormat();
+
+          const outflowData = {
+            date: getDateAndHour[0],
+            hour: getDateAndHour[1],
+            name: supplyExists.name,
+            category: supplyExists.category,
+            reason: 'Venda',
+            unities: ingredient.quantity,
+            employee: doesEmployeeReallyExists,
+            supplyRealTime: supplyExists,
+          };
+
+          const createOutflow = queryRunner.manager.create(
+            Outflow,
+            outflowData,
+          );
+
+          const newOutflow = await queryRunner.manager.save(
+            Outflow,
+            createOutflow,
+          );
+
+          if (!createOutflow || !newOutflow) {
+            throw new InternalServerErrorException(
+              `Erro ao cadastrar saída do insumo ${supplyExists.name} da receita do produto ${item.product}`,
             );
           }
         }
