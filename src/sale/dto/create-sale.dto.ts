@@ -23,15 +23,26 @@ export class CreateSaleDTO {
   readonly hour: string;
 
   @IsNotEmpty({
-    message: 'campo "nome" não preenchido',
+    message: 'campo "nome do cliente" não preenchido',
   })
   @IsString({
-    message: 'campo "nome" deve estar em formato de texto',
+    message: 'campo "nome do cliente" deve estar em formato de texto',
   })
   @Length(0, 125, {
-    message: 'campo "nome" deve ter no máximo 125 caracteres',
+    message: 'campo "nome do cliente" deve ter no máximo 125 caracteres',
   })
-  readonly name: string;
+  readonly clientName: string;
+
+  @IsNotEmpty({
+    message: 'campo "telefone" não preenchido',
+  })
+  @IsString({
+    message: 'campo "telefone" deve estar em formato de texto',
+  })
+  @Length(15, 15, {
+    message: 'campo "telefone" deve ter estar no formato (00) 00000 0000',
+  })
+  readonly phoneNumber: string;
 
   @IsNotEmpty({
     message: 'campo "endereço" não preenchido',

@@ -19,8 +19,8 @@ export class Sale {
   @Column({ type: 'time', precision: 0 })
   hour: string;
 
-  @Column({ type: 'varchar', length: 125 })
-  name: string;
+  @Column({ type: 'varchar', length: 125, name: 'client_name' })
+  clientName: string;
 
   @Column({ type: 'varchar', length: 14, name: 'phone_number' })
   phoneNumber: string;

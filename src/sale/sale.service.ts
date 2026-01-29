@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -11,7 +12,6 @@ import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { DataSource, Repository } from 'typeorm';
 import { CreateSaleDTO } from './dto/create-sale.dto';
-import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
 import { SaleItems } from './entities/sale-items.entity';
 import { Sale } from './entities/sale.entity';
@@ -39,8 +39,14 @@ export class SaleService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    let newSaleItems: SaleItems;
-    let findProductRecipe: ProductIngredient[];
+    const dataSale = {
+      date: createSaleDTO.date,
+      hour: createSaleDTO.hour,
+      clientName: createSaleDTO.clientName,
+      phoneNumber: createSaleDTO.phoneNumber,
+      address: createSaleDTO.address,
+      saleItems: [],
+    };
 
     try {
       const doesEmployeeReallyExists = await queryRunner.manager.findOne(
@@ -67,6 +73,13 @@ export class SaleService {
           throw new NotFoundException(`Produto ${item.product} não encontrado`);
         }
 
+        if (item.quantity > itemExists.unities) {
+          // Mandar email avisando da quantidade
+          throw new BadRequestException(
+            `Produto ${item.product} com estoque insuficiente de ${itemExists.unities} unidades`,
+          );
+        }
+
         const data = {
           quantity: item.quantity,
           price: item.price,
@@ -75,7 +88,7 @@ export class SaleService {
 
         const createSaleItems = queryRunner.manager.create(SaleItems, data);
 
-        newSaleItems = await queryRunner.manager.save(
+        const newSaleItems = await queryRunner.manager.save(
           SaleItems,
           createSaleItems,
         );
@@ -86,28 +99,22 @@ export class SaleService {
           );
         }
 
-        const findProductRecipeInsideFor = await queryRunner.manager.find(
-          ProductIngredient,
-          {
-            where: {
-              product: {
-                id: itemExists.id,
-              },
-            },
-          },
-        );
-
-        findProductRecipe.push(...findProductRecipeInsideFor);
-
-        if (
-          !findProductRecipeInsideFor ||
-          findProductRecipeInsideFor.length < 1
-        ) {
-          throw new NotFoundException(
-            `Receita não criada para o produto ${itemExists.name}. Não é possível atualizar os insumos estoque`,
-          );
-        }
+        dataSale.saleItems.push(newSaleItems);
       }
+
+      const createSale = queryRunner.manager.create(Sale, dataSale);
+
+      const newSale = queryRunner.manager.save(Sale, createSale);
+
+      if (!createSale || !newSale) {
+        throw new InternalServerErrorException('Erro ao cadastrar nova venda');
+      }
+
+      await queryRunner.commitTransaction();
+
+      return {
+        ...newSale,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(`Erro ao criar registro de venda: ${error.message}`);
