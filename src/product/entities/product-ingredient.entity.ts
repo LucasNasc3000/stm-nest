@@ -1,3 +1,4 @@
+import { Employee } from 'src/employee/entities/employee.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
@@ -24,6 +25,12 @@ export class ProductIngredient {
     nullable: true,
   })
   product: Product;
+
+  @ManyToOne(() => Employee, (employee) => employee.productIngredient, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  employee: Employee;
 
   @Column({ type: 'integer' })
   quantity: number;

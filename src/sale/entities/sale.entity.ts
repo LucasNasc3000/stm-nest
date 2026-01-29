@@ -33,6 +33,7 @@ export class Sale {
 
   @ManyToOne(() => Employee, (employee) => employee.outflows, {
     onDelete: 'RESTRICT',
+    nullable: true,
   })
   employee: Employee;
 

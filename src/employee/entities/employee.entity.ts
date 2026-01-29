@@ -2,6 +2,7 @@ import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
 import { Sale } from 'src/sale/entities/sale.entity';
 import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
@@ -72,6 +73,9 @@ export class Employee {
 
   @OneToMany(() => Sale, (sale) => sale.employee)
   sales: Sale[];
+
+  @OneToMany(() => ProductIngredient, (ingredient) => ingredient.employee)
+  productIngredient: ProductIngredient[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

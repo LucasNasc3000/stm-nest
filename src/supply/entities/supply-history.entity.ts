@@ -37,6 +37,7 @@ export class SupplyHistory {
 
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
     onDelete: 'RESTRICT',
+    nullable: true,
   })
   employee: Employee;
 
@@ -59,6 +60,7 @@ export class SupplyHistory {
 
   @ManyToOne(() => Employee, (employee) => employee.suppliesHistory, {
     onDelete: 'RESTRICT',
+    nullable: true,
   })
   registeredBy: Employee;
 

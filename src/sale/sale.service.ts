@@ -16,6 +16,8 @@ import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Like, Repository } from 'typeorm';
+import { ProductIngredient } from '../product/entities/product-ingredient.entity';
+import { Product } from '../product/entities/product.entity';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
 import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
@@ -24,8 +26,6 @@ import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
 import { UpdatePriceSaleDTO } from './dto/update-price-sale.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
-import { ProductIngredient } from './entities/product-ingredient.entity';
-import { Product } from './entities/product.entity';
 import { SaleItems } from './entities/sale-items.entity';
 import { Sale } from './entities/sale.entity';
 
