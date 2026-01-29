@@ -6,5 +6,7 @@ export enum EmployeeRole {
   EDIT_PRICES = 'editar-precos',
   SUPPLIES = 'insumos',
   OUTFLOWS = 'saidas',
+  PRODUCTS = 'produtos',
+  RECIPES = 'receitas',
   SALES = 'vendas',
 }
