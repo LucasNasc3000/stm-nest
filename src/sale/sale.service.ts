@@ -88,6 +88,13 @@ export class SaleService {
           );
         }
 
+        if (
+          item.quantity < itemExists.unities &&
+          item.quantity <= itemExists.lowStock
+        ) {
+          // Enviar email avisando da quantidade
+        }
+
         const data = {
           quantity: item.quantity,
           price: item.price,
@@ -188,6 +195,13 @@ export class SaleService {
           );
         }
 
+        if (
+          item.quantity < itemExists.unities &&
+          item.quantity <= itemExists.lowStock
+        ) {
+          // Enviar email avisando da quantidade
+        }
+
         for (const recipe of itemExists.recipe) {
           const recipeExists = await queryRunner.manager.findOne(
             ProductIngredient,
@@ -219,6 +233,19 @@ export class SaleService {
             throw new NotFoundException(
               `Insumo ${ingredient.supplyRealTime.name} da receita do produto ${item.product} não encontrada`,
             );
+          }
+
+          if (supplyExists.quantity < ingredient.quantity) {
+            throw new BadRequestException(
+              `Quantidade do insumo ${supplyExists.name} insuficiente`,
+            );
+          }
+
+          if (
+            ingredient.quantity < supplyExists.quantity &&
+            ingredient.quantity <= supplyExists.lowStock
+          ) {
+            // enviar email avisando da quantidade
           }
 
           const updatedSupplyQuantity =
