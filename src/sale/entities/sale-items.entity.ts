@@ -15,12 +15,13 @@ export class SaleItems {
 
   @ManyToOne(() => Product, (product) => product.sales, {
     onDelete: 'RESTRICT',
+    nullable: true,
   })
   product: Product;
 
   @ManyToOne(() => Sale, (sale) => sale.saleItems, {
     onDelete: 'RESTRICT',
-    nullable: true,
+    nullable: false,
   })
   sale: Sale;
 }
