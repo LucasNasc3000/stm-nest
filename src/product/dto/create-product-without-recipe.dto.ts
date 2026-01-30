@@ -8,7 +8,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class CreateProductDTO {
+export class CreateProductWithoutRecipeDTO {
   @IsNotEmpty({
     message: 'campo "nome" não preenchido',
   })

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -341,10 +342,6 @@ export class SaleService {
 
       const newSale = queryRunner.manager.save(Sale, createSale);
 
-      if (!createSale || !newSale) {
-        throw new InternalServerErrorException('Erro ao cadastrar nova venda');
-      }
-
       await queryRunner.commitTransaction();
 
       return {
@@ -352,7 +349,16 @@ export class SaleService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
+
       this.logger.error(`Erro ao criar registro de venda: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na criação de registro de venda',
+      );
     } finally {
       await queryRunner.release();
     }

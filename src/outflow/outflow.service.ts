@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -162,12 +163,6 @@ export class OutflowService {
 
       const newOutflow = await queryRunner.manager.save(Outflow, outflowCreate);
 
-      if (!outflowCreate || !newOutflow) {
-        throw new InternalServerErrorException(
-          `Erro ao cadastrar saída de ${createOutflowDTO.name}`,
-        );
-      }
-
       await queryRunner.commitTransaction();
 
       return {
@@ -177,6 +172,14 @@ export class OutflowService {
       await queryRunner.rollbackTransaction();
       this.logger.error(
         `Erro ao criar saída do insumo ${createOutflowDTO.name}: ${error.message}`,
+      );
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na criação de saída',
       );
     } finally {
       await queryRunner.release();

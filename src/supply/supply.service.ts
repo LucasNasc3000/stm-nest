@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -19,6 +20,7 @@ import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { SearchByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
+import { UpdatePriceSupplyRealtimeDTO } from './dto/update-price-supply-realtime.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
@@ -100,10 +102,6 @@ export class SupplyService {
       const newSupplyHistory =
         await queryRunner.manager.save(supplyHistoryCreate);
 
-      if (!supplyHistoryCreate || !newSupplyHistory) {
-        throw new InternalServerErrorException('Erro ao cadastrar insumo');
-      }
-
       await queryRunner.commitTransaction();
 
       return {
@@ -112,7 +110,16 @@ export class SupplyService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
+
       this.logger.error(`Erro ao criar insumo: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na criação de insumo',
+      );
     } finally {
       await queryRunner.release();
     }
@@ -135,9 +142,6 @@ export class SupplyService {
     const allowedData = {
       category: updateSupplyRealtimeDTO.category,
       name: updateSupplyRealtimeDTO.name,
-      quantity: updateSupplyRealtimeDTO.quantity,
-      totalWeight: updateSupplyRealtimeDTO.totalWeight,
-      weightPerUnit: updateSupplyRealtimeDTO.weightPerUnit,
       supplier: updateSupplyRealtimeDTO.supplier,
       expirationDate: updateSupplyRealtimeDTO.expirationDate,
       lowStock: updateSupplyRealtimeDTO.lowStock,
@@ -159,7 +163,7 @@ export class SupplyService {
 
   async UpdatePrice(
     supplyId: UrlUuidDTO,
-    updatePriceSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
+    updatePriceSupplyRealtimeDTO: UpdatePriceSupplyRealtimeDTO,
   ) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {

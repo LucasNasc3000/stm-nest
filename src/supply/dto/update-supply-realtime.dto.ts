@@ -1,7 +1,6 @@
 import {
   IsDateString,
   IsInt,
-  IsNumberString,
   IsOptional,
   IsPositive,
   IsString,
@@ -28,33 +27,6 @@ export class UpdateSupplyRealtimeDTO {
   readonly category?: string;
 
   @IsOptional()
-  @IsInt({
-    message: 'campo "quantidade" deve ser um número inteiro',
-  })
-  @IsPositive({
-    message: 'campo "quantidade" deve ser maior que zero',
-  })
-  readonly quantity?: number;
-
-  @IsOptional()
-  @IsString({
-    message: 'O campo "peso total" deve estar no formato de texto',
-  })
-  @IsNumberString({
-    no_symbols: true,
-  })
-  readonly totalWeight?: string;
-
-  @IsOptional()
-  @IsString({
-    message: 'O campo "peso unitário" deve estar no formato de texto',
-  })
-  @IsNumberString({
-    no_symbols: true,
-  })
-  readonly weightPerUnit?: string;
-
-  @IsOptional()
   @IsString({
     message: 'campo "fornecedor" deve estar em formato de texto',
   })
@@ -75,13 +47,4 @@ export class UpdateSupplyRealtimeDTO {
     message: 'campo "Quantidade mínima" deve ser maior que zero',
   })
   readonly lowStock?: number;
-
-  @IsOptional()
-  @IsString({
-    message: 'O campo "preço" deve estar no formato de texto',
-  })
-  @IsNumberString({
-    no_symbols: true,
-  })
-  readonly price?: string;
 }
