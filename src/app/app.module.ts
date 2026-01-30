@@ -3,6 +3,7 @@ import { ConfigModule, ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from 'src/employee/employee.module';
 import { OutflowModule } from 'src/outflow/outflow.module';
+import { ProductModule } from 'src/product/product.module';
 import { SaleModule } from 'src/sale/sale.module';
 import { SupplyModule } from 'src/supply/suppy.module';
 import appConfig from './app.config';
@@ -33,6 +34,7 @@ import { AppService } from './app.service';
     SupplyModule,
     OutflowModule,
     SaleModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
