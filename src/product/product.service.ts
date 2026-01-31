@@ -6,10 +6,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
+import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Repository } from 'typeorm';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
@@ -217,6 +220,55 @@ export class ProductService {
             `Insumo ${supply.supplyId} da receita do produto ${createProductWithRecipe.name} não encontrado`,
           );
         }
+
+        const totalWeightDecimal = new Decimal(
+          doesSupplyReallyExists.totalWeight,
+        );
+
+        const weightPerUnitDecimal = new Decimal(
+          doesSupplyReallyExists.weightPerUnit,
+        );
+
+        const totalWeightPerOutflow = weightPerUnitDecimal.mul(supply.quantity);
+
+        const newTotalWeight = totalWeightDecimal
+          .sub(totalWeightPerOutflow)
+          .toString();
+
+        const updatedQuantity =
+          doesSupplyReallyExists.quantity - supply.quantity;
+
+        const supplyUpdate = await queryRunner.manager.update(
+          SupplyRealTime,
+          doesSupplyReallyExists.id,
+          {
+            totalWeight: newTotalWeight,
+            quantity: updatedQuantity,
+          },
+        );
+
+        if (!supplyUpdate || supplyUpdate.affected < 1) {
+          throw new InternalServerErrorException(
+            `Erro ao atualizar insumo ${doesSupplyReallyExists.name} da receita do produto ${createProductWithRecipe.name}`,
+          );
+        }
+
+        const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+        const outflowData = {
+          date: dateAndHour[0],
+          hour: dateAndHour[1],
+          name: doesSupplyReallyExists.name,
+          category: doesSupplyReallyExists.category,
+          reason: 'Cadastro de produto',
+          unities: createProductWithRecipe.unities,
+          employee: doesEmployeeReallyExists,
+          supplyRealTime: doesSupplyReallyExists,
+        };
+
+        const createOutflow = queryRunner.manager.create(Outflow, outflowData);
+
+        await queryRunner.manager.save(Outflow, createOutflow);
 
         const productIngredientDataLoop = {
           supplyRealTime: doesSupplyReallyExists,

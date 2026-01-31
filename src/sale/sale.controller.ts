@@ -29,21 +29,11 @@ export class SaleController {
   @Post()
   @SetRoutePolicy(EmployeeRole.CREATE)
   @SetRoutePolicy(EmployeeRole.SALES)
-  CreateWithoutRecipe(
+  Create(
     @Body() body: CreateSaleDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    return this.salesService.CreateWithoutRecipe(tokenPayloadDTO, body);
-  }
-
-  @Post()
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.SALES)
-  CreateWithRecipe(
-    @Body() body: CreateSaleDTO,
-    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
-  ) {
-    return this.salesService.CreateWithRecipe(tokenPayloadDTO, body);
+    return this.salesService.Create(tokenPayloadDTO, body);
   }
 
   @Patch()
