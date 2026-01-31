@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
@@ -63,6 +64,58 @@ export class SupplyService {
 
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
+      }
+
+      const doesSupplyAlreadyExists = await queryRunner.manager.findOne(
+        SupplyRealTime,
+        {
+          where: {
+            name: createSupplyDTO.name,
+          },
+        },
+      );
+
+      if (doesSupplyAlreadyExists) {
+        const weightPerUnitDecimal = new Decimal(
+          doesSupplyAlreadyExists.weightPerUnit,
+        );
+
+        const totalWeightDecimal = new Decimal(
+          doesSupplyAlreadyExists.totalWeight,
+        );
+
+        const addToTotalWeight = weightPerUnitDecimal.mul(
+          createSupplyDTO.quantity,
+        );
+
+        const newTotalWeight = totalWeightDecimal
+          .add(addToTotalWeight)
+          .toString();
+
+        const updatedQuantity =
+          doesSupplyAlreadyExists.quantity - createSupplyDTO.quantity;
+
+        const supplyUpdate = await queryRunner.manager.update(
+          SupplyRealTime,
+          doesSupplyAlreadyExists.id,
+          {
+            totalWeight: newTotalWeight,
+            quantity: updatedQuantity,
+          },
+        );
+
+        if (!supplyUpdate || supplyUpdate.affected < 1) {
+          throw new InternalServerErrorException(
+            'Erro ao atualizar insumo existente',
+          );
+        }
+
+        await queryRunner.commitTransaction();
+
+        return {
+          message: 'Insumo já existente atualizado',
+          supplyRealTime: supplyUpdate,
+        };
       }
 
       const data = {
