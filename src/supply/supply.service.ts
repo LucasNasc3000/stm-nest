@@ -205,13 +205,16 @@ export class SupplyService {
       ...allowedData,
     });
 
-    if (!supplyUpdate) {
+    const supplyUpdated =
+      await this.supplyRealTimeRepository.save(supplyUpdate);
+
+    if (!supplyUpdate || !supplyUpdated) {
       throw new InternalServerErrorException(
         `Erro ao tentar atualizar insumo: ${findSupply.name}`,
       );
     }
 
-    return this.supplyRealTimeRepository.save(supplyUpdate);
+    return supplyUpdated;
   }
 
   async UpdatePrice(
@@ -233,13 +236,16 @@ export class SupplyService {
       price: updatePriceSupplyRealtimeDTO.price,
     });
 
-    if (!supplyUpdate) {
+    const supplyUpdated =
+      await this.supplyRealTimeRepository.save(supplyUpdate);
+
+    if (!supplyUpdate || !supplyUpdated) {
       throw new InternalServerErrorException(
         `Erro ao tentar atualizar preço do insumo: ${findSupply.name}`,
       );
     }
 
-    return this.supplyRealTimeRepository.save(supplyUpdate);
+    return supplyUpdated;
   }
 
   async FindById(id: UrlUuidDTO) {

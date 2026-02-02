@@ -159,13 +159,15 @@ export class SaleService {
       ...allowedData,
     });
 
-    if (!supplyUpdate) {
+    const saleUpdated = await this.salesRepository.save(supplyUpdate);
+
+    if (!supplyUpdate || !saleUpdated) {
       throw new InternalServerErrorException(
         'Erro ao tentar atualizar registro da venda',
       );
     }
 
-    return this.salesRepository.save(supplyUpdate);
+    return saleUpdated;
   }
 
   async UpdatePrice(
@@ -187,13 +189,15 @@ export class SaleService {
       price: updatePriceSaleDTO.price,
     });
 
-    if (!supplyUpdate) {
+    const saleUpdated = await this.salesRepository.save(supplyUpdate);
+
+    if (!supplyUpdate || !saleUpdated) {
       throw new InternalServerErrorException(
         'Erro ao tentar atualizar registro da venda',
       );
     }
 
-    return this.salesRepository.save(supplyUpdate);
+    return saleUpdated;
   }
 
   async FindByDate(paginationByDate: PaginationByDateDTO) {

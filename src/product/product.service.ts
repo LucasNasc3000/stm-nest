@@ -3,19 +3,24 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Repository } from 'typeorm';
+import { CreateProductIngredientDTO } from './dto/create-product-ingredient.dto';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
+import { UpdateProductRegularDataDTO } from './dto/update-product-regular-data.dto';
+import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
 
@@ -311,5 +316,55 @@ export class ProductService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async Update(productId: UrlUuidDTO, updateProductDTO: UpdateProductDTO) {
+    if (!updateProductDTO.price && !updateProductDTO.productIngredient) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { price, productIngredient, ...rest } = updateProductDTO;
+
+      const updateRegularData = await this.UpdateRegularData(rest);
+
+      return updateRegularData;
+    }
+  }
+
+  private async UpdatePrice(productId: UrlUuidDTO, price: string) {}
+
+  private async UpdateProductIngredient(
+    id: UrlUuidDTO,
+    productIngredient: CreateProductIngredientDTO[],
+  ) {}
+
+  private async UpdateRegularData(
+    productId: UrlUuidDTO,
+    updateProductRegularDataDTO: UpdateProductRegularDataDTO,
+  ) {
+    const { id } = productId;
+
+    const findProduct = await this.productRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!findProduct) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    const productUpdate = await this.productRepository.preload({
+      id,
+      ...updateProductRegularDataDTO,
+    });
+
+    const productUpdated = await this.productRepository.save(productUpdate);
+
+    if (!productUpdate || !productUpdated) {
+      throw new InternalServerErrorException(
+        `Erro ao tentar atualizar produto: ${findProduct.name}`,
+      );
+    }
+
+    return productUpdated;
   }
 }

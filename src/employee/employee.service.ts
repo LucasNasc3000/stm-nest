@@ -105,13 +105,15 @@ export class EmployeeService {
       ...allowedData,
     });
 
-    if (!employeeUpdate) {
+    const employeeUpdated = await this.employeeRepository.save(employeeUpdate);
+
+    if (!employeeUpdate || !employeeUpdated) {
       throw new InternalServerErrorException(
         'Erro ao tentar atualizar funcionário',
       );
     }
 
-    return this.employeeRepository.save(employeeUpdate);
+    return employeeUpdated;
   }
 
   async UpdateAdmin(
@@ -162,13 +164,15 @@ export class EmployeeService {
       ...allowedData,
     });
 
-    if (!employeeUpdate) {
+    const employeeUpdated = await this.employeeRepository.save(employeeUpdate);
+
+    if (!employeeUpdate || !employeeUpdated) {
       throw new InternalServerErrorException(
         'Erro ao tentar atualizar dados de funcionário',
       );
     }
 
-    return this.employeeRepository.save(employeeUpdate);
+    return employeeUpdated;
   }
 
   async FindByEmail(emailDTO: SearchByEmailDTO) {
