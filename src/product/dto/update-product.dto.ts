@@ -1,18 +1,15 @@
 import {
+  IsBoolean,
   IsDateString,
   IsInt,
-  IsNotEmpty,
   IsNumberString,
   IsPositive,
   IsString,
   Length,
 } from 'class-validator';
-import { CreateProductIngredientDTO } from './create-product-ingredient.dto';
+import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
 export class UpdateProductDTO {
-  @IsNotEmpty({
-    message: 'campo "nome" não preenchido',
-  })
   @IsString({
     message: 'campo "nome" deve estar em formato de texto',
   })
@@ -21,9 +18,6 @@ export class UpdateProductDTO {
   })
   readonly name?: string;
 
-  @IsNotEmpty({
-    message: 'campo "categoria" não preenchido',
-  })
   @IsString({
     message: 'campo "categoria" deve estar em formato de texto',
   })
@@ -32,9 +26,6 @@ export class UpdateProductDTO {
   })
   readonly category?: string;
 
-  @IsNotEmpty({
-    message: 'campo "unidades" não preenchido',
-  })
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
   })
@@ -43,15 +34,9 @@ export class UpdateProductDTO {
   })
   readonly unities?: number;
 
-  @IsNotEmpty({
-    message: 'campo "fornecedor" não preenchido',
-  })
   @IsDateString()
   readonly expirationDate?: string;
 
-  @IsNotEmpty({
-    message: 'campo "Quantidade mínima" não preenchido',
-  })
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })
@@ -60,9 +45,6 @@ export class UpdateProductDTO {
   })
   readonly lowStock?: number;
 
-  @IsNotEmpty({
-    message: 'Campo "preço" não preenchido',
-  })
   @IsString({
     message: 'O campo "preço" deve estar no formato de texto',
   })
@@ -71,5 +53,8 @@ export class UpdateProductDTO {
   })
   readonly price?: string;
 
-  readonly productIngredient?: CreateProductIngredientDTO[];
+  @IsBoolean()
+  readonly disableProduct?: boolean;
+
+  readonly productIngredient?: UpdateProductIngredientDTO[];
 }

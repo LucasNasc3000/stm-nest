@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -15,10 +16,10 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
-import { DataSource, Repository } from 'typeorm';
-import { CreateProductIngredientDTO } from './dto/create-product-ingredient.dto';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
+import { UpdateProductIngredientDTO } from './dto/update-product-ingredient.dto';
 import { UpdateProductRegularDataDTO } from './dto/update-product-regular-data.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductIngredient } from './entities/product-ingredient.entity';
@@ -318,53 +319,225 @@ export class ProductService {
     }
   }
 
-  async Update(productId: UrlUuidDTO, updateProductDTO: UpdateProductDTO) {
-    if (!updateProductDTO.price && !updateProductDTO.productIngredient) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { price, productIngredient, ...rest } = updateProductDTO;
+  async Update(
+    tokenPayloadDTO: TokenPayloadDTO,
+    productId: UrlUuidDTO,
+    updateProductDTO: UpdateProductDTO,
+  ) {
+    const findEmployee = await this.employeesService.FindById(
+      tokenPayloadDTO.sub,
+    );
 
-      const updateRegularData = await this.UpdateRegularData(rest);
+    if (!findEmployee) {
+      throw new UnauthorizedException('Funcionário não encontrado');
+    }
 
-      return updateRegularData;
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    const updatesPerformed = [];
+
+    try {
+      const doesEmployeeReallyExists = await queryRunner.manager.findOne(
+        Employee,
+        {
+          where: {
+            id: tokenPayloadDTO.sub,
+          },
+        },
+      );
+
+      if (!doesEmployeeReallyExists) {
+        throw new UnauthorizedException('Funcionário não encontrado');
+      }
+
+      const { id } = productId;
+
+      const findProduct = await queryRunner.manager.findOne(Product, {
+        where: {
+          id: id,
+        },
+      });
+
+      if (!findProduct) {
+        throw new NotFoundException('Produto não encontrado');
+      }
+
+      if (updateProductDTO.productIngredient.length > 0) {
+        await this.UpdateProductIngredient(
+          updateProductDTO.productIngredient,
+          queryRunner,
+        );
+      }
+
+      if (updateProductDTO.price) {
+        await this.UpdatePrice(
+          findProduct,
+          updateProductDTO.price,
+          queryRunner,
+        );
+      }
+
+      await this.UpdateRegularData(findProduct, updateProductDTO, queryRunner);
+
+      for (let i = 0; i < Object.keys(updateProductDTO).length; i++) {
+        updatesPerformed.push(Object.keys(updateProductDTO));
+      }
+
+      await queryRunner.commitTransaction();
+
+      const findUpdatedProduct = await this.productRepository.findOne({
+        where: {
+          id: productId.id,
+        },
+      });
+
+      return {
+        updatedFields: updatesPerformed,
+        product: findUpdatedProduct,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      this.logger.error(
+        `Erro ao atualizar ingredientes do produto: ${error.message}`,
+      );
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na atualização dos ingredientes do produto',
+      );
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  private async UpdatePrice(productId: UrlUuidDTO, price: string) {}
-
-  private async UpdateProductIngredient(
-    id: UrlUuidDTO,
-    productIngredient: CreateProductIngredientDTO[],
-  ) {}
-
-  private async UpdateRegularData(
-    productId: UrlUuidDTO,
-    updateProductRegularDataDTO: UpdateProductRegularDataDTO,
+  private async UpdatePrice(
+    product: Product,
+    price: string,
+    queryRunner: QueryRunner,
   ) {
-    const { id } = productId;
-
-    const findProduct = await this.productRepository.findOne({
-      where: {
-        id: id,
+    const productUpdate = await queryRunner.manager.update(
+      Product,
+      product.id,
+      {
+        id: product.id,
+        price,
       },
-    });
+    );
 
-    if (!findProduct) {
-      throw new NotFoundException('Produto não encontrado');
-    }
-
-    const productUpdate = await this.productRepository.preload({
-      id,
-      ...updateProductRegularDataDTO,
-    });
-
-    const productUpdated = await this.productRepository.save(productUpdate);
-
-    if (!productUpdate || !productUpdated) {
+    if (!productUpdate || productUpdate.affected < 1) {
       throw new InternalServerErrorException(
-        `Erro ao tentar atualizar produto: ${findProduct.name}`,
+        `Erro ao tentar atualizar preço do produto: ${product.name}`,
       );
     }
+  }
 
-    return productUpdated;
+  private async UpdateProductIngredient(
+    productIngredient: UpdateProductIngredientDTO[],
+    queryRunner: QueryRunner,
+  ) {
+    for (const ingredient of productIngredient) {
+      if (ingredient.disableProduct === true) {
+        const findIngredient = await queryRunner.manager.findOne(
+          ProductIngredient,
+          {
+            where: {
+              id: ingredient.id,
+            },
+          },
+        );
+
+        if (!findIngredient) {
+          throw new NotFoundException(
+            `Ingrediente ${ingredient.id} não encontrado`,
+          );
+        }
+
+        const disableIngredient = await queryRunner.manager.update(
+          ProductIngredient,
+          ingredient.id,
+          {
+            is_active: false,
+          },
+        );
+
+        if (!disableIngredient || disableIngredient.affected < 1) {
+          throw new InternalServerErrorException(
+            `Erro ao remover ingrediente ${ingredient.id}`,
+          );
+        }
+      }
+
+      if (ingredient.quantity) {
+        const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
+          where: {
+            id: ingredient.supplyId,
+          },
+        });
+
+        if (!findSupply) {
+          throw new NotFoundException(
+            `Insumo ${findSupply.name} do ingrediente ${ingredient.id} não encontrado`,
+          );
+        }
+
+        if (findSupply.quantity < ingredient.quantity) {
+          throw new BadRequestException(
+            `Insumo ${findSupply.name} em quantidade insuficiente em estoque`,
+          );
+        }
+
+        const unitiesRequested = findSupply.quantity - ingredient.quantity;
+
+        if (unitiesRequested > 0 && unitiesRequested <= findSupply.lowStock) {
+          // Mandar email avisando da quantidade
+        }
+
+        const updateIngredientQuantity = await queryRunner.manager.update(
+          ProductIngredient,
+          ingredient.id,
+          {
+            quantity: ingredient.quantity,
+          },
+        );
+
+        if (
+          !updateIngredientQuantity ||
+          updateIngredientQuantity.affected < 1
+        ) {
+          throw new InternalServerErrorException(
+            `Erro ao atualizar quantidade do ingrediente ${ingredient.id}`,
+          );
+        }
+      }
+    }
+  }
+
+  private async UpdateRegularData(
+    product: Product,
+    updateProductRegularDataDTO: UpdateProductRegularDataDTO,
+    queryRunner: QueryRunner,
+  ) {
+    if (Object.keys(updateProductRegularDataDTO).length < 1) return;
+
+    const productUpdate = await queryRunner.manager.update(
+      Product,
+      product.id,
+      {
+        id: product.id,
+        ...updateProductRegularDataDTO,
+      },
+    );
+
+    if (!productUpdate || productUpdate.affected < 1) {
+      throw new InternalServerErrorException(
+        `Erro ao tentar atualizar produto: ${product.name}`,
+      );
+    }
   }
 }
