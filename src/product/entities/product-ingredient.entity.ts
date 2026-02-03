@@ -35,8 +35,8 @@ export class ProductIngredient {
   @Column({ type: 'integer' })
   quantity: number;
 
-  @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
+  isActive: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

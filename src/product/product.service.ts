@@ -17,6 +17,7 @@ import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { CreateProductIngredientDTO } from './dto/create-product-ingredient.dto';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { UpdateProductIngredientDTO } from './dto/update-product-ingredient.dto';
@@ -319,19 +320,188 @@ export class ProductService {
     }
   }
 
-  async Update(
+  async CreateRecipe(
     tokenPayloadDTO: TokenPayloadDTO,
     productId: UrlUuidDTO,
-    updateProductDTO: UpdateProductDTO,
+    createRecipeDTO: CreateProductIngredientDTO[],
+    useStockSupplies: boolean,
   ) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
+    const recipe: ProductIngredient[] = [];
+    const outflows: Outflow[] = [];
+
+    const doesProductReallyExists = await queryRunner.manager.findOne(Product, {
+      where: {
+        id: productId.id,
+      },
+    });
+
+    if (!doesProductReallyExists) {
+      throw new NotFoundException('Produto não encontrado');
     }
 
+    const doesEmployeeReallyExists = await queryRunner.manager.findOne(
+      Employee,
+      {
+        where: {
+          id: tokenPayloadDTO.sub,
+        },
+      },
+    );
+
+    if (!doesEmployeeReallyExists) {
+      throw new NotFoundException('Funcionário não encontrado');
+    }
+
+    try {
+      for (const ingredient of createRecipeDTO) {
+        const doesSupplyReallyExists = await queryRunner.manager.findOne(
+          SupplyRealTime,
+          {
+            where: {
+              id: ingredient.supplyId,
+            },
+          },
+        );
+
+        if (!doesSupplyReallyExists) {
+          throw new NotFoundException(
+            `Insumo ${ingredient.supplyId} não encontrado`,
+          );
+        }
+
+        if (useStockSupplies !== true) {
+          if (ingredient.quantity > 0) {
+            throw new BadRequestException(
+              'A quantidade deve ser zero caso não se queira usar os insumos em estoque',
+            );
+          }
+
+          const data = {
+            supplyRealTime: doesSupplyReallyExists,
+            product: doesProductReallyExists,
+            employee: doesEmployeeReallyExists,
+            quantity: ingredient.quantity,
+            is_active: true,
+          };
+
+          const createProductIngredient = queryRunner.manager.create(
+            ProductIngredient,
+            data,
+          );
+
+          recipe.push(createProductIngredient);
+        }
+
+        if (ingredient.quantity < 1) {
+          throw new BadRequestException(
+            'A quantidade deve ser maior que zero caso se queira usar insumos em estoque',
+          );
+        }
+
+        const totalWeightDecimal = new Decimal(
+          doesSupplyReallyExists.totalWeight,
+        );
+
+        const weightPerUnitDecimal = new Decimal(
+          doesSupplyReallyExists.weightPerUnit,
+        );
+
+        const totalWeightPerOutflow = weightPerUnitDecimal.mul(
+          ingredient.quantity,
+        );
+
+        const newTotalWeight = totalWeightDecimal
+          .sub(totalWeightPerOutflow)
+          .toString();
+
+        const updatedQuantity =
+          doesSupplyReallyExists.quantity - ingredient.quantity;
+
+        const supplyUpdate = await queryRunner.manager.update(
+          SupplyRealTime,
+          doesSupplyReallyExists.id,
+          {
+            totalWeight: newTotalWeight,
+            quantity: updatedQuantity,
+          },
+        );
+
+        if (!supplyUpdate || supplyUpdate.affected < 1) {
+          throw new InternalServerErrorException(
+            `Erro ao atualizar insumo ${doesSupplyReallyExists.name} para a receita do produto ${doesProductReallyExists.name}`,
+          );
+        }
+
+        const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+        const outflowData = {
+          date: dateAndHour[0],
+          hour: dateAndHour[1],
+          name: doesSupplyReallyExists.name,
+          category: doesSupplyReallyExists.category,
+          reason: 'Criacao de receita',
+          unities: ingredient.quantity,
+          employee: doesEmployeeReallyExists,
+          supplyRealTime: doesSupplyReallyExists,
+        };
+
+        if (ingredient.quantity > 0) {
+          throw new BadRequestException(
+            'A quantidade deve ser zero caso não se queira usar os insumos em estoque',
+          );
+        }
+
+        const data = {
+          supplyRealTime: doesSupplyReallyExists,
+          product: doesProductReallyExists,
+          employee: doesEmployeeReallyExists,
+          quantity: ingredient.quantity,
+          is_active: true,
+        };
+
+        const createProductIngredient = queryRunner.manager.create(
+          ProductIngredient,
+          data,
+        );
+
+        const createOutflow = queryRunner.manager.create(Outflow, outflowData);
+
+        recipe.push(createProductIngredient);
+
+        outflows.push(createOutflow);
+      }
+
+      await queryRunner.manager.save(Outflow, outflows);
+
+      await queryRunner.manager.save(ProductIngredient, recipe);
+
+      await queryRunner.commitTransaction();
+
+      return {
+        message: 'success',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      this.logger.error(`Erro ao cadastrar produto: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na criação de produto com receita',
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async Update(productId: UrlUuidDTO, updateProductDTO: UpdateProductDTO) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -339,19 +509,6 @@ export class ProductService {
     const updatesPerformed = [];
 
     try {
-      const doesEmployeeReallyExists = await queryRunner.manager.findOne(
-        Employee,
-        {
-          where: {
-            id: tokenPayloadDTO.sub,
-          },
-        },
-      );
-
-      if (!doesEmployeeReallyExists) {
-        throw new UnauthorizedException('Funcionário não encontrado');
-      }
-
       const { id } = productId;
 
       const findProduct = await queryRunner.manager.findOne(Product, {
@@ -462,7 +619,7 @@ export class ProductService {
           ProductIngredient,
           ingredient.id,
           {
-            is_active: false,
+            isActive: false,
           },
         );
 
