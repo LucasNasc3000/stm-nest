@@ -1,10 +1,12 @@
 import { Employee } from 'src/employee/entities/employee.entity';
+import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -31,6 +33,9 @@ export class ProductIngredient {
     nullable: true,
   })
   employee: Employee;
+
+  @OneToMany(() => Outflow, (outflow) => outflow.ingredient)
+  outflows: Outflow[];
 
   @Column({ type: 'integer' })
   quantity: number;
