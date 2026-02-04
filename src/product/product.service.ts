@@ -636,13 +636,13 @@ export class ProductService {
           );
         }
 
-        if (findSupply.quantity < ingredient.quantity) {
+        const unitiesRequested = findSupply.quantity - ingredient.quantity;
+
+        if (unitiesRequested < 1) {
           throw new BadRequestException(
             `Insumo ${findSupply.name} em quantidade insuficiente em estoque`,
           );
         }
-
-        const unitiesRequested = findSupply.quantity - ingredient.quantity;
 
         if (unitiesRequested > 0 && unitiesRequested <= findSupply.lowStock) {
           // Mandar email avisando da quantidade
