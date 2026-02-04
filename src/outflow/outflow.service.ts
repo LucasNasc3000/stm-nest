@@ -187,9 +187,9 @@ export class OutflowService {
   }
 
   QuantityCheck(supply: SupplyRealTime, outflow: CreateOutflowDTO) {
-    if (outflow.unities > supply.quantity) return 'Stock_out';
-
     const sub = supply.quantity - outflow.unities;
+
+    if (sub < 1) return 'Stock_out';
 
     if (sub > 0 && sub <= supply.lowStock) return 'Low_stock';
   }

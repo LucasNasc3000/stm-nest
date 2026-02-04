@@ -88,17 +88,16 @@ export class SaleService {
           throw new NotFoundException(`Produto ${item.product} não encontrado`);
         }
 
-        if (item.quantity > itemExists.unities) {
+        const differenceBetween = itemExists.unities - item.quantity;
+
+        if (differenceBetween < 1) {
           // Mandar email avisando da quantidade
           throw new BadRequestException(
             `Produto ${item.product} com estoque insuficiente de ${itemExists.unities} unidades`,
           );
         }
 
-        if (
-          item.quantity < itemExists.unities &&
-          item.quantity <= itemExists.lowStock
-        ) {
+        if (differenceBetween > 0 && differenceBetween <= itemExists.lowStock) {
           // Enviar email avisando da quantidade
         }
 

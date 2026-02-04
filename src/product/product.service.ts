@@ -330,7 +330,6 @@ export class ProductService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const recipe: ProductIngredient[] = [];
     const outflows: Outflow[] = [];
 
     const doesProductReallyExists = await queryRunner.manager.findOne(Product, {
@@ -373,111 +372,105 @@ export class ProductService {
           );
         }
 
-        if (useStockSupplies !== true) {
-          if (ingredient.quantity > 0) {
-            throw new BadRequestException(
-              'A quantidade deve ser zero caso não se queira usar os insumos em estoque',
-            );
-          }
-
-          const data = {
-            supplyRealTime: doesSupplyReallyExists,
-            product: doesProductReallyExists,
-            employee: doesEmployeeReallyExists,
-            quantity: ingredient.quantity,
-            is_active: true,
-          };
-
-          const createProductIngredient = queryRunner.manager.create(
-            ProductIngredient,
-            data,
-          );
-
-          recipe.push(createProductIngredient);
-        }
-
-        if (ingredient.quantity < 1) {
-          throw new BadRequestException(
-            'A quantidade deve ser maior que zero caso se queira usar insumos em estoque',
-          );
-        }
-
-        const totalWeightDecimal = new Decimal(
-          doesSupplyReallyExists.totalWeight,
-        );
-
-        const weightPerUnitDecimal = new Decimal(
-          doesSupplyReallyExists.weightPerUnit,
-        );
-
-        const totalWeightPerOutflow = weightPerUnitDecimal.mul(
-          ingredient.quantity,
-        );
-
-        const newTotalWeight = totalWeightDecimal
-          .sub(totalWeightPerOutflow)
-          .toString();
-
-        const updatedQuantity =
-          doesSupplyReallyExists.quantity - ingredient.quantity;
-
-        const supplyUpdate = await queryRunner.manager.update(
-          SupplyRealTime,
-          doesSupplyReallyExists.id,
-          {
-            totalWeight: newTotalWeight,
-            quantity: updatedQuantity,
-          },
-        );
-
-        if (!supplyUpdate || supplyUpdate.affected < 1) {
-          throw new InternalServerErrorException(
-            `Erro ao atualizar insumo ${doesSupplyReallyExists.name} para a receita do produto ${doesProductReallyExists.name}`,
-          );
-        }
-
-        const dateAndHour = ReturnDateAndTimeForeignFormat();
-
-        const outflowData = {
-          date: dateAndHour[0],
-          hour: dateAndHour[1],
-          name: doesSupplyReallyExists.name,
-          category: doesSupplyReallyExists.category,
-          reason: 'Criacao de receita',
-          unities: ingredient.quantity,
-          employee: doesEmployeeReallyExists,
-          supplyRealTime: doesSupplyReallyExists,
-        };
-
-        if (ingredient.quantity > 0) {
-          throw new BadRequestException(
-            'A quantidade deve ser zero caso não se queira usar os insumos em estoque',
-          );
-        }
-
-        const data = {
+        const productIngredientData = {
           supplyRealTime: doesSupplyReallyExists,
           product: doesProductReallyExists,
           employee: doesEmployeeReallyExists,
+          outflows: null,
           quantity: ingredient.quantity,
           is_active: true,
         };
 
         const createProductIngredient = queryRunner.manager.create(
           ProductIngredient,
-          data,
+          productIngredientData,
         );
 
-        const createOutflow = queryRunner.manager.create(Outflow, outflowData);
+        const newProductIngredient = await queryRunner.manager.save(
+          ProductIngredient,
+          createProductIngredient,
+        );
 
-        recipe.push(createProductIngredient);
+        if (useStockSupplies) {
+          if (ingredient.quantity < 1) {
+            throw new BadRequestException(
+              'A quantidade deve ser maior que zero caso se queira usar os insumos em estoque',
+            );
+          }
 
-        outflows.push(createOutflow);
+          const totalWeightDecimal = new Decimal(
+            doesSupplyReallyExists.totalWeight,
+          );
+
+          const weightPerUnitDecimal = new Decimal(
+            doesSupplyReallyExists.weightPerUnit,
+          );
+
+          const totalWeightPerOutflow = weightPerUnitDecimal.mul(
+            ingredient.quantity,
+          );
+
+          const newTotalWeight = totalWeightDecimal
+            .sub(totalWeightPerOutflow)
+            .toString();
+
+          const updatedQuantity =
+            doesSupplyReallyExists.quantity - ingredient.quantity;
+
+          if (updatedQuantity < 1) {
+            throw new BadRequestException(
+              `Quantidade insuficiente do insumo ${doesSupplyReallyExists.name}`,
+            );
+          }
+
+          if (
+            updatedQuantity > 0 &&
+            updatedQuantity <= doesSupplyReallyExists.lowStock
+          ) {
+            // Mandar email avisando da quantidade
+          }
+
+          const supplyUpdate = await queryRunner.manager.update(
+            SupplyRealTime,
+            doesSupplyReallyExists.id,
+            {
+              totalWeight: newTotalWeight,
+              quantity: updatedQuantity,
+            },
+          );
+
+          if (!supplyUpdate || supplyUpdate.affected < 1) {
+            throw new InternalServerErrorException(
+              `Erro ao atualizar insumo ${doesSupplyReallyExists.name} para a receita do produto ${doesProductReallyExists.name}`,
+            );
+          }
+
+          const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+          const outflowData = {
+            date: dateAndHour[0],
+            hour: dateAndHour[1],
+            name: doesSupplyReallyExists.name,
+            category: doesSupplyReallyExists.category,
+            reason: 'Criacao de receita',
+            unities: ingredient.quantity,
+            employee: doesEmployeeReallyExists,
+            supplyRealTime: doesSupplyReallyExists,
+            ingredient: newProductIngredient,
+          };
+
+          const createOutflow = queryRunner.manager.create(
+            Outflow,
+            outflowData,
+          );
+
+          outflows.push(createOutflow);
+        }
       }
 
-      await queryRunner.manager.save(Outflow, outflows);
-
-      await queryRunner.manager.save(ProductIngredient, recipe);
+      if (outflows.length > 0) {
+        await queryRunner.manager.save(Outflow, outflows);
+      }
 
       await queryRunner.commitTransaction();
 
