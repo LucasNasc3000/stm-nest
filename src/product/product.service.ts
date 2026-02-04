@@ -598,6 +598,8 @@ export class ProductService {
           {
             where: {
               id: ingredient.id,
+              product: ingredient,
+              isActive: true,
             },
           },
         );
@@ -621,9 +623,11 @@ export class ProductService {
             `Erro ao remover ingrediente ${ingredient.id}`,
           );
         }
+
+        continue;
       }
 
-      if (ingredient.quantity) {
+      if (ingredient.quantity > 0) {
         const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
           where: {
             id: ingredient.supplyId,
@@ -632,20 +636,8 @@ export class ProductService {
 
         if (!findSupply) {
           throw new NotFoundException(
-            `Insumo ${findSupply.name} do ingrediente ${ingredient.id} não encontrado`,
+            `Insumo ${ingredient.supplyId} do ingrediente ${ingredient.id} não encontrado`,
           );
-        }
-
-        const unitiesRequested = findSupply.quantity - ingredient.quantity;
-
-        if (unitiesRequested < 1) {
-          throw new BadRequestException(
-            `Insumo ${findSupply.name} em quantidade insuficiente em estoque`,
-          );
-        }
-
-        if (unitiesRequested > 0 && unitiesRequested <= findSupply.lowStock) {
-          // Mandar email avisando da quantidade
         }
 
         const updateIngredientQuantity = await queryRunner.manager.update(

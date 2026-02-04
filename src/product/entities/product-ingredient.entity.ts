@@ -24,7 +24,7 @@ export class ProductIngredient {
 
   @ManyToOne(() => Product, (product) => product.recipe, {
     onDelete: 'RESTRICT',
-    nullable: true,
+    nullable: false,
   })
   product: Product;
 
