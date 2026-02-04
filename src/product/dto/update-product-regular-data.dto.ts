@@ -1,16 +1,12 @@
 import {
   IsDateString,
   IsInt,
-  IsNotEmpty,
   IsPositive,
   IsString,
   Length,
 } from 'class-validator';
 
 export class UpdateProductRegularDataDTO {
-  @IsNotEmpty({
-    message: 'campo "nome" não preenchido',
-  })
   @IsString({
     message: 'campo "nome" deve estar em formato de texto',
   })
@@ -19,9 +15,6 @@ export class UpdateProductRegularDataDTO {
   })
   readonly name?: string;
 
-  @IsNotEmpty({
-    message: 'campo "categoria" não preenchido',
-  })
   @IsString({
     message: 'campo "categoria" deve estar em formato de texto',
   })
@@ -30,26 +23,9 @@ export class UpdateProductRegularDataDTO {
   })
   readonly category?: string;
 
-  @IsNotEmpty({
-    message: 'campo "unidades" não preenchido',
-  })
-  @IsInt({
-    message: 'campo "unidades" deve ser um número inteiro',
-  })
-  @IsPositive({
-    message: 'campo "unidades" deve ser maior que zero',
-  })
-  readonly unities?: number;
-
-  @IsNotEmpty({
-    message: 'campo "fornecedor" não preenchido',
-  })
   @IsDateString()
   readonly expirationDate?: string;
 
-  @IsNotEmpty({
-    message: 'campo "Quantidade mínima" não preenchido',
-  })
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })

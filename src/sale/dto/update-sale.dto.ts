@@ -1,9 +1,6 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsString, Length } from 'class-validator';
 
 export class UpdateSaleDTO {
-  @IsNotEmpty({
-    message: 'campo "nome do cliente" não preenchido',
-  })
   @IsString({
     message: 'campo "nome do cliente" deve estar em formato de texto',
   })
@@ -12,9 +9,6 @@ export class UpdateSaleDTO {
   })
   readonly clientName?: string;
 
-  @IsNotEmpty({
-    message: 'campo "telefone" não preenchido',
-  })
   @IsString({
     message: 'campo "telefone" deve estar em formato de texto',
   })
@@ -23,9 +17,6 @@ export class UpdateSaleDTO {
   })
   readonly phoneNumber?: string;
 
-  @IsNotEmpty({
-    message: 'campo "endereço" não preenchido',
-  })
   @IsString({
     message: 'campo "endereço" deve estar em formato de texto',
   })

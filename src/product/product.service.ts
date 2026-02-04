@@ -22,6 +22,7 @@ import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { UpdateProductIngredientDTO } from './dto/update-product-ingredient.dto';
 import { UpdateProductRegularDataDTO } from './dto/update-product-regular-data.dto';
+import { UpdateProductUnitiesDTO } from './dto/update-product-unities.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
@@ -378,7 +379,6 @@ export class ProductService {
           employee: doesEmployeeReallyExists,
           outflows: null,
           quantity: ingredient.quantity,
-          is_active: true,
         };
 
         const createProductIngredient = queryRunner.manager.create(
@@ -584,6 +584,17 @@ export class ProductService {
       throw new InternalServerErrorException(
         `Erro ao tentar atualizar preço do produto: ${product.name}`,
       );
+    }
+  }
+
+  private async UpdateUnities(
+    updateProductUnitiesDTO: UpdateProductUnitiesDTO,
+    useStockSupplies: boolean,
+    queryRunner: QueryRunner,
+  ) {
+    const { unities } = updateProductUnitiesDTO;
+
+    if (useStockSupplies) {
     }
   }
 
