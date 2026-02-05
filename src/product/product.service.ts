@@ -712,24 +712,24 @@ export class ProductService {
     queryRunner: QueryRunner,
   ) {
     for (const ingredient of productIngredient) {
-      if (ingredient.disableProduct === true) {
-        const findIngredient = await queryRunner.manager.findOne(
-          ProductIngredient,
-          {
-            where: {
-              id: ingredient.id,
-              product: ingredient,
-              isActive: true,
-            },
+      const findIngredient = await queryRunner.manager.findOne(
+        ProductIngredient,
+        {
+          where: {
+            id: ingredient.id,
+            product: ingredient,
+            isActive: true,
           },
+        },
+      );
+
+      if (!findIngredient) {
+        throw new NotFoundException(
+          `Ingrediente ${ingredient.id} não encontrado`,
         );
+      }
 
-        if (!findIngredient) {
-          throw new NotFoundException(
-            `Ingrediente ${ingredient.id} não encontrado`,
-          );
-        }
-
+      if (ingredient.disableProduct === true) {
         const disableIngredient = await queryRunner.manager.update(
           ProductIngredient,
           ingredient.id,
@@ -748,6 +748,12 @@ export class ProductService {
       }
 
       if (ingredient.quantity > 0) {
+        if (findIngredient.isActive !== true) {
+          throw new BadRequestException(
+            `Não é possível atualizar o ingrediente ${ingredient.id}, está inativo`,
+          );
+        }
+
         const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
           where: {
             id: ingredient.supplyId,
