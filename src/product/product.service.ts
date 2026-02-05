@@ -618,9 +618,9 @@ export class ProductService {
       );
     }
 
-    let updatedQuantityFinal: number = 0;
+    let productUnities: number = 0;
 
-    if (useStockSupplies && addUnities) {
+    if (useStockSupplies && addUnities > 0) {
       for (const ingredient of productIngredient) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
           SupplyRealTime,
@@ -658,7 +658,7 @@ export class ProductService {
         const updatedQuantity =
           doesSupplyReallyExists.quantity - updatedQuantityByAddUnities;
 
-        if (updatedQuantity < 1) {
+        if (updatedQuantity < 0) {
           throw new BadRequestException(
             `Quantidade insuficiente do insumo ${doesSupplyReallyExists.name}`,
           );
@@ -687,22 +687,28 @@ export class ProductService {
         }
       }
 
-      if (addUnities) {
-        updatedQuantityFinal = product.unities + addUnities;
-      }
+      if (addUnities) productUnities += addUnities;
 
       if (takeUnities) {
-        updatedQuantityFinal = product.unities - takeUnities;
+        productUnities -= takeUnities;
+
+        if (productUnities < 0) {
+          throw new BadRequestException(
+            'A quantidade do produto em estoque não pode ser negativa',
+          );
+        }
       }
 
-      const updateProduct = await queryRunner.manager.update(Product, id, {
-        unities: updatedQuantityFinal,
-      });
+      if (addUnities || takeUnities) {
+        const updateProduct = await queryRunner.manager.update(Product, id, {
+          unities: productUnities,
+        });
 
-      if (!updateProduct || updateProduct.affected < 1) {
-        throw new InternalServerErrorException(
-          'Erro ao atualizar quantidade do produto',
-        );
+        if (!updateProduct || updateProduct.affected < 1) {
+          throw new InternalServerErrorException(
+            'Erro ao atualizar quantidade do produto',
+          );
+        }
       }
     }
   }
@@ -717,7 +723,9 @@ export class ProductService {
         {
           where: {
             id: ingredient.id,
-            product: ingredient,
+            product: {
+              id: ingredient.supplyId,
+            },
             isActive: true,
           },
         },
