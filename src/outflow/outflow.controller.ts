@@ -11,6 +11,7 @@ import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
+import { PaginationByTypeDTO } from './dto/pagination-type.dto';
 import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { OutflowService } from './outflow.service';
 
@@ -47,6 +48,13 @@ export class OutflowController {
   @SetRoutePolicy(EmployeeRole.OUTFLOWS)
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
     return this.outflowsService.FindByCategory(paginationByCategoryDto);
+  }
+
+  @Get('search/date/')
+  @SetRoutePolicy(EmployeeRole.READ)
+  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  FindByType(@Query() paginationByTypeDto: PaginationByTypeDTO) {
+    return this.outflowsService.FindByType(paginationByTypeDto);
   }
 
   @Get('search/date/')
