@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsDateString,
   IsInt,
+  IsNotEmpty,
   IsNumberString,
   IsPositive,
   IsString,
@@ -55,6 +56,28 @@ export class UpdateProductDTO {
 
   @IsBoolean()
   readonly disableProduct?: boolean;
+
+  @IsNotEmpty({
+    message: 'O campo "usar insumos em estoque é obrigatório"',
+  })
+  @IsBoolean()
+  readonly useStockSupplies: boolean;
+
+  @IsInt({
+    message: 'campo "adicionar unidades" deve ser um número inteiro',
+  })
+  @IsPositive({
+    message: 'campo "adicionar unidades" deve ser maior que zero',
+  })
+  readonly addUnities?: number;
+
+  @IsInt({
+    message: 'campo "tirar unidades" deve ser um número inteiro',
+  })
+  @IsPositive({
+    message: 'campo "tirar unidades" deve ser maior que zero',
+  })
+  readonly takeUnities?: number;
 
   readonly productIngredient?: UpdateProductIngredientDTO[];
 }

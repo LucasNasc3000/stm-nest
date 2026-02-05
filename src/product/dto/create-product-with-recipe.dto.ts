@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsInt,
   IsNotEmpty,
@@ -70,6 +71,12 @@ export class CreateProductWithRecipeDTO {
     no_symbols: true,
   })
   readonly price: string;
+
+  @IsNotEmpty({
+    message: 'O campo "usar insumos em estoque é obrigatório"',
+  })
+  @IsBoolean()
+  readonly useStockSupplies: boolean;
 
   readonly productIngredient: CreateProductIngredientDTO[];
 }

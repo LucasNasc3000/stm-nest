@@ -529,6 +529,22 @@ export class ProductService {
         );
       }
 
+      if (updateProductDTO.unities) {
+        const updateProductUnitesData = {
+          id: findProduct.id,
+          addUnities: updateProductDTO.addUnities,
+          takeUnities: updateProductDTO.takeUnities,
+          productIngredient: updateProductDTO.productIngredient,
+        };
+
+        await this.UpdateUnities(
+          updateProductUnitesData,
+          findProduct,
+          updateProductDTO.useStockSupplies,
+          queryRunner,
+        );
+      }
+
       await this.UpdateRegularData(findProduct, updateProductDTO, queryRunner);
 
       for (let i = 0; i < Object.keys(updateProductDTO).length; i++) {
@@ -589,12 +605,105 @@ export class ProductService {
 
   private async UpdateUnities(
     updateProductUnitiesDTO: UpdateProductUnitiesDTO,
+    product: Product,
     useStockSupplies: boolean,
     queryRunner: QueryRunner,
   ) {
-    const { unities } = updateProductUnitiesDTO;
+    const { addUnities, takeUnities, productIngredient, id } =
+      updateProductUnitiesDTO;
 
-    if (useStockSupplies) {
+    if (addUnities && takeUnities) {
+      throw new BadRequestException(
+        'Unidades não podem ser tiradas e adicionadas ao mesmo tempo',
+      );
+    }
+
+    let updatedQuantityFinal: number = 0;
+
+    if (useStockSupplies && addUnities) {
+      for (const ingredient of productIngredient) {
+        const doesSupplyReallyExists = await queryRunner.manager.findOne(
+          SupplyRealTime,
+          {
+            where: {
+              id: ingredient.supplyId,
+            },
+          },
+        );
+
+        if (!doesSupplyReallyExists) {
+          throw new NotFoundException(
+            `Insumo ${ingredient.supplyId} não encontrado`,
+          );
+        }
+
+        const totalWeightDecimal = new Decimal(
+          doesSupplyReallyExists.totalWeight,
+        );
+
+        const weightPerUnitDecimal = new Decimal(
+          doesSupplyReallyExists.weightPerUnit,
+        );
+
+        const updatedQuantityByAddUnities = ingredient.quantity * addUnities;
+
+        const totalWeightPerOutflow = weightPerUnitDecimal.mul(
+          updatedQuantityByAddUnities,
+        );
+
+        const newTotalWeight = totalWeightDecimal
+          .sub(totalWeightPerOutflow)
+          .toString();
+
+        const updatedQuantity =
+          doesSupplyReallyExists.quantity - updatedQuantityByAddUnities;
+
+        if (updatedQuantity < 1) {
+          throw new BadRequestException(
+            `Quantidade insuficiente do insumo ${doesSupplyReallyExists.name}`,
+          );
+        }
+
+        if (
+          updatedQuantity > 0 &&
+          updatedQuantity <= doesSupplyReallyExists.lowStock
+        ) {
+          // Mandar email avisando da quantidade
+        }
+
+        const supplyUpdate = await queryRunner.manager.update(
+          SupplyRealTime,
+          doesSupplyReallyExists.id,
+          {
+            totalWeight: newTotalWeight,
+            quantity: updatedQuantity,
+          },
+        );
+
+        if (!supplyUpdate || supplyUpdate.affected < 1) {
+          throw new InternalServerErrorException(
+            `Erro ao atualizar insumo ${doesSupplyReallyExists.name} para a receita do produto`,
+          );
+        }
+      }
+
+      if (addUnities) {
+        updatedQuantityFinal = product.unities + addUnities;
+      }
+
+      if (takeUnities) {
+        updatedQuantityFinal = product.unities - takeUnities;
+      }
+
+      const updateProduct = await queryRunner.manager.update(Product, id, {
+        unities: updatedQuantityFinal,
+      });
+
+      if (!updateProduct || updateProduct.affected < 1) {
+        throw new InternalServerErrorException(
+          'Erro ao atualizar quantidade do produto',
+        );
+      }
     }
   }
 
