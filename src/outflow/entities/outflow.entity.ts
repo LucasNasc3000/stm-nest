@@ -1,5 +1,6 @@
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
@@ -14,6 +15,9 @@ import {
 export class Outflow {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ type: 'enum', enum: ['SUPPLY', 'PRODUCT'] })
+  targetType: string;
 
   @Column({ type: 'date' })
   date: string;
@@ -54,6 +58,12 @@ export class Outflow {
     nullable: true,
   })
   ingredient: ProductIngredient;
+
+  @ManyToOne(() => Product, (product) => product.outflows, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  product: Product;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -1,3 +1,4 @@
+import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
   Column,
   CreateDateColumn,
@@ -39,6 +40,9 @@ export class Product {
 
   @OneToMany(() => SaleItems, (sale) => sale.product)
   sales: SaleItems[];
+
+  @OneToMany(() => Outflow, (outflow) => outflow.product)
+  outflows: Outflow[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
