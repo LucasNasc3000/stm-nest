@@ -149,6 +149,7 @@ export class OutflowService {
       }
 
       const data = {
+        targetType: createOutflowDTO.targetType,
         date: createOutflowDTO.date,
         hour: createOutflowDTO.hour,
         name: createOutflowDTO.name,

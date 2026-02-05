@@ -1,5 +1,6 @@
 import {
   IsDateString,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsPositive,
@@ -7,8 +8,17 @@ import {
   Length,
   Matches,
 } from 'class-validator';
+import { OutflowType } from 'src/common/enums/outflow-type.enum';
 
 export class CreateOutflowDTO {
+  @IsNotEmpty({
+    message: 'campo "data" não preenchido',
+  })
+  @IsEnum(OutflowType, {
+    message: 'Tipo de saída inválido',
+  })
+  readonly targetType: OutflowType;
+
   @IsNotEmpty({
     message: 'campo "data" não preenchido',
   })

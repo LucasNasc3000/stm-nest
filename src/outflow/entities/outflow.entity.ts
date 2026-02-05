@@ -1,3 +1,4 @@
+import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
 import { Product } from 'src/product/entities/product.entity';
@@ -16,8 +17,8 @@ export class Outflow {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: ['SUPPLY', 'PRODUCT'] })
-  targetType: string;
+  @Column({ type: 'enum', enum: OutflowType })
+  targetType: OutflowType;
 
   @Column({ type: 'date' })
   date: string;
