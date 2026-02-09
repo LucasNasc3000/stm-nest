@@ -29,8 +29,8 @@ export class PaginationByNameDTO {
   @IsString({
     message: 'campo "nome" deve estar em formato de texto',
   })
-  @Length(0, 150, {
-    message: 'campo "nome" deve ter no máximo 150 caracteres',
+  @Length(0, 50, {
+    message: 'campo "nome" deve ter no máximo 50 caracteres',
   })
   value: string;
 }

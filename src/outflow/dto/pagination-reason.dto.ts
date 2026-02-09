@@ -29,8 +29,8 @@ export class PaginationByReasonDTO {
   @IsString({
     message: 'campo "motivo" deve estar em formato de texto',
   })
-  @Length(0, 50, {
-    message: 'campo "motivo" deve ter no máximo 150 caracteres',
+  @Length(0, 90, {
+    message: 'campo "motivo" deve ter no máximo 90 caracteres',
   })
   value: string;
 }

@@ -29,8 +29,8 @@ export class PaginationByCategoryDTO {
   @IsString({
     message: 'campo "categoria" deve estar em formato de texto',
   })
-  @Length(0, 150, {
-    message: 'campo "categoria" deve ter no máximo 150 caracteres',
+  @Length(0, 50, {
+    message: 'campo "categoria" deve ter no máximo 50 caracteres',
   })
   value: string;
 }

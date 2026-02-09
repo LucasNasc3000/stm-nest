@@ -1,3 +1,4 @@
+import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -34,6 +36,12 @@ export class Product {
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @ManyToOne(() => Employee, (employee) => employee.supplies, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  employee: Employee;
 
   @OneToMany(() => ProductIngredient, (recipe) => recipe.product)
   recipe: ProductIngredient[];
