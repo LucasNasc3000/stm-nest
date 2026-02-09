@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
@@ -494,7 +495,11 @@ export class ProductService {
     }
   }
 
-  async Update(productId: UrlUuidDTO, updateProductDTO: UpdateProductDTO) {
+  async Update(
+    tokenPayloadDTO: TokenPayloadDTO,
+    productId: UrlUuidDTO,
+    updateProductDTO: UpdateProductDTO,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -503,6 +508,16 @@ export class ProductService {
 
     try {
       const { id } = productId;
+
+      const findEmployee = await queryRunner.manager.findOne(Employee, {
+        where: {
+          id: tokenPayloadDTO.sub,
+        },
+      });
+
+      if (!findEmployee) {
+        throw new NotFoundException('Funcionário não encontrado');
+      }
 
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
@@ -540,6 +555,7 @@ export class ProductService {
         await this.UpdateUnities(
           updateProductUnitesData,
           findProduct,
+          findEmployee,
           updateProductDTO.useStockSupplies,
           queryRunner,
         );
@@ -606,6 +622,7 @@ export class ProductService {
   private async UpdateUnities(
     updateProductUnitiesDTO: UpdateProductUnitiesDTO,
     product: Product,
+    employee: Employee,
     useStockSupplies: boolean,
     queryRunner: QueryRunner,
   ) {
@@ -619,7 +636,9 @@ export class ProductService {
     }
 
     let productUnities: number = 0;
+    const outflows: Outflow[] = [];
 
+    // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
     if (useStockSupplies && addUnities > 0) {
       for (const ingredient of productIngredient) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
@@ -668,6 +687,13 @@ export class ProductService {
           updatedQuantity > 0 &&
           updatedQuantity <= doesSupplyReallyExists.lowStock
         ) {
+          if (updatedQuantity === 0) {
+            // avisar que acabou
+          }
+
+          if (updatedQuantity <= doesSupplyReallyExists.lowStock) {
+            // avisar e mandar a quantidade que sobrou
+          }
           // Mandar email avisando da quantidade
         }
 
@@ -685,6 +711,24 @@ export class ProductService {
             `Erro ao atualizar insumo ${doesSupplyReallyExists.name} para a receita do produto`,
           );
         }
+
+        const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+        const data = {
+          targetType: OutflowType.SUPPLY,
+          date: dateAndHour[0],
+          hour: dateAndHour[1],
+          name: doesSupplyReallyExists.name,
+          category: doesSupplyReallyExists.category,
+          reason: `Cadastro de novas unidades do produto ${product.name}`,
+          unities: updatedQuantityByAddUnities,
+          employee,
+          supplyRealTime: doesSupplyReallyExists,
+        };
+
+        const outflowCreate = queryRunner.manager.create(Outflow, data);
+
+        outflows.push(outflowCreate);
       }
 
       if (addUnities) productUnities += addUnities;
@@ -697,7 +741,35 @@ export class ProductService {
             'A quantidade do produto em estoque não pode ser negativa',
           );
         }
+
+        if (productUnities === 0) {
+          // avisar que acabou
+        }
+
+        if (productUnities <= product.lowStock) {
+          // avisar e mandar quantidade que sobrou
+        }
+
+        const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+        const data = {
+          targetType: OutflowType.PRODUCT,
+          date: dateAndHour[0],
+          hour: dateAndHour[1],
+          name: product.name,
+          category: product.category,
+          reason: `Baixa no estoque do produto ${product.name}`,
+          unities: takeUnities,
+          employee,
+          product,
+        };
+
+        const outflowCreate = queryRunner.manager.create(Outflow, data);
+
+        outflows.push(outflowCreate);
       }
+
+      await queryRunner.manager.save(Outflow, outflows);
 
       if (addUnities || takeUnities) {
         const updateProduct = await queryRunner.manager.update(Product, id, {
