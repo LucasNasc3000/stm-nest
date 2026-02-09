@@ -11,10 +11,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
+import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -36,12 +39,153 @@ export class OutflowService {
     @InjectRepository(SupplyHistory)
     private readonly supplyHistoryRepository: Repository<SupplyHistory>,
 
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+
     private readonly employeesService: EmployeeService,
     private dataSource: DataSource,
     private readonly logger: Logger,
   ) {}
 
-  async Create(
+  async CreateForProduct(
+    createOutflowDTO: CreateOutflowDTO,
+    tokenPayloadDTO: TokenPayloadDTO,
+  ) {
+    const findEmployee = await this.employeesService.FindById(
+      tokenPayloadDTO.sub,
+    );
+
+    if (!findEmployee) {
+      throw new UnauthorizedException('Funcionário não encontrado');
+    }
+
+    const productExists = await this.productRepository.findOne({
+      where: {
+        name: createOutflowDTO.name,
+      },
+    });
+
+    if (!productExists) {
+      throw new NotFoundException(
+        `Ocorreu um erro interno ou o insumo ${createOutflowDTO.name} não está cadastrado`,
+      );
+    }
+
+    if (createOutflowDTO.targetType !== OutflowType.PRODUCT) {
+      throw new BadRequestException('O tipo de saída deve ser "PRODUCT"');
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const doesEmployeeReallyExists = await queryRunner.manager.findOne(
+        Employee,
+        {
+          where: {
+            id: tokenPayloadDTO.sub,
+          },
+        },
+      );
+
+      if (!doesEmployeeReallyExists) {
+        throw new UnauthorizedException('Funcionário não encontrado');
+      }
+
+      const doesProductReallyExists = await queryRunner.manager.findOne(
+        Product,
+        {
+          where: {
+            name: createOutflowDTO.name,
+            category: createOutflowDTO.category,
+          },
+        },
+      );
+
+      if (!doesProductReallyExists) {
+        throw new NotFoundException(
+          `Ocorreu um erro interno ou o produto ${createOutflowDTO.name} não está cadastrado`,
+        );
+      }
+
+      const differenceBetween =
+        doesProductReallyExists.unities - createOutflowDTO.unities;
+
+      if (differenceBetween < 0) {
+        throw new BadRequestException(
+          'Quantidade insuficiente do produto em estoque',
+        );
+      }
+
+      if (
+        differenceBetween >= 0 &&
+        differenceBetween <= doesProductReallyExists.lowStock
+      ) {
+        if (differenceBetween === 0) {
+          // avisar que acabou
+        }
+
+        if (differenceBetween <= doesProductReallyExists.lowStock) {
+          // mandar o aviso e a quantidade que sobrou
+        }
+        // Mandar email avisando da quantidade do produto
+      }
+
+      const productUpdate = await queryRunner.manager.update(
+        Product,
+        doesProductReallyExists.id,
+        {
+          unities: differenceBetween,
+        },
+      );
+
+      if (!productUpdate || productUpdate.affected < 1) {
+        throw new InternalServerErrorException('Erro ao atualizar produto');
+      }
+
+      const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+      const data = {
+        targetType: createOutflowDTO.targetType,
+        date: dateAndHour[0],
+        hour: dateAndHour[1],
+        name: createOutflowDTO.name,
+        category: createOutflowDTO.category,
+        reason: createOutflowDTO.reason,
+        unities: createOutflowDTO.unities,
+        employee: doesEmployeeReallyExists,
+        product: doesProductReallyExists,
+      };
+
+      const outflowCreate = queryRunner.manager.create(Outflow, data);
+
+      const newOutflow = await queryRunner.manager.save(Outflow, outflowCreate);
+
+      await queryRunner.commitTransaction();
+
+      return {
+        ...newOutflow,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(
+        `Erro ao criar saída do produto ${createOutflowDTO.name}: ${error.message}`,
+      );
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na criação de saída',
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async CreateForSupply(
     createOutflowDTO: CreateOutflowDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
@@ -64,6 +208,10 @@ export class OutflowService {
       throw new NotFoundException(
         `Ocorreu um erro interno ou o insumo ${createOutflowDTO.name} não está cadastrado`,
       );
+    }
+
+    if (createOutflowDTO.targetType !== OutflowType.SUPPLY) {
+      throw new BadRequestException('O tipo de saída deve ser "SUPPLY"');
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -149,10 +297,12 @@ export class OutflowService {
         );
       }
 
+      const dateAndHour = ReturnDateAndTimeForeignFormat();
+
       const data = {
         targetType: createOutflowDTO.targetType,
-        date: createOutflowDTO.date,
-        hour: createOutflowDTO.hour,
+        date: dateAndHour[0],
+        hour: dateAndHour[1],
         name: createOutflowDTO.name,
         category: createOutflowDTO.category,
         reason: createOutflowDTO.reason,

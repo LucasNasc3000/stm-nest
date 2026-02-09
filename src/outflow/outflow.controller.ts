@@ -19,14 +19,24 @@ import { OutflowService } from './outflow.service';
 export class OutflowController {
   constructor(private readonly outflowsService: OutflowService) {}
 
-  @Post()
+  @Post('create/supply')
   @SetRoutePolicy(EmployeeRole.CREATE)
   @SetRoutePolicy(EmployeeRole.OUTFLOWS)
-  Create(
+  CreateForSupply(
     @Body() body: CreateOutflowDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    return this.outflowsService.Create(body, tokenPayloadDTO);
+    return this.outflowsService.CreateForSupply(body, tokenPayloadDTO);
+  }
+
+  @Post('create/product')
+  @SetRoutePolicy(EmployeeRole.CREATE)
+  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  CreateForProduct(
+    @Body() body: CreateOutflowDTO,
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+  ) {
+    return this.outflowsService.CreateForProduct(body, tokenPayloadDTO);
   }
 
   @Get('search/id/:id')
@@ -50,7 +60,7 @@ export class OutflowController {
     return this.outflowsService.FindByCategory(paginationByCategoryDto);
   }
 
-  @Get('search/date/')
+  @Get('search/type/')
   @SetRoutePolicy(EmployeeRole.READ)
   @SetRoutePolicy(EmployeeRole.OUTFLOWS)
   FindByType(@Query() paginationByTypeDto: PaginationByTypeDTO) {
