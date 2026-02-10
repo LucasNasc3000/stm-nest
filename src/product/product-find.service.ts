@@ -7,7 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Like, Repository } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
+import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
+import { PaginationByPriceDTO } from './dto/pagination-price.dto';
+import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -90,5 +94,156 @@ export class ProductFindService {
     }
 
     return [total, ...productFindByCategory];
+  }
+
+  async FindByUnities(paginationByUnities: PaginationByUnitiesDTO) {
+    const { limit, offset, value } = paginationByUnities;
+
+    const [productFindByUnities, total] =
+      await this.productRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          unities: +value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!productFindByUnities) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por produtos',
+      );
+    }
+
+    if (productFindByUnities.length < 1) {
+      throw new NotFoundException('Produtos não encontradas');
+    }
+
+    return [total, ...productFindByUnities];
+  }
+
+  async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
+    const { limit, offset, value } = paginatioByExpDateDTO;
+
+    const productFindByExpDate = await this.productRepository.findAndCount({
+      take: limit,
+      skip: offset,
+      order: {
+        id: 'desc',
+      },
+      where: {
+        employee: {
+          id: value,
+        },
+      },
+      relations: {
+        employee: true,
+      },
+      select: {
+        employee: {
+          id: true,
+          email: true,
+        },
+      },
+    });
+
+    if (!productFindByExpDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por produtos',
+      );
+    }
+
+    if (productFindByExpDate.length < 1) {
+      throw new NotFoundException('Produtos não encontrados');
+    }
+
+    return productFindByExpDate;
+  }
+
+  async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
+    const { limit, offset, value } = paginationByPriceDTO;
+
+    const [productFindByPrice, total] =
+      await this.productRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          price: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!productFindByPrice) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por produtos',
+      );
+    }
+
+    if (productFindByPrice.length < 1) {
+      throw new NotFoundException('Produtos não encontrados');
+    }
+
+    return [total, ...productFindByPrice];
+  }
+
+  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+    const { limit, offset, value } = paginationByEmployeeDTO;
+
+    const [productFindByEmployee, total] =
+      await this.productRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          employee: {
+            id: value,
+          },
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!productFindByEmployee) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por produtos',
+      );
+    }
+
+    if (productFindByEmployee.length < 1) {
+      throw new NotFoundException('Produtos não encontrados');
+    }
+
+    return [total, ...productFindByEmployee];
   }
 }
