@@ -536,14 +536,6 @@ export class ProductService {
         );
       }
 
-      if (updateProductDTO.price) {
-        await this.UpdatePrice(
-          findProduct,
-          updateProductDTO.price,
-          queryRunner,
-        );
-      }
-
       if (updateProductDTO.unities) {
         const updateProductUnitesData = {
           id: findProduct.id,
@@ -598,26 +590,22 @@ export class ProductService {
     }
   }
 
-  private async UpdatePrice(
-    product: Product,
-    price: string,
-    queryRunner: QueryRunner,
-  ) {
-    const productUpdate = await queryRunner.manager.update(
-      Product,
-      product.id,
-      {
-        id: product.id,
-        price,
-      },
-    );
+  // async UpdatePrice(id: UrlUuidDTO) {
+  //   const productUpdate = await queryRunner.manager.update(
+  //     Product,
+  //     product.id,
+  //     {
+  //       id: product.id,
+  //       price,
+  //     },
+  //   );
 
-    if (!productUpdate || productUpdate.affected < 1) {
-      throw new InternalServerErrorException(
-        `Erro ao tentar atualizar preço do produto: ${product.name}`,
-      );
-    }
-  }
+  //   if (!productUpdate || productUpdate.affected < 1) {
+  //     throw new InternalServerErrorException(
+  //       `Erro ao tentar atualizar preço do produto: ${product.name}`,
+  //     );
+  //   }
+  // }
 
   private async UpdateUnities(
     updateProductUnitiesDTO: UpdateProductUnitiesDTO,

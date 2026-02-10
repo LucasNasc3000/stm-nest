@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsInt,
@@ -7,6 +8,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 
 export class CreateSupplyDTO {
   @IsNotEmpty({
@@ -95,11 +97,14 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'Campo "preço" não preenchido',
   })
-  @IsString({
-    message: 'O campo "preço" deve estar no formato de texto',
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   })
-  @IsNumberString({
-    no_symbols: true,
+  @IsDecimalString({
+    message: 'O campo preco deve ser um string decima ex: 59.99',
   })
   readonly price: string;
 
