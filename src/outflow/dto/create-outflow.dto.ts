@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -53,6 +54,7 @@ export class CreateOutflowDTO {
   @IsNotEmpty({
     message: 'campo "unidades" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
   })

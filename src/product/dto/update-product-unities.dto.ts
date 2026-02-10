@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsInt, IsPositive, IsUUID } from 'class-validator';
 import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
@@ -7,6 +8,7 @@ export class UpdateProductUnitiesDTO {
   })
   id: string;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "adicionar unidades" deve ser um número inteiro',
   })
@@ -15,6 +17,7 @@ export class UpdateProductUnitiesDTO {
   })
   readonly addUnities?: number;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "tirar unidades" deve ser um número inteiro',
   })

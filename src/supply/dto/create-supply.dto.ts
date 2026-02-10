@@ -36,6 +36,7 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'campo "quantidade" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "quantidade" deve ser um número inteiro',
   })
@@ -86,6 +87,7 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'campo "Quantidade mínima" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })

@@ -6,6 +6,7 @@ export class SaleItemsDTO {
   @IsNotEmpty({
     message: 'campo "quantidade" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "quantidade" deve ser um número inteiro',
   })

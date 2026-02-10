@@ -37,6 +37,7 @@ export class CreateProductWithRecipeDTO {
   @IsNotEmpty({
     message: 'campo "unidades" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
   })
@@ -54,6 +55,7 @@ export class CreateProductWithRecipeDTO {
   @IsNotEmpty({
     message: 'campo "Quantidade mínima" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })

@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
 
 export class CreateProductIngredientDTO {
@@ -12,6 +13,7 @@ export class CreateProductIngredientDTO {
   @IsNotEmpty({
     message: 'campo "quantidade" não preenchido',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "quantidade" deve ser um número inteiro',
   })

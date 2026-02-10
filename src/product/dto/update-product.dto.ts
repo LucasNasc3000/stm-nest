@@ -28,6 +28,7 @@ export class UpdateProductDTO {
   })
   readonly category?: string;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
   })
@@ -39,6 +40,7 @@ export class UpdateProductDTO {
   @IsDateString()
   readonly expirationDate?: string;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })
@@ -67,6 +69,7 @@ export class UpdateProductDTO {
   @IsBoolean()
   readonly useStockSupplies: boolean;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "adicionar unidades" deve ser um número inteiro',
   })
@@ -75,6 +78,7 @@ export class UpdateProductDTO {
   })
   readonly addUnities?: number;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "tirar unidades" deve ser um número inteiro',
   })

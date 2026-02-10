@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsInt,
@@ -26,6 +27,7 @@ export class UpdateProductRegularDataDTO {
   @IsDateString()
   readonly expirationDate?: string;
 
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })
