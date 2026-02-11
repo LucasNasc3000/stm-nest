@@ -1,7 +1,11 @@
 import { SetMetadata } from '@nestjs/common';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
-import { ROUTE_POLICY_KEY } from '../auth.constants';
+import { CHECK_PERMISSION_KEY } from '../auth.constants';
 
-export const SetRoutePolicy = (policy: EmployeeRole) => {
-  return SetMetadata(ROUTE_POLICY_KEY, policy);
-};
+// Definimos a interface para garantir tipagem no controller
+export interface RequiredPermission {
+  resource: string;
+  action: string;
+}
+
+export const SetRoutePolicy = (permission: RequiredPermission) =>
+  SetMetadata(CHECK_PERMISSION_KEY, permission);

@@ -1,27 +1,36 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
-import { REQUEST_TOKEN_PAYLOAD_KEY, ROUTE_POLICY_KEY } from '../auth.constants';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
+import { Role } from 'src/employee/entities/role.entity';
+import { Repository } from 'typeorm';
+import {
+  CHECK_PERMISSION_KEY,
+  REQUEST_TOKEN_PAYLOAD_KEY,
+} from '../auth.constants';
+import { RequiredPermission } from '../decorators/set-route-policy.decorator';
 
 @Injectable()
 export class RoutePolicyGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const routePolicyRequired = this.reflector.get<EmployeeRole | undefined>(
-      ROUTE_POLICY_KEY,
-      context.getHandler(),
-    );
+    const routePolicyRequired = this.reflector.get<
+      RequiredPermission | undefined
+    >(CHECK_PERMISSION_KEY, context.getHandler());
 
     // Se o controller ou método não tiver o permissões configuradas a request passa daqui
     if (!routePolicyRequired) return true;
@@ -38,13 +47,22 @@ export class RoutePolicyGuard implements CanActivate {
       throw new UnauthorizedException('Somente funcionários');
     }
 
-    if (role.includes(EmployeeRole.ADMIN)) return true;
+    const findEmployeeAndTheirRole = await this.roleRepository.findOne({
+      where: {
+        id: role.id,
+      },
+      relations: {
+        permissions: true,
+      },
+    });
 
-    if (!role.includes(routePolicyRequired)) {
-      throw new UnauthorizedException(
-        `Permissão ${routePolicyRequired} necessária`,
-      );
-    }
+    const hasPermission = findEmployeeAndTheirRole.permissions.some(
+      (p: { resource: Resource; action: Action }) =>
+        p.resource === routePolicyRequired.resource &&
+        p.action === routePolicyRequired.action,
+    );
+
+    if (!hasPermission) throw new ForbiddenException('Acesso negado');
 
     return true;
   }
