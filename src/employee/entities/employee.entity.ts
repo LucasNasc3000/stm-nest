@@ -1,4 +1,4 @@
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
@@ -23,7 +23,6 @@ export class Employee {
   id: string;
 
   @Column({ type: 'varchar', length: 14, unique: true })
-  @IsString()
   cpf: string;
 
   @Column({ type: 'varchar', length: 50, unique: true })
@@ -31,11 +30,9 @@ export class Employee {
   email: string;
 
   @Column({ type: 'varchar', length: 125 })
-  @IsString()
   name: string;
 
   @Column({ type: 'varchar', length: 255 })
-  @IsString()
   password_hash: string;
 
   @ManyToOne(() => Role, (role) => role.employees, {

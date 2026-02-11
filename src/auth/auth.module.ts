@@ -1,0 +1,29 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Employee } from 'src/employee/entities/employee.entity';
+import { LogsModule } from 'src/logs-register/log.module';
+import { AuthService } from './auth.service';
+import jwtConfig from './config/jwt.config';
+import { BcryptService } from './hashing/bcrypt.service';
+import { HashingServiceProtocol } from './hashing/hashing.service';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([Employee]),
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
+    LogsModule,
+  ],
+  controllers: [],
+  providers: [
+    AuthService,
+    {
+      provide: HashingServiceProtocol,
+      useClass: BcryptService,
+    },
+  ],
+  exports: [HashingServiceProtocol, JwtModule, ConfigModule, AuthService],
+})
+export class AuthModule {}
