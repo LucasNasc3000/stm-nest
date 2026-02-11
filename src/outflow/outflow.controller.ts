@@ -1,9 +1,17 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -15,6 +23,7 @@ import { PaginationByTypeDTO } from './dto/pagination-type.dto';
 import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { OutflowService } from './outflow.service';
 
+@UseGuards(RoutePolicyGuard)
 @Controller('outflows')
 export class OutflowController {
   constructor(private readonly outflowsService: OutflowService) {}

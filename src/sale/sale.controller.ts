@@ -6,12 +6,13 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
 import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
@@ -22,6 +23,7 @@ import { UpdatePriceSaleDTO } from './dto/update-price-sale.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
 import { SaleService } from './sale.service';
 
+@UseGuards(RoutePolicyGuard)
 @Controller('sales')
 export class SaleController {
   constructor(private readonly salesService: SaleService) {}

@@ -6,12 +6,13 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -24,6 +25,7 @@ import { UpdatePriceSupplyRealtimeDTO } from './dto/update-price-supply-realtime
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyService } from './supply.service';
 
+@UseGuards(RoutePolicyGuard)
 @Controller('supplies')
 export class SupplyController {
   constructor(private readonly supplyService: SupplyService) {}

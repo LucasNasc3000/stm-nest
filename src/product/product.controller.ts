@@ -6,12 +6,13 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -23,6 +24,7 @@ import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductFindService } from './product-find.service';
 import { ProductService } from './product.service';
 
+@UseGuards(RoutePolicyGuard)
 @Controller('products')
 export class ProductController {
   constructor(
