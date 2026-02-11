@@ -1,10 +1,16 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { LogsService } from 'src/logs-register/log.service';
+import { RefreshTokensService } from 'src/refresh-tokens/refresh-token.service';
 import { Repository } from 'typeorm';
 import jwtConfig from './config/jwt.config';
 import { LoginDTO } from './dto/login.dto';
@@ -21,6 +27,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly hashingService: HashingServiceProtocol,
     private readonly logService: LogsService,
+    private readonly refreshTokenService: RefreshTokensService,
   ) {}
 
   async LoginEmployee(loginDTO: LoginDTO) {
@@ -59,13 +66,13 @@ export class AuthService {
       this.jwtConfiguration.jwtRefreshTtl,
     );
 
-    // const create = await this.refreshTokenService.CreateEmployee(employeeData);
+    const create = await this.refreshTokenService.CreateEmployee(employeeData);
 
-    // if (!create) {
-    //   throw new InternalServerErrorException(
-    //     'Erro ao criar registro de refresh token',
-    //   );
-    // }
+    if (!create) {
+      throw new InternalServerErrorException(
+        'Erro ao criar registro de refresh token',
+      );
+    }
 
     const dataForLog = {
       email: employeeData.email,

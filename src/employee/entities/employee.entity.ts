@@ -2,6 +2,7 @@ import { IsEmail } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
+import { RefreshTokenEmployee } from 'src/refresh-tokens/entities/refresh-token-employee.entity';
 import { Sale } from 'src/sale/entities/sale.entity';
 import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
@@ -70,6 +71,9 @@ export class Employee {
 
   @OneToMany(() => ProductIngredient, (ingredient) => ingredient.employee)
   productIngredient: ProductIngredient[];
+
+  @OneToMany(() => RefreshTokenEmployee, (token) => token.employee)
+  refresh_tokens: RefreshTokenEmployee[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
