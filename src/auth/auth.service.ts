@@ -9,11 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsService } from 'src/logs-register/log.service';
 import { RefreshTokensService } from 'src/refresh-tokens/refresh-token.service';
 import { Repository } from 'typeorm';
 import jwtConfig from './config/jwt.config';
 import { LoginDTO } from './dto/login.dto';
+import { LogoutDTO } from './dto/logout.dto';
 import { HashingServiceProtocol } from './hashing/hashing.service';
 
 @Injectable()
@@ -21,6 +23,9 @@ export class AuthService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
+
+    @InjectRepository(JWTBlacklist)
+    private readonly jwtBlacklistRepository: Repository<JWTBlacklist>,
 
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
@@ -106,5 +111,26 @@ export class AuthService {
         expiresIn,
       },
     );
+  }
+
+  async LogoutEmployee(logoutDto: LogoutDTO) {
+    const jwtBlacklistData = {
+      email: logoutDto.email,
+      token: logoutDto.token,
+    };
+
+    const findEmployee = await this.employeeRepository.findOne({
+      where: {
+        email: logoutDto.email,
+      },
+    });
+
+    await this.refreshTokenService.RevokeAllEmployee(findEmployee, true);
+
+    const createLogout = this.jwtBlacklistRepository.create(jwtBlacklistData);
+
+    await this.jwtBlacklistRepository.save(createLogout);
+
+    return 'Logout criado com suceso';
   }
 }

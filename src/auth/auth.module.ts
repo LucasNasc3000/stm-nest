@@ -3,7 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsModule } from 'src/logs-register/log.module';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';
 import { BcryptService } from './hashing/bcrypt.service';
@@ -11,12 +13,12 @@ import { HashingServiceProtocol } from './hashing/hashing.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Employee]),
+    TypeOrmModule.forFeature([Employee, JWTBlacklist]),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     LogsModule,
   ],
-  controllers: [],
+  controllers: [AuthController],
   providers: [
     AuthService,
     {
