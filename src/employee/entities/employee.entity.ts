@@ -1,5 +1,4 @@
-import { IsEmail, IsEnum, IsString } from 'class-validator';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
+import { IsEmail, IsString } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
@@ -16,6 +15,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Role } from './role.entity';
 
 @Entity()
 export class Employee {
@@ -38,19 +38,16 @@ export class Employee {
   @IsString()
   password_hash: string;
 
-  @Column({
-    type: 'enum',
-    enum: EmployeeRole,
-    array: true,
+  @ManyToOne(() => Role, (role) => role.employees, {
+    onDelete: 'RESTRICT',
   })
-  role: EmployeeRole[];
+  role: Role;
 
   @Column({
     type: 'enum',
     enum: EmployeeSituation,
     default: EmployeeSituation.EMPLOYED,
   })
-  @IsEnum(EmployeeSituation)
   situation: EmployeeSituation;
 
   @ManyToOne(() => Employee, (employee) => employee.subordinates, {
