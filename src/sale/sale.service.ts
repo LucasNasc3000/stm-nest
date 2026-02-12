@@ -75,7 +75,7 @@ export class SaleService {
 
       const createSale = queryRunner.manager.create(Sale, dataSale);
 
-      const newSale = queryRunner.manager.save(Sale, createSale);
+      const newSale = await queryRunner.manager.save(Sale, createSale);
 
       for (const item of createSaleDTO.saleItems) {
         const itemExists = await queryRunner.manager.findOne(Product, {
@@ -105,6 +105,7 @@ export class SaleService {
           quantity: item.quantity,
           price: item.price,
           product: itemExists,
+          sale: newSale,
         };
 
         const createSaleItems = queryRunner.manager.create(SaleItems, data);
@@ -192,7 +193,7 @@ export class SaleService {
 
     if (!supplyUpdate || !saleUpdated) {
       throw new InternalServerErrorException(
-        'Erro ao tentar atualizar registro da venda',
+        'Erro ao tentar atualizar preço do registro da venda',
       );
     }
 

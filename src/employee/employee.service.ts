@@ -12,6 +12,7 @@ import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Like, Repository } from 'typeorm';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
+import { CreateRoleDTO } from './dto/create-role.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
 import { PaginationExEmployeesDTO } from './dto/pagination-exemployees.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -19,14 +20,49 @@ import { SearchByEmailDTO } from './dto/search-email-employee.dto';
 import { UpdateEmployeeAdminDTO } from './dto/update-employee-admin.dto';
 import { UpdateEmployeeDTO } from './dto/update-employee.dto';
 import { Employee } from './entities/employee.entity';
+import { Permission } from './entities/permission.entity';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class EmployeeService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
+
+    @InjectRepository(Permission)
+    private readonly permissionRepository: Repository<Permission>,
+
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
     private readonly hashingService: HashingServiceProtocol,
   ) {}
+
+  async CreateRole(createRoleDTO: CreateRoleDTO) {
+    const permissions: Permission[] = [];
+
+    const createRole = this.roleRepository.create(createRoleDTO);
+
+    const newRole = await this.roleRepository.save(createRole);
+
+    for (const permission of createRoleDTO.permissions) {
+      const permissionData = {
+        action: permission.action,
+        resource: permission.resource,
+        role: newRole,
+      };
+
+      const createPermission = this.permissionRepository.create(permissionData);
+
+      permissions.push(createPermission);
+    }
+
+    const newPermissions = await this.permissionRepository.save(permissions);
+
+    return {
+      role: newRole,
+      rolePermissions: newPermissions,
+    };
+  }
 
   async Create(createEmployeeDTO: CreateEmployeeDTO) {
     const password_hash = await this.hashingService.Hash(
