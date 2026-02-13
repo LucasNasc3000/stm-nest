@@ -13,6 +13,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -31,8 +32,7 @@ export class SupplyController {
   constructor(private readonly supplyService: SupplyService) {}
 
   @Post()
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.CREATE })
   Create(
     @Body() body: CreateSupplyDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
@@ -40,9 +40,8 @@ export class SupplyController {
     return this.supplyService.Create(body, tokenPayloadDTO);
   }
 
-  @Patch()
-  @SetRoutePolicy(EmployeeRole.UPDATE)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @Patch(':id')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.UPDATE })
   Update(
     @Param('id') id: UrlUuidDTO,
     @Body() updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
@@ -50,10 +49,8 @@ export class SupplyController {
     return this.supplyService.Update(id, updateSupplyRealtimeDTO);
   }
 
-  @Patch()
-  @SetRoutePolicy(EmployeeRole.UPDATE)
-  @SetRoutePolicy(EmployeeRole.EDIT_PRICES)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @Patch(':id')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.EDIT_PRICES })
   UpdatePrice(
     @Param('id') id: UrlUuidDTO,
     @Body() updateSupplyRealtimePriceDTO: UpdatePriceSupplyRealtimeDTO,
@@ -62,43 +59,37 @@ export class SupplyController {
   }
 
   @Get('search/id/:id')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindById(@Param('id') id: UrlUuidDTO) {
     return this.supplyService.FindById(id);
   }
 
   @Get('search/supplier/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindBySupplier(@Query() paginationBySupplierDto: PaginationBySupplierDTO) {
     return this.supplyService.FindBySupplier(paginationBySupplierDto);
   }
 
   @Get('search/name/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.supplyService.FindByName(paginationByNameDto);
   }
 
   @Get('search/category/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
     return this.supplyService.FindByCategory(paginationByCategoryDto);
   }
 
   @Get('search/price/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.supplyService.FindByPrice(paginationByPriceDto);
   }
 
   @Get('search/weightPerUnit/:weightPerUnit')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByWeightPerUnit(
     @Param('weightPerUnit')
     searchByWeightPerUnitDto: SearchByWeightPerUnitDTO,
@@ -107,15 +98,13 @@ export class SupplyController {
   }
 
   @Get('search/employee/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
     return this.supplyService.FindByEmployee(paginationByEmployeeDto);
   }
 
   @Get('search/expirationDate/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SUPPLIES)
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByExpirationDate(
     @Query() paginationByExpDateDto: PaginationByExpDateDTO,
   ) {

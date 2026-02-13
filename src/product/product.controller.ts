@@ -13,6 +13,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -33,8 +34,7 @@ export class ProductController {
   ) {}
 
   @Post('create/withoutRecipe')
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateWithoutRecipe(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Body() body: CreateProductWithoutRecipeDTO,
@@ -43,8 +43,7 @@ export class ProductController {
   }
 
   @Post('create/withRecipe')
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateWithRecipe(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Body() body: CreateProductWithRecipeDTO,
@@ -53,8 +52,7 @@ export class ProductController {
   }
 
   @Post('create/withRecipe/registeredSupplies')
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateWithRecipeAndRegisteredSupplies(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Body() body: CreateProductWithRecipeDTO,
@@ -66,8 +64,7 @@ export class ProductController {
   }
 
   @Post('create/recipe')
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateRecipe(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Body() body: any,
@@ -82,9 +79,8 @@ export class ProductController {
     );
   }
 
-  @Patch()
-  @SetRoutePolicy(EmployeeRole.UPDATE)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @Patch(':id')
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Param('id') id: UrlUuidDTO,
@@ -94,36 +90,31 @@ export class ProductController {
   }
 
   @Get('search/name/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.productFindService.FindByName(paginationByNameDto);
   }
 
   @Get('search/category/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
     return this.productFindService.FindByCategory(paginationByCategoryDto);
   }
 
   @Get('search/price/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.productFindService.FindByPrice(paginationByPriceDto);
   }
 
   @Get('search/unities/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByUnities(@Query() paginationByUnitiesDto: PaginationByUnitiesDTO) {
     return this.productFindService.FindByUnities(paginationByUnitiesDto);
   }
 
   @Get('search/expirationDate/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.PRODUCTS)
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByExpirationDate(
     @Query() paginationByExpDateDto: PaginationByExpDateDTO,
   ) {

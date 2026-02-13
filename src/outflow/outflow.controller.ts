@@ -12,6 +12,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -29,8 +30,7 @@ export class OutflowController {
   constructor(private readonly outflowsService: OutflowService) {}
 
   @Post('create/supply')
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.CREATE })
   CreateForSupply(
     @Body() body: CreateOutflowDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
@@ -39,8 +39,7 @@ export class OutflowController {
   }
 
   @Post('create/product')
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.CREATE })
   CreateForProduct(
     @Body() body: CreateOutflowDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
@@ -49,64 +48,55 @@ export class OutflowController {
   }
 
   @Get('search/id/:id')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindById(@Param('id') id: UrlUuidDTO) {
     return this.outflowsService.FindById(id);
   }
 
   @Get('search/name/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.outflowsService.FindByName(paginationByNameDto);
   }
 
   @Get('search/category/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
     return this.outflowsService.FindByCategory(paginationByCategoryDto);
   }
 
   @Get('search/type/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByType(@Query() paginationByTypeDto: PaginationByTypeDTO) {
     return this.outflowsService.FindByType(paginationByTypeDto);
   }
 
   @Get('search/date/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
     return this.outflowsService.FindByDate(paginationByDateDto);
   }
 
   @Get('search/hour/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByHour(@Query() paginationByHourDto: PaginationByHourDTO) {
     return this.outflowsService.FindByHour(paginationByHourDto);
   }
 
   @Get('search/unities/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByUnities(@Query() paginationByUnitiesDto: PaginationByUnitiesDTO) {
     return this.outflowsService.FindByUnities(paginationByUnitiesDto);
   }
 
   @Get('search/reason/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByReason(@Query() paginationByReasonDto: PaginationByReasonDTO) {
     return this.outflowsService.FindByReason(paginationByReasonDto);
   }
 
   @Get('search/employee/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.OUTFLOWS)
+  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
     return this.outflowsService.FindByEmployee(paginationByEmployeeDto);
   }

@@ -13,6 +13,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
 import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
@@ -29,8 +30,7 @@ export class SaleController {
   constructor(private readonly salesService: SaleService) {}
 
   @Post()
-  @SetRoutePolicy(EmployeeRole.CREATE)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.CREATE })
   Create(
     @Body() body: CreateSaleDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
@@ -38,10 +38,8 @@ export class SaleController {
     return this.salesService.Create(tokenPayloadDTO, body);
   }
 
-  @Patch()
-  @SetRoutePolicy(EmployeeRole.UPDATE)
-  @SetRoutePolicy(EmployeeRole.EDIT_PRICES)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @Patch(':id')
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.EDIT_PRICES })
   UpdatePrice(
     @Param('id') id: UrlUuidDTO,
     @Body() updatePriceSaleDTO: UpdatePriceSaleDTO,
@@ -49,30 +47,26 @@ export class SaleController {
     return this.salesService.UpdatePrice(id, updatePriceSaleDTO);
   }
 
-  @Patch()
-  @SetRoutePolicy(EmployeeRole.UPDATE)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @Patch(':id')
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
   Update(@Param('id') id: UrlUuidDTO, @Body() updateSaleDTO: UpdateSaleDTO) {
     return this.salesService.Update(id, updateSaleDTO);
   }
 
   @Get('search/date/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
     return this.salesService.FindByDate(paginationByDateDto);
   }
 
   @Get('search/hour/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByHour(@Query() paginationByHourDto: PaginationByHourDTO) {
     return this.salesService.FindByHour(paginationByHourDto);
   }
 
   @Get('search/name/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByClientName(
     @Query() paginationByClientNameDto: PaginationByClientNameDTO,
   ) {
@@ -80,15 +74,13 @@ export class SaleController {
   }
 
   @Get('search/address/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByAddress(@Query() paginationByAddressDto: PaginationByAddressDTO) {
     return this.salesService.FindByAddress(paginationByAddressDto);
   }
 
   @Get('search/employee/')
-  @SetRoutePolicy(EmployeeRole.READ)
-  @SetRoutePolicy(EmployeeRole.SALES)
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
     return this.salesService.FindByEmployee(paginationByEmployeeDto);
   }

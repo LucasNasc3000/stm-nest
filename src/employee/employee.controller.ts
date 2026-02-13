@@ -15,6 +15,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { ReqBodyCpfValidation } from 'src/common/pipes/cpf-validation-body-request.pipe';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
@@ -31,7 +32,7 @@ export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
 
   @Post()
-  @SetRoutePolicy(EmployeeRole.ADMIN)
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
   @UsePipes(ReqBodyCpfValidation)
   Create(@Body() body: CreateEmployeeDTO) {
     return this.employeesService.Create(body);
@@ -52,7 +53,7 @@ export class EmployeeController {
   }
 
   @Patch('update/admin/:id')
-  @SetRoutePolicy(EmployeeRole.ADMIN)
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.UPDATE })
   @UsePipes(ReqBodyCpfValidation)
   UpdateAdmin(
     @Param('id') id: UrlUuidDTO,
@@ -67,24 +68,25 @@ export class EmployeeController {
   }
 
   @Get('search/email/:email')
-  @SetRoutePolicy(EmployeeRole.ADMIN)
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByEmail(@Param('email') email: SearchByEmailDTO) {
     return this.employeesService.FindByEmail(email);
   }
 
   @Get('search/name/')
-  @SetRoutePolicy(EmployeeRole.ADMIN)
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.employeesService.FindByName(paginationByNameDto);
   }
 
   @Get('search/role/')
-  @SetRoutePolicy(EmployeeRole.ADMIN)
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByRole(@Query() paginationByRoleDto: PaginationByRoleDTO) {
     return this.employeesService.FindByRole(paginationByRoleDto);
   }
 
   @Get()
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   async ListExEmployees(
     @Query() paginationExEmployeesDTO: PaginationExEmployeesDTO,
   ) {
