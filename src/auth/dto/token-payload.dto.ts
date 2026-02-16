@@ -1,8 +1,6 @@
-import { Role } from 'src/employee/entities/role.entity';
-
 export class TokenPayloadDTO {
   sub: string;
-  role: Role;
+  roleId: string;
   email: string;
   iat: number;
   exp: number;

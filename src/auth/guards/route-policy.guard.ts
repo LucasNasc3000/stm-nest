@@ -6,8 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
+import { Role } from 'src/employee/entities/role.entity';
+import { Repository } from 'typeorm';
 import {
   CHECK_PERMISSION_KEY,
   REQUEST_TOKEN_PAYLOAD_KEY,
@@ -16,7 +19,11 @@ import { RequiredPermission } from '../decorators/set-route-policy.decorator';
 
 @Injectable()
 export class RoutePolicyGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
@@ -39,7 +46,17 @@ export class RoutePolicyGuard implements CanActivate {
       throw new UnauthorizedException('Somente funcionários');
     }
 
-    const hasPermission = role.permissions.some(
+    const findRole = await this.roleRepository.findOne({
+      where: {
+        id: role.id,
+      },
+    });
+
+    if (!findRole) {
+      throw new UnauthorizedException('Cargo não encontrado');
+    }
+
+    const hasPermission = findRole.permissions.some(
       (p: { resource: Resource; action: Action }) =>
         p.resource === routePolicyRequired.resource &&
         p.action === routePolicyRequired.action,

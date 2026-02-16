@@ -8,6 +8,7 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsService } from 'src/logs-register/log.service';
@@ -60,13 +61,13 @@ export class AuthService {
   }
 
   async CreateTokensEmployee(employeeData: Employee) {
-    const accessToken = await this.SignJwtAsync<Partial<Employee>>(
+    const accessToken = await this.SignJwtAsync(
       employeeData.id,
       this.jwtConfiguration.jwtTtl,
-      { email: employeeData.email, role: employeeData.role },
+      { email: employeeData.email, roleId: employeeData.role.id },
     );
 
-    const refreshToken = await this.SignJwtAsync<Partial<Employee>>(
+    const refreshToken = await this.SignJwtAsync(
       employeeData.id,
       this.jwtConfiguration.jwtRefreshTtl,
     );
@@ -98,7 +99,7 @@ export class AuthService {
     };
   }
 
-  async SignJwtAsync<T>(sub: string, expiresIn: number, payload?: T) {
+  async SignJwtAsync(sub: string, expiresIn: number, payload?: JwtPayload) {
     return await this.jwtService.signAsync(
       {
         sub,
