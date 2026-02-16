@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, Max, Min } from 'class-validator';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
+import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
 
 export class PaginationByRoleDTO {
   @IsInt({
@@ -24,8 +23,11 @@ export class PaginationByRoleDTO {
   @Type(() => Number)
   offset: number;
 
-  @IsEnum(EmployeeRole, {
-    message: 'Permissão inválida',
+  @IsNotEmpty({
+    message: 'Id do cargo não fornecido',
   })
-  value: EmployeeRole;
+  @IsUUID(4, {
+    message: 'O id do cargo deve ser um uuid',
+  })
+  value: string;
 }

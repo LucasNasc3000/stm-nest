@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from 'src/employee/employee.module';
 import { Sale } from './entities/sale.entity';
@@ -8,6 +8,6 @@ import { SaleService } from './sale.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Sale]), EmployeeModule],
   controllers: [SaleController],
-  providers: [SaleService],
+  providers: [SaleService, Logger],
 })
 export class SaleModule {}

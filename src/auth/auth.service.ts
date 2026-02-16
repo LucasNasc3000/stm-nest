@@ -114,10 +114,10 @@ export class AuthService {
     );
   }
 
-  async LogoutEmployee(logoutDto: LogoutDTO) {
+  async LogoutEmployee(accessToken: string, logoutDto: LogoutDTO) {
     const jwtBlacklistData = {
       email: logoutDto.email,
-      token: logoutDto.token,
+      token: accessToken,
     };
 
     const findEmployee = await this.employeeRepository.findOne({

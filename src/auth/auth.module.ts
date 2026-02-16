@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsModule } from 'src/logs-register/log.module';
+import { RefreshTokensModule } from 'src/refresh-tokens/refresh-token.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';
@@ -17,6 +18,7 @@ import { HashingServiceProtocol } from './hashing/hashing.service';
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     LogsModule,
+    RefreshTokensModule,
   ],
   controllers: [AuthController],
   providers: [

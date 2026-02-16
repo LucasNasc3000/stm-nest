@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { Public } from './decorators/set-metadata.decorator';
 import { LoginDTO } from './dto/login.dto';
 import { LogoutDTO } from './dto/logout.dto';
+import { TokenParam } from './params/token.param';
 
 @Controller('auth')
 export class AuthController {
@@ -44,8 +45,11 @@ export class AuthController {
 
   @Public()
   @Post('logout/employee')
-  async LogoutEmployee(@Body() logoutDto: LogoutDTO) {
-    await this.authService.LogoutEmployee(logoutDto);
+  async LogoutEmployee(
+    @TokenParam() accessToken: string,
+    @Body() logoutDto: LogoutDTO,
+  ) {
+    await this.authService.LogoutEmployee(accessToken, logoutDto);
     return { success: true, message: 'Logout concluído' };
   }
 }

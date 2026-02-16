@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from 'src/employee/employee.module';
 import { SupplyHistory } from './entities/supply-history.entity';
@@ -12,6 +12,7 @@ import { SupplyService } from './supply.service';
     EmployeeModule,
   ],
   controllers: [SupplyController],
-  providers: [SupplyService],
+  providers: [SupplyService, Logger],
+  exports: [TypeOrmModule],
 })
 export class SupplyModule {}

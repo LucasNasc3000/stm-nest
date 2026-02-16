@@ -284,7 +284,9 @@ export class EmployeeService {
           id: 'desc',
         },
         where: {
-          role: value,
+          role: {
+            id: value,
+          },
           situation: EmployeeSituation.EMPLOYED,
         },
       });
