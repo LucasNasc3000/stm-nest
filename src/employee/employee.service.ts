@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -8,8 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { Resource } from 'src/common/enums/permissions.enum';
 import { Like, Repository } from 'typeorm';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
 import { CreateRoleDTO } from './dto/create-role.dto';
@@ -69,12 +70,24 @@ export class EmployeeService {
       createEmployeeDTO.password,
     );
 
+    const findRole = await this.roleRepository.findOne({
+      where: {
+        id: createEmployeeDTO.role.roleId,
+      },
+    });
+
+    if (!findRole) {
+      throw new BadRequestException(
+        `Cargo ${createEmployeeDTO.role.name} não encontrado`,
+      );
+    }
+
     const employeeCreateData = {
       cpf: createEmployeeDTO.cpf,
       email: createEmployeeDTO.email,
       name: createEmployeeDTO.name,
       password_hash,
-      role: createEmployeeDTO.role,
+      role: findRole,
       situation: createEmployeeDTO.situation,
       boss: createEmployeeDTO.boss,
       subordinates: createEmployeeDTO.subordinates,
@@ -159,10 +172,6 @@ export class EmployeeService {
   ) {
     const id = employeeIdDTO.id;
 
-    if (updateEmployeeAdminDTO.role.includes(EmployeeRole.ADMIN)) {
-      throw new ForbiddenException('Ação não permitida');
-    }
-
     const allowedData = {
       email: updateEmployeeAdminDTO.email,
       name: updateEmployeeAdminDTO.name,
@@ -171,28 +180,24 @@ export class EmployeeService {
       situation: updateEmployeeAdminDTO.situation,
     };
 
-    if (!tokenPayloadDTO.role.includes(EmployeeRole.ADMIN)) {
-      throw new ForbiddenException('Ação não permitida');
-    }
-
     const findEmployeeById = await this.employeeRepository.findOne({
       where: {
         id,
       },
     });
 
+    if (!findEmployeeById) {
+      throw new NotFoundException('Funcionário não encontrado');
+    }
+
     // Não deixa atualizar outros admins
-    for (let i = 0; i < findEmployeeById.role.length; i++) {
+    for (let i = 0; i < findEmployeeById.role.permissions.length; i++) {
       if (
         tokenPayloadDTO.sub !== id &&
-        findEmployeeById.role[i] === EmployeeRole.ADMIN
+        findEmployeeById.role.permissions[i].resource === Resource.EMPLOYEES
       ) {
         throw new ForbiddenException('Ação não permitida');
       }
-    }
-
-    if (!findEmployeeById) {
-      throw new NotFoundException('Funcionário não encontrado');
     }
 
     const employeeUpdate = await this.employeeRepository.preload({

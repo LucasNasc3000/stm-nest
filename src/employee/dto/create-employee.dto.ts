@@ -7,9 +7,9 @@ import {
   IsStrongPassword,
   Length,
 } from 'class-validator';
-import { EmployeeRole } from 'src/common/enums/employee-role.enum';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Employee } from '../entities/employee.entity';
+import { RoleIdDTO } from './role.dto';
 
 export class CreateEmployeeDTO {
   @IsNotEmpty({
@@ -57,14 +57,7 @@ export class CreateEmployeeDTO {
   })
   readonly password: string;
 
-  @IsNotEmpty({
-    message: 'campo "função" não preenchido',
-  })
-  @IsEnum(EmployeeRole, {
-    message: 'Permissão inválida',
-    each: true,
-  })
-  readonly role: EmployeeRole[];
+  readonly role: RoleIdDTO;
 
   @IsNotEmpty({
     message: 'campo "situação" não preenchido',
