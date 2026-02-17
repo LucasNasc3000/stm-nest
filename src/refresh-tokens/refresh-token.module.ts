@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -15,7 +15,7 @@ import { RefreshTokensService } from './refresh-token.service';
     JwtModule.registerAsync(jwtConfig.asProvider()),
   ],
   controllers: [RefreshTokensController],
-  providers: [RefreshTokensService],
+  providers: [RefreshTokensService, Logger],
   exports: [RefreshTokensService],
 })
 export class RefreshTokensModule {}

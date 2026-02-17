@@ -13,6 +13,5 @@ import { SupplyService } from './supply.service';
   ],
   controllers: [SupplyController],
   providers: [SupplyService, Logger],
-  exports: [TypeOrmModule],
 })
 export class SupplyModule {}

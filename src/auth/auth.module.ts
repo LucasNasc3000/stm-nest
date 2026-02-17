@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,6 +23,7 @@ import { HashingServiceProtocol } from './hashing/hashing.service';
   controllers: [AuthController],
   providers: [
     AuthService,
+    Logger,
     {
       provide: HashingServiceProtocol,
       useClass: BcryptService,
