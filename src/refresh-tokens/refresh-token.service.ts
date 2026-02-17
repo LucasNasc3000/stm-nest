@@ -1,7 +1,9 @@
 import {
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -9,8 +11,12 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import jwtConfig from 'src/auth/config/jwt.config';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import {
+  JwtPayload,
+  RefreshTokenPayload,
+} from 'src/common/interfaces/jwt-payload.interface';
 import { Employee } from 'src/employee/entities/employee.entity';
-import { Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { RefreshTokenEmployee } from './entities/refresh-token-employee.entity';
 
 @Injectable()
@@ -25,51 +31,29 @@ export class RefreshTokensService {
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     private readonly jwtService: JwtService,
+    private readonly logger: Logger,
+    private dataSource: DataSource,
   ) {}
 
-  async CreateEmployee(sub: Employee) {
+  async CreateEmployee(sub: Employee, queryRunnerSub?: QueryRunner) {
     const rtData = {
       is_valid: true,
       employee: sub,
     };
 
-    const rtCreate = this.RTEmployeeRepository.create(rtData);
+    const rtCreate = queryRunnerSub.manager.create(
+      RefreshTokenEmployee,
+      rtData,
+    );
 
-    const newRT = await this.RTEmployeeRepository.save(rtCreate);
+    const newRT = await queryRunnerSub.manager.save(
+      RefreshTokenEmployee,
+      rtCreate,
+    );
 
     return {
       ...newRT,
     };
-  }
-
-  async FindUsedRefreshTokenEmployee(refreshTokenId: string, sub: Employee) {
-    const findUsedRefreshToken = await this.RTEmployeeRepository.findOne({
-      where: {
-        token_id: refreshTokenId,
-        employee: {
-          id: sub.id,
-        },
-      },
-    });
-
-    if (!findUsedRefreshToken) {
-      throw new InternalServerErrorException(
-        'Erro ao buscar refresh tokens relacionados ao funcionário',
-      );
-    }
-
-    return findUsedRefreshToken;
-  }
-
-  async RefreshTokenVerifyEmployee(
-    refreshTokenData: RefreshTokenEmployee,
-    sub: Employee,
-  ) {
-    if (refreshTokenData.is_valid !== true) {
-      return this.RevokeAllEmployee(sub, false, refreshTokenData.token_id);
-    } else {
-      return 'Token válido. Sem incidentes';
-    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -157,60 +141,93 @@ export class RefreshTokensService {
     return create;
   }
 
-  async InvalidateRefreshToken(id: string) {
-    const invalidate = await this.RTEmployeeRepository.update(id, {
-      is_valid: false,
-    });
-
-    return invalidate;
-  }
-
   async CreateTokensEmployee(
     employeeData: Employee,
     refreshTokenIdIncoming: string,
   ) {
-    const findUsedRT = await this.FindUsedRefreshTokenEmployee(
-      refreshTokenIdIncoming,
-      employeeData,
-    );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    await this.RefreshTokenVerifyEmployee(findUsedRT, employeeData);
+    let accessToken: string = '';
+    let refreshToken: string = '';
 
-    const invalidate = await this.InvalidateRefreshToken(findUsedRT.id);
-
-    if (!invalidate) {
-      throw new InternalServerErrorException(
-        'Erro ao atualizar estado de refresh token',
+    try {
+      const doesEmployeeReallyExists = await queryRunner.manager.findOne(
+        Employee,
+        {
+          where: {
+            id: employeeData.id,
+          },
+        },
       );
-    }
 
-    const create = await this.CreateEmployee(employeeData);
+      if (!doesEmployeeReallyExists) {
+        throw new UnauthorizedException('Funcionário não encontrado');
+      }
 
-    if (!create) {
-      throw new InternalServerErrorException(
-        'Erro ao criar registro de refresh token',
+      const updateToken = await queryRunner.manager.query(
+        `
+          UPDATE refresh_token_employee
+          SET is_valid = false
+          WHERE token_id = $1
+            AND employee_id = $2
+            AND is_valid = true
+          RETURNING *
+        `,
+        [refreshTokenIdIncoming, doesEmployeeReallyExists.id],
       );
+
+      if (updateToken.length === 0) {
+        await this.RevokeAllEmployee(doesEmployeeReallyExists, false);
+
+        throw new UnauthorizedException(
+          'Refresh token inválido ou já utilizado',
+        );
+      }
+
+      const create = await this.CreateEmployee(employeeData, queryRunner);
+
+      accessToken = await this.SignJwtAsync(
+        employeeData.id,
+        this.jwtConfiguration.jwtTtl,
+        { email: employeeData.email, roleId: employeeData.role.id },
+      );
+
+      refreshToken = await this.SignJwtAsync(
+        employeeData.id,
+        this.jwtConfiguration.jwtRefreshTtl,
+        { id: create.token_id },
+      );
+
+      await queryRunner.commitTransaction();
+
+      return {
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      this.logger.error(`Erro ao criar novo par de tokens: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação da autenticação',
+      );
+    } finally {
+      await queryRunner.release();
     }
-
-    const accessToken = await this.SignJwtAsync<Partial<Employee>>(
-      employeeData.id,
-      this.jwtConfiguration.jwtTtl,
-      { email: employeeData.email, role: employeeData.role },
-    );
-
-    const refreshToken = await this.SignJwtAsync<Partial<Employee>>(
-      employeeData.id,
-      this.jwtConfiguration.jwtRefreshTtl,
-      { id: create.token_id },
-    );
-
-    return {
-      accessToken,
-      refreshToken,
-    };
   }
 
-  async SignJwtAsync<T>(sub: string, expiresIn: number, payload?: T) {
+  async SignJwtAsync(
+    sub: string,
+    expiresIn: number,
+    payload?: JwtPayload | RefreshTokenPayload,
+  ) {
     return await this.jwtService.signAsync(
       {
         sub,
