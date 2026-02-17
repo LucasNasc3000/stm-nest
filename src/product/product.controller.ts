@@ -21,6 +21,7 @@ import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
+import { UpdatePriceProductDTO } from './dto/update-product-price.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductFindService } from './product-find.service';
 import { ProductService } from './product.service';
@@ -79,7 +80,7 @@ export class ProductController {
     );
   }
 
-  @Patch(':id')
+  @Patch('update/general/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
@@ -87,6 +88,15 @@ export class ProductController {
     @Body() updateProductDTO: UpdateProductDTO,
   ) {
     return this.productService.Update(tokenPayloadDTO, id, updateProductDTO);
+  }
+
+  @Patch('update/price/:id')
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })
+  UpdateProductPrice(
+    @Param('id') id: UrlUuidDTO,
+    @Body() updatePriceProductDTO: UpdatePriceProductDTO,
+  ) {
+    return this.productService.UpdatePrice(id, updatePriceProductDTO);
   }
 
   @Get('search/name/')

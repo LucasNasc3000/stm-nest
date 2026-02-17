@@ -22,6 +22,7 @@ import { CreateProductIngredientDTO } from './dto/create-product-ingredient.dto'
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { UpdateProductIngredientDTO } from './dto/update-product-ingredient.dto';
+import { UpdatePriceProductDTO } from './dto/update-product-price.dto';
 import { UpdateProductRegularDataDTO } from './dto/update-product-regular-data.dto';
 import { UpdateProductUnitiesDTO } from './dto/update-product-unities.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
@@ -593,22 +594,35 @@ export class ProductService {
     }
   }
 
-  // async UpdatePrice(id: UrlUuidDTO) {
-  //   const productUpdate = await queryRunner.manager.update(
-  //     Product,
-  //     product.id,
-  //     {
-  //       id: product.id,
-  //       price,
-  //     },
-  //   );
+  async UpdatePrice(idParam: UrlUuidDTO, priceParam: UpdatePriceProductDTO) {
+    const { id } = idParam;
+    const { price } = priceParam;
 
-  //   if (!productUpdate || productUpdate.affected < 1) {
-  //     throw new InternalServerErrorException(
-  //       `Erro ao tentar atualizar preço do produto: ${product.name}`,
-  //     );
-  //   }
-  // }
+    const findProduct = await this.productRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!findProduct) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    const productUpdate = await this.productRepository.preload({
+      id,
+      price,
+    });
+
+    const productUpdated = await this.productRepository.save(productUpdate);
+
+    if (!productUpdate || !productUpdated) {
+      throw new InternalServerErrorException(
+        `Erro ao tentar atualizar preço do produto: ${findProduct.name}`,
+      );
+    }
+
+    return productUpdated;
+  }
 
   private async UpdateUnities(
     updateProductUnitiesDTO: UpdateProductUnitiesDTO,
