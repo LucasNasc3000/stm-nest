@@ -221,6 +221,7 @@ export class ProductService {
             where: {
               id: supply.supplyId,
             },
+            lock: { mode: 'pessimistic_write' },
           },
         );
 
@@ -365,6 +366,7 @@ export class ProductService {
             where: {
               id: ingredient.supplyId,
             },
+            lock: { mode: 'pessimistic_write' },
           },
         );
 
@@ -523,6 +525,7 @@ export class ProductService {
         where: {
           id: id,
         },
+        lock: { mode: 'pessimistic_write' },
       });
 
       if (!findProduct) {
@@ -635,6 +638,7 @@ export class ProductService {
             where: {
               id: ingredient.supplyId,
             },
+            lock: { mode: 'pessimistic_write' },
           },
         );
 
@@ -788,6 +792,7 @@ export class ProductService {
             },
             isActive: true,
           },
+          lock: { mode: 'pessimistic_write' },
         },
       );
 
@@ -800,7 +805,7 @@ export class ProductService {
       if (ingredient.disableProduct === true) {
         const disableIngredient = await queryRunner.manager.update(
           ProductIngredient,
-          ingredient.id,
+          findIngredient.id,
           {
             isActive: false,
           },
@@ -836,7 +841,7 @@ export class ProductService {
 
         const updateIngredientQuantity = await queryRunner.manager.update(
           ProductIngredient,
-          ingredient.id,
+          findIngredient.id,
           {
             quantity: ingredient.quantity,
           },

@@ -100,6 +100,7 @@ export class OutflowService {
             name: createOutflowDTO.name,
             category: createOutflowDTO.category,
           },
+          lock: { mode: 'pessimistic_write' },
         },
       );
 
@@ -239,6 +240,7 @@ export class OutflowService {
             name: createOutflowDTO.name,
             category: createOutflowDTO.category,
           },
+          lock: { mode: 'pessimistic_write' },
         },
       );
 

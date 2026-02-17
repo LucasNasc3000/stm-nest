@@ -72,6 +72,7 @@ export class SupplyService {
           where: {
             name: createSupplyDTO.name,
           },
+          lock: { mode: 'pessimistic_write' },
         },
       );
 
