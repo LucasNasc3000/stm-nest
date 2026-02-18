@@ -166,8 +166,9 @@ export class RefreshTokensService {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
 
-      const updateToken = await queryRunner.manager.query(
-        `
+      const [updateToken]: RefreshTokenEmployee[] =
+        await queryRunner.manager.query(
+          `
           UPDATE refresh_token_employee
           SET is_valid = false
           WHERE token_id = $1
@@ -175,10 +176,10 @@ export class RefreshTokensService {
             AND is_valid = true
           RETURNING *
         `,
-        [refreshTokenIdIncoming, doesEmployeeReallyExists.id],
-      );
+          [refreshTokenIdIncoming, doesEmployeeReallyExists.id],
+        );
 
-      if (updateToken.length === 0) {
+      if (!updateToken) {
         await this.RevokeAllEmployee(doesEmployeeReallyExists, false);
 
         throw new UnauthorizedException(

@@ -1,3 +1,4 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -45,6 +46,11 @@ import { AppService } from './app.service';
     JWTBlacklistModule,
     LogsModule,
     RefreshTokensModule,
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 1000 * 60 * 60 * 24,
+      max: 80,
+    }),
   ],
   controllers: [AppController],
   providers: [
