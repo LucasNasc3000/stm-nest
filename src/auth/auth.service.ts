@@ -1,7 +1,9 @@
 import {
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -13,7 +15,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsService } from 'src/logs-register/log.service';
 import { RefreshTokensService } from 'src/refresh-tokens/refresh-token.service';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import jwtConfig from './config/jwt.config';
 import { LoginDTO } from './dto/login.dto';
 import { LogoutDTO } from './dto/logout.dto';
@@ -34,6 +36,8 @@ export class AuthService {
     private readonly hashingService: HashingServiceProtocol,
     private readonly logService: LogsService,
     private readonly refreshTokenService: RefreshTokensService,
+    private readonly logger: Logger,
+    private dataSource: DataSource,
   ) {}
 
   async LoginEmployee(loginDTO: LoginDTO) {
@@ -61,42 +65,61 @@ export class AuthService {
   }
 
   async CreateTokensEmployee(employeeData: Employee) {
-    const accessToken = await this.SignJwtAsync(
-      employeeData.id,
-      this.jwtConfiguration.jwtTtl,
-      { email: employeeData.email, roleId: employeeData.role.id },
-    );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const refreshToken = await this.SignJwtAsync(
-      employeeData.id,
-      this.jwtConfiguration.jwtRefreshTtl,
-    );
+    let accessToken: string = '';
+    let refreshToken: string = '';
 
-    const create = await this.refreshTokenService.CreateEmployee(employeeData);
+    try {
+      await this.refreshTokenService.CreateEmployee(employeeData, queryRunner);
 
-    if (!create) {
-      throw new InternalServerErrorException(
-        'Erro ao criar registro de refresh token',
+      accessToken = await this.SignJwtAsync(
+        employeeData.id,
+        this.jwtConfiguration.jwtTtl,
+        { email: employeeData.email, roleId: employeeData.role.id },
       );
+
+      refreshToken = await this.SignJwtAsync(
+        employeeData.id,
+        this.jwtConfiguration.jwtRefreshTtl,
+      );
+
+      const dataForLog = {
+        email: employeeData.email,
+        name: employeeData.name,
+        employee: employeeData,
+      };
+
+      await this.logService.CreateLogEmployee(dataForLog);
+
+      await queryRunner.commitTransaction();
+
+      //if (!createLog) await this.emailsService.LogIssue('Funcionários');
+
+      return {
+        accessToken,
+        refreshToken,
+        email: employeeData.email,
+        name: employeeData.name,
+        id: employeeData.id,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      this.logger.error(`Erro ao criar novo par de tokens: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação da autenticação',
+      );
+    } finally {
+      await queryRunner.release();
     }
-
-    const dataForLog = {
-      email: employeeData.email,
-      name: employeeData.name,
-      employee: employeeData,
-    };
-
-    await this.logService.CreateLogEmployee(dataForLog);
-
-    //if (!createLog) await this.emailsService.LogIssue('Funcionários');
-
-    return {
-      accessToken,
-      refreshToken,
-      email: employeeData.email,
-      name: employeeData.name,
-      id: employeeData.id,
-    };
   }
 
   async SignJwtAsync(sub: string, expiresIn: number, payload?: JwtPayload) {
@@ -130,7 +153,11 @@ export class AuthService {
 
     const createLogout = this.jwtBlacklistRepository.create(jwtBlacklistData);
 
-    await this.jwtBlacklistRepository.save(createLogout);
+    const newLogout = await this.jwtBlacklistRepository.save(createLogout);
+
+    if (!createLogout || !newLogout) {
+      throw new InternalServerErrorException('Erro ao criar logout');
+    }
 
     return 'Logout criado com suceso';
   }
