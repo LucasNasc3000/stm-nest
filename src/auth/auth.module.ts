@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { forwardRef, Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,7 +20,7 @@ import { HashingServiceProtocol } from './hashing/hashing.service';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     LogsModule,
     RefreshTokensModule,
-    EmployeeModule,
+    forwardRef(() => EmployeeModule),
   ],
   controllers: [AuthController],
   providers: [
