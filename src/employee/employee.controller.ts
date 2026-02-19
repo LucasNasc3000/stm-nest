@@ -10,6 +10,7 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
@@ -31,6 +32,7 @@ import { EmployeeService } from './employee.service';
 export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
 
+  @SkipThrottle({ read: true, auth: true })
   @Post()
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
   @UsePipes(ReqBodyCpfValidation)
@@ -38,6 +40,7 @@ export class EmployeeController {
     return this.employeesService.Create(body);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch('update/self/:id')
   @UsePipes(ReqBodyCpfValidation)
   UpdateSelf(
@@ -52,6 +55,7 @@ export class EmployeeController {
     );
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch('update/admin/:id')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.UPDATE })
   @UsePipes(ReqBodyCpfValidation)
@@ -67,25 +71,29 @@ export class EmployeeController {
     );
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/email/:email')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByEmail(@Param('email') email: SearchByEmailDTO) {
     return this.employeesService.FindByEmail(email);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.employeesService.FindByName(paginationByNameDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/role/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByRole(@Query() paginationByRoleDto: PaginationByRoleDTO) {
     return this.employeesService.FindByRole(paginationByRoleDto);
   }
 
-  @Get()
+  @SkipThrottle({ write: true, auth: true })
+  @Get('exemployees')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   async ListExEmployees(
     @Query() paginationExEmployeesDTO: PaginationExEmployeesDTO,

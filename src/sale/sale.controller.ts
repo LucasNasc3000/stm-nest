@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
@@ -29,6 +30,7 @@ import { SaleService } from './sale.service';
 export class SaleController {
   constructor(private readonly salesService: SaleService) {}
 
+  @SkipThrottle({ read: true, auth: true })
   @Post()
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.CREATE })
   Create(
@@ -38,6 +40,7 @@ export class SaleController {
     return this.salesService.Create(tokenPayloadDTO, body);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.EDIT_PRICES })
   UpdatePrice(
@@ -47,24 +50,28 @@ export class SaleController {
     return this.salesService.UpdatePrice(id, updatePriceSaleDTO);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
   Update(@Param('id') id: UrlUuidDTO, @Body() updateSaleDTO: UpdateSaleDTO) {
     return this.salesService.Update(id, updateSaleDTO);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
     return this.salesService.FindByDate(paginationByDateDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/hour/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByHour(@Query() paginationByHourDto: PaginationByHourDTO) {
     return this.salesService.FindByHour(paginationByHourDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByClientName(
@@ -73,12 +80,14 @@ export class SaleController {
     return this.salesService.FindByClientName(paginationByClientNameDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/address/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByAddress(@Query() paginationByAddressDto: PaginationByAddressDTO) {
     return this.salesService.FindByAddress(paginationByAddressDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {

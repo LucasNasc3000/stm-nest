@@ -1,4 +1,5 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/set-metadata.decorator';
@@ -10,6 +11,7 @@ import { TokenParam } from './params/token.param';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @SkipThrottle({ read: true, write: true })
   @Public()
   @Post('employee')
   async LoginEmployee(
@@ -43,6 +45,7 @@ export class AuthController {
     };
   }
 
+  @SkipThrottle({ read: true, write: true })
   @Public()
   @Post('logout/employee')
   async LogoutEmployee(

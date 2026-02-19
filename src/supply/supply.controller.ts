@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
@@ -31,6 +32,7 @@ import { SupplyService } from './supply.service';
 export class SupplyController {
   constructor(private readonly supplyService: SupplyService) {}
 
+  @SkipThrottle({ read: true, auth: true })
   @Post()
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.CREATE })
   Create(
@@ -40,6 +42,7 @@ export class SupplyController {
     return this.supplyService.Create(body, tokenPayloadDTO);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.UPDATE })
   Update(
@@ -49,6 +52,7 @@ export class SupplyController {
     return this.supplyService.Update(id, updateSupplyRealtimeDTO);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.EDIT_PRICES })
   UpdatePrice(
@@ -58,36 +62,42 @@ export class SupplyController {
     return this.supplyService.UpdatePrice(id, updateSupplyRealtimePriceDTO);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/id/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindById(@Param('id') id: UrlUuidDTO) {
     return this.supplyService.FindById(id);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/supplier/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindBySupplier(@Query() paginationBySupplierDto: PaginationBySupplierDTO) {
     return this.supplyService.FindBySupplier(paginationBySupplierDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.supplyService.FindByName(paginationByNameDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/category/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
     return this.supplyService.FindByCategory(paginationByCategoryDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/price/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.supplyService.FindByPrice(paginationByPriceDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/weightPerUnit/:weightPerUnit')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByWeightPerUnit(
@@ -97,12 +107,14 @@ export class SupplyController {
     return this.supplyService.FindByWeightPerUnit(searchByWeightPerUnitDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
     return this.supplyService.FindByEmployee(paginationByEmployeeDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/expirationDate/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByExpirationDate(

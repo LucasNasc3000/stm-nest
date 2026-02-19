@@ -2,9 +2,11 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
+import { ThrottlerBehindProxyGuard } from 'src/auth/guards/throttler-behind-proxy.guard';
 import { EmployeeModule } from 'src/employee/employee.module';
 import { JWTBlacklistModule } from 'src/jwt-blacklist/jwt-blacklist.module';
 import { LogsModule } from 'src/logs-register/log.module';
@@ -37,6 +39,28 @@ import { AppService } from './app.service';
         };
       },
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'auth',
+        ttl: 60000,
+        limit: 5,
+      },
+      {
+        name: 'write',
+        ttl: 10000,
+        limit: 10,
+      },
+      {
+        name: 'read',
+        ttl: 10000,
+        limit: 50,
+      },
+      {
+        name: 'global',
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     EmployeeModule,
     SupplyModule,
     OutflowModule,
@@ -58,6 +82,10 @@ import { AppService } from './app.service';
     {
       provide: APP_GUARD,
       useClass: AuthTokenGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerBehindProxyGuard,
     },
   ],
 })

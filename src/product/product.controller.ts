@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
@@ -34,6 +35,7 @@ export class ProductController {
     private readonly productFindService: ProductFindService,
   ) {}
 
+  @SkipThrottle({ read: true, auth: true })
   @Post('create/withoutRecipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateWithoutRecipe(
@@ -43,6 +45,7 @@ export class ProductController {
     return this.productService.CreateWithoutRecipe(tokenPayloadDTO, body);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Post('create/withRecipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateWithRecipe(
@@ -52,6 +55,7 @@ export class ProductController {
     return this.productService.CreateWithRecipe(tokenPayloadDTO, body);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Post('create/withRecipe/registeredSupplies')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateWithRecipeAndRegisteredSupplies(
@@ -64,6 +68,7 @@ export class ProductController {
     );
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Post('create/recipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
   CreateRecipe(
@@ -80,6 +85,7 @@ export class ProductController {
     );
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch('update/general/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
@@ -90,6 +96,7 @@ export class ProductController {
     return this.productService.Update(tokenPayloadDTO, id, updateProductDTO);
   }
 
+  @SkipThrottle({ read: true, auth: true })
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })
   UpdateProductPrice(
@@ -99,30 +106,35 @@ export class ProductController {
     return this.productService.UpdatePrice(id, updatePriceProductDTO);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
     return this.productFindService.FindByName(paginationByNameDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/category/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
     return this.productFindService.FindByCategory(paginationByCategoryDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/price/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.productFindService.FindByPrice(paginationByPriceDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/unities/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByUnities(@Query() paginationByUnitiesDto: PaginationByUnitiesDTO) {
     return this.productFindService.FindByUnities(paginationByUnitiesDto);
   }
 
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/expirationDate/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByExpirationDate(
