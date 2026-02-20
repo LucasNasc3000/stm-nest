@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, Max, Min } from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 
 export class PaginationByExpDateDTO {
   @IsInt({
@@ -23,6 +23,9 @@ export class PaginationByExpDateDTO {
   @Type(() => Number)
   offset: number;
 
+  @IsNotEmpty({
+    message: 'campo "data" não preenchido',
+  })
   @IsDateString()
   value: string;
 }

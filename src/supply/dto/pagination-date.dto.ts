@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsDateString, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 
-export class PaginationByExpDateDTO {
+export class PaginationByDateDTO {
   @IsInt({
     message: 'Limite precisa ser um numero inteiro',
   })
@@ -24,7 +24,7 @@ export class PaginationByExpDateDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'campo "data de validade" não preenchido',
+    message: 'campo "data" não preenchido',
   })
   @IsDateString()
   value: string;

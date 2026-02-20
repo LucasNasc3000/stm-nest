@@ -15,6 +15,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { DataSource, Like, Repository } from 'typeorm';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -31,6 +32,9 @@ export class SupplyService {
   constructor(
     @InjectRepository(SupplyRealTime)
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
+
+    @InjectRepository(SupplyHistory)
+    private readonly supplyHistoryRepository: Repository<SupplyHistory>,
     private readonly employeesService: EmployeeService,
     private dataSource: DataSource,
     private readonly logger: Logger,
@@ -520,6 +524,44 @@ export class SupplyService {
           },
         },
       });
+
+    if (!supplyFindByExpDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (supplyFindByExpDate.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return supplyFindByExpDate;
+  }
+
+  async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
+    const { limit, offset, value } = paginatioByDateDTO;
+
+    const supplyFindByExpDate = await this.supplyHistoryRepository.findAndCount(
+      {
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          date: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    );
 
     if (!supplyFindByExpDate) {
       throw new InternalServerErrorException(

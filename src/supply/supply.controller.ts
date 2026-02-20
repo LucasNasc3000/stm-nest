@@ -17,6 +17,7 @@ import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -121,5 +122,12 @@ export class SupplyController {
     @Query() paginationByExpDateDto: PaginationByExpDateDTO,
   ) {
     return this.supplyService.FindByExpirationDate(paginationByExpDateDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/date/')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
+    return this.supplyService.FindByDate(paginationByDateDto);
   }
 }
