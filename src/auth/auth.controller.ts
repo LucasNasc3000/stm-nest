@@ -22,7 +22,7 @@ export class AuthController {
 
     res.cookie('accessToken', createTokens.accessToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
       maxAge: 1000 * 60 * 20, // 20 minutos
       path: '/',
@@ -30,9 +30,9 @@ export class AuthController {
 
     res.cookie('refreshToken', createTokens.refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
+      maxAge: 1000 * 60 * 60 * 24, // 1 dia
       path: '/refresh/employee',
     });
 
@@ -49,10 +49,16 @@ export class AuthController {
   @Public()
   @Post('logout/employee')
   async LogoutEmployee(
+    @Res({ passthrough: true }) res: Response,
     @TokenParam() accessToken: string,
     @Body() logoutDto: LogoutDTO,
   ) {
     await this.authService.LogoutEmployee(accessToken, logoutDto);
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.clearCookie('x-csrf-token');
+
     return { success: true, message: 'Logout concluído' };
   }
 }

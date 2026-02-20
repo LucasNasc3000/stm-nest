@@ -6,6 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
+import { CsrfGuard } from 'src/auth/guards/csrf.guard';
 import { ThrottlerBehindProxyGuard } from 'src/auth/guards/throttler-behind-proxy.guard';
 import { EmployeeModule } from 'src/employee/employee.module';
 import { JWTBlacklistModule } from 'src/jwt-blacklist/jwt-blacklist.module';
@@ -86,6 +87,10 @@ import { AppService } from './app.service';
     {
       provide: APP_GUARD,
       useClass: ThrottlerBehindProxyGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: CsrfGuard,
     },
   ],
 })
