@@ -13,17 +13,6 @@ import { RoleIdDTO } from './role.dto';
 
 export class CreateEmployeeDTO {
   @IsNotEmpty({
-    message: 'campo "cpf" não preenchido',
-  })
-  @IsString({
-    message: 'campo "cpf" deve estar em formato de texto',
-  })
-  @Length(14, 14, {
-    message: 'O cpf deve estar no formato 000.000.000-00',
-  })
-  readonly cpf: string;
-
-  @IsNotEmpty({
     message: 'campo "email" não preenchido',
   })
   @IsString({
