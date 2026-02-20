@@ -71,6 +71,7 @@ export class SupplyService {
         {
           where: {
             name: createSupplyDTO.name,
+            is_active: true,
           },
           lock: { mode: 'pessimistic_write' },
         },
@@ -186,6 +187,7 @@ export class SupplyService {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
         id: supplyId.id,
+        is_active: true,
       },
     });
 
@@ -225,6 +227,7 @@ export class SupplyService {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
         id: supplyId.id,
+        is_active: true,
       },
     });
 
@@ -253,6 +256,7 @@ export class SupplyService {
     const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
       where: {
         id: id.id,
+        is_active: true,
       },
       relations: {
         employee: true,
@@ -284,6 +288,7 @@ export class SupplyService {
         },
         where: {
           supplier: Like(`${value}%`),
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -321,6 +326,7 @@ export class SupplyService {
         },
         where: {
           name: Like(`${value}%`),
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -358,6 +364,7 @@ export class SupplyService {
         },
         where: {
           category: Like(`${value}%`),
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -395,6 +402,7 @@ export class SupplyService {
         },
         where: {
           price: value,
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -425,6 +433,7 @@ export class SupplyService {
       await this.supplyRealTimeRepository.findOne({
         where: {
           weightPerUnit: weightPerUnit.weightPerUnit,
+          is_active: true,
         },
         order: {
           id: 'desc',
@@ -461,6 +470,7 @@ export class SupplyService {
           employee: {
             id: value,
           },
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -497,9 +507,8 @@ export class SupplyService {
           id: 'desc',
         },
         where: {
-          employee: {
-            id: value,
-          },
+          expirationDate: value,
+          is_active: true,
         },
         relations: {
           employee: true,

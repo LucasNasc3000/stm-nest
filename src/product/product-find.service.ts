@@ -34,6 +34,7 @@ export class ProductFindService {
         },
         where: {
           name: Like(`${value}%`),
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -71,6 +72,7 @@ export class ProductFindService {
         },
         where: {
           category: Like(`${value}%`),
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -108,6 +110,7 @@ export class ProductFindService {
         },
         where: {
           unities: +value,
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -143,9 +146,8 @@ export class ProductFindService {
         id: 'desc',
       },
       where: {
-        employee: {
-          id: value,
-        },
+        expirationDate: value,
+        is_active: true,
       },
       relations: {
         employee: true,
@@ -183,6 +185,7 @@ export class ProductFindService {
         },
         where: {
           price: value,
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -222,6 +225,7 @@ export class ProductFindService {
           employee: {
             id: value,
           },
+          is_active: true,
         },
         relations: {
           employee: true,

@@ -3,9 +3,7 @@ import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
-  Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -29,13 +27,16 @@ export class Product {
   unities: number;
 
   @Column({ type: 'date', name: 'expiration_date' })
-  expirationDate: Date;
+  expirationDate: string;
 
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
   lowStock: number;
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @Column({ type: 'boolean', default: true })
+  is_active: boolean;
 
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
     onDelete: 'RESTRICT',
@@ -57,8 +58,4 @@ export class Product {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  @Index()
-  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-  deletedAt: Date;
 }

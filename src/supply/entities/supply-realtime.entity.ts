@@ -4,9 +4,7 @@ import { ProductIngredient } from 'src/product/entities/product-ingredient.entit
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
-  Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -38,7 +36,7 @@ export class SupplyRealTime {
   supplier: string;
 
   @Column({ type: 'date', name: 'expiration_date' })
-  expirationDate: Date;
+  expirationDate: string;
 
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
     onDelete: 'RESTRICT',
@@ -50,6 +48,9 @@ export class SupplyRealTime {
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @Column({ type: 'boolean', default: true })
+  is_active: boolean;
 
   @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealtime)
   supplyHistory: SupplyHistory[];
@@ -65,8 +66,4 @@ export class SupplyRealTime {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  @Index()
-  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-  deletedAt: Date;
 }

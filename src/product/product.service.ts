@@ -117,6 +117,7 @@ export class ProductService {
           {
             where: {
               id: supply.supplyId,
+              is_active: true,
             },
           },
         );
@@ -221,6 +222,7 @@ export class ProductService {
           {
             where: {
               id: supply.supplyId,
+              is_active: true,
             },
             lock: { mode: 'pessimistic_write' },
           },
@@ -339,6 +341,7 @@ export class ProductService {
     const doesProductReallyExists = await queryRunner.manager.findOne(Product, {
       where: {
         id: productId.id,
+        is_active: true,
       },
     });
 
@@ -366,6 +369,7 @@ export class ProductService {
           {
             where: {
               id: ingredient.supplyId,
+              is_active: true,
             },
             lock: { mode: 'pessimistic_write' },
           },
@@ -525,6 +529,7 @@ export class ProductService {
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
           id: id,
+          is_active: true,
         },
         lock: { mode: 'pessimistic_write' },
       });
@@ -568,6 +573,7 @@ export class ProductService {
       const findUpdatedProduct = await this.productRepository.findOne({
         where: {
           id: productId.id,
+          is_active: true,
         },
       });
 
@@ -601,6 +607,7 @@ export class ProductService {
     const findProduct = await this.productRepository.findOne({
       where: {
         id,
+        is_active: true,
       },
     });
 
@@ -651,6 +658,7 @@ export class ProductService {
           {
             where: {
               id: ingredient.supplyId,
+              is_active: true,
             },
             lock: { mode: 'pessimistic_write' },
           },
@@ -844,6 +852,7 @@ export class ProductService {
         const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
           where: {
             id: ingredient.supplyId,
+            is_active: true,
           },
         });
 

@@ -20,6 +20,9 @@ export class SupplyHistory {
   @Column({ type: 'varchar', length: 50 })
   name: string;
 
+  @Column({ type: 'date' })
+  date: string;
+
   @Column({ type: 'integer' })
   quantity: number;
 
@@ -33,7 +36,7 @@ export class SupplyHistory {
   supplier: string;
 
   @Column({ type: 'date', name: 'expiration_date' })
-  expirationDate: Date;
+  expirationDate: string;
 
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
     onDelete: 'RESTRICT',
