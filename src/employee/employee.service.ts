@@ -83,7 +83,6 @@ export class EmployeeService {
     }
 
     const employeeCreateData = {
-      cpf: createEmployeeDTO.cpf,
       email: createEmployeeDTO.email,
       name: createEmployeeDTO.name,
       password_hash,
