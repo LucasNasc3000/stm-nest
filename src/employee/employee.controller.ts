@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Public } from 'src/auth/decorators/set-metadata.decorator';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
@@ -31,8 +32,9 @@ export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
 
   @SkipThrottle({ read: true, auth: true })
+  @Public()
   @Post()
-  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
+  // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
   Create(@Body() body: CreateEmployeeDTO) {
     return this.employeesService.Create(body);
   }

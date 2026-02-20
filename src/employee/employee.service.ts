@@ -65,7 +65,23 @@ export class EmployeeService {
     };
   }
 
+  private async IsEmployeeVerify(email: string) {
+    const findEmployee = await this.employeeRepository.findOne({
+      where: {
+        email,
+      },
+    });
+
+    return findEmployee;
+  }
+
   async Create(createEmployeeDTO: CreateEmployeeDTO) {
+    const employeeExists = await this.IsEmployeeVerify(createEmployeeDTO.email);
+
+    if (employeeExists) {
+      throw new BadRequestException('Funcionário já existe');
+    }
+
     const password_hash = await this.hashingService.Hash(
       createEmployeeDTO.password,
     );
