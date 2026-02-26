@@ -14,7 +14,7 @@ export class CreatePermissionDTO {
     message: 'Campo "recurso" não preenchido',
   })
   @IsEnum(Resource, {
-    message: 'Recurso inválida',
+    message: 'Recurso inválido',
   })
   readonly resource: Resource;
 }

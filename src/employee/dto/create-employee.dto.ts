@@ -1,13 +1,11 @@
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsStrongPassword,
   Length,
 } from 'class-validator';
-import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Employee } from '../entities/employee.entity';
 import { RoleIdDTO } from './role.dto';
 
@@ -47,14 +45,6 @@ export class CreateEmployeeDTO {
   readonly password: string;
 
   readonly role: RoleIdDTO;
-
-  @IsNotEmpty({
-    message: 'campo "situação" não preenchido',
-  })
-  @IsEnum(EmployeeSituation, {
-    message: 'Situação do funcionário inválida',
-  })
-  readonly situation: EmployeeSituation;
 
   @IsOptional()
   readonly boss?: Employee;

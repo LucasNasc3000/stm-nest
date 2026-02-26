@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
 import { CreatePermissionDTO } from './create-permission.dto';
 
 export class CreateRoleDTO {
@@ -16,5 +23,10 @@ export class CreateRoleDTO {
   @IsNotEmpty({
     message: 'Campo "permissões" não preenchido',
   })
+  @IsArray({
+    message: 'Permissões deve ser um array',
+  })
+  @ValidateNested({ each: true }) // <--- ESSENCIAL: Valida cada item do array
+  @Type(() => CreatePermissionDTO)
   readonly permissions: CreatePermissionDTO[];
 }

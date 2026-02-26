@@ -12,12 +12,14 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from 'src/auth/decorators/set-metadata.decorator';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
+import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
+import { CreateRoleDTO } from './dto/create-role.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
 import { PaginationExEmployeesDTO } from './dto/pagination-exemployees.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -31,9 +33,19 @@ import { EmployeeService } from './employee.service';
 export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Public()
-  @Post()
+  @Post('create/role')
+  // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
+  CreateRole(@Body() body: CreateRoleDTO) {
+    return this.employeesService.CreateRole(body);
+  }
+
+  @SkipCsrf()
+  @SkipThrottle({ read: true, auth: true })
+  @Public()
+  @Post('create/employee')
   // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
   Create(@Body() body: CreateEmployeeDTO) {
     return this.employeesService.Create(body);
