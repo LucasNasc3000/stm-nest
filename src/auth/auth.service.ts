@@ -96,8 +96,6 @@ export class AuthService {
 
       await queryRunner.commitTransaction();
 
-      //if (!createLog) await this.emailsService.LogIssue('Funcionários');
-
       return {
         accessToken,
         refreshToken,
@@ -109,6 +107,15 @@ export class AuthService {
       await queryRunner.rollbackTransaction();
 
       this.logger.error(`Erro ao criar novo par de tokens: ${error.message}`);
+
+      // try {
+      //   await this.emailsService.LogIssue('funcionário');
+      // } catch (emailErr) {
+      //   console.error(
+      //     'Falha ao enviar e-mail de alerta de erro de autenticação',
+      //     emailErr.message,
+      //   );
+      // }
 
       if (error instanceof HttpException) {
         throw error;
