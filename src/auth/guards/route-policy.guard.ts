@@ -1,23 +1,23 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
+    CanActivate,
+    ExecutionContext,
+    ForbiddenException,
+    Inject,
+    Injectable,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Request } from 'express';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
-import { Permission } from 'src/employee/entities/permission.entity';
 import { Role } from 'src/employee/entities/role.entity';
+import { Permission } from 'src/role/entities/permission.entity';
 import { Repository } from 'typeorm';
 import {
-  CHECK_PERMISSION_KEY,
-  REQUEST_TOKEN_PAYLOAD_KEY,
+    CHECK_PERMISSION_KEY,
+    REQUEST_TOKEN_PAYLOAD_KEY,
 } from '../auth.constants';
 import { RequiredPermission } from '../decorators/set-route-policy.decorator';
 

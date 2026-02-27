@@ -19,7 +19,6 @@ import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
-import { CreateRoleDTO } from './dto/create-role.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
 import { PaginationExEmployeesDTO } from './dto/pagination-exemployees.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -32,15 +31,6 @@ import { EmployeeService } from './employee.service';
 @Controller('employees')
 export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
-
-  @SkipCsrf()
-  @SkipThrottle({ read: true, auth: true })
-  @Public()
-  @Post('create/role')
-  // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
-  CreateRole(@Body() body: CreateRoleDTO) {
-    return this.employeesService.CreateRole(body);
-  }
 
   @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
