@@ -10,7 +10,10 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
-import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
+import {
+  JwtPayload,
+  RefreshTokenPayload,
+} from 'src/common/interfaces/jwt-payload.interface';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsService } from 'src/logs-register/log.service';
@@ -73,7 +76,10 @@ export class AuthService {
     let refreshToken: string = '';
 
     try {
-      await this.refreshTokenService.CreateEmployee(employeeData, queryRunner);
+      const createRefreshToken = await this.refreshTokenService.CreateEmployee(
+        employeeData,
+        queryRunner,
+      );
 
       accessToken = await this.SignJwtAsync(
         employeeData.id,
@@ -84,6 +90,7 @@ export class AuthService {
       refreshToken = await this.SignJwtAsync(
         employeeData.id,
         this.jwtConfiguration.jwtRefreshTtl,
+        { id: createRefreshToken.token_id },
       );
 
       const dataForLog = {
@@ -129,7 +136,11 @@ export class AuthService {
     }
   }
 
-  async SignJwtAsync(sub: string, expiresIn: number, payload?: JwtPayload) {
+  async SignJwtAsync(
+    sub: string,
+    expiresIn: number,
+    payload?: JwtPayload | RefreshTokenPayload,
+  ) {
     return await this.jwtService.signAsync(
       {
         sub,
