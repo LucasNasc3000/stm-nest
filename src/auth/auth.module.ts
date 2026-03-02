@@ -7,6 +7,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsModule } from 'src/logs-register/log.module';
 import { RefreshTokensModule } from 'src/refresh-tokens/refresh-token.module';
+import { RoleModule } from 'src/role/role.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';
@@ -20,6 +21,7 @@ import { HashingServiceProtocol } from './hashing/hashing.service';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     LogsModule,
     RefreshTokensModule,
+    RoleModule,
     forwardRef(() => EmployeeModule),
   ],
   controllers: [AuthController],

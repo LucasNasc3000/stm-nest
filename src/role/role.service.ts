@@ -104,6 +104,7 @@ export class RoleService {
             where: {
               id: permission.id,
             },
+            lock: { mode: 'pessimistic_write' },
           },
         );
 
@@ -121,7 +122,40 @@ export class RoleService {
         }
       }
 
+      for (const updatePermission of updateRoleDTO.updatePermissionDTO) {
+        if (updatePermission.take) {
+          await this.TakePermissions(updatePermission, queryRunner);
+        }
+
+        if (updatePermission.add) {
+          await this.AddPermissions(
+            doesRoleReallyExists.id,
+            updatePermission,
+            queryRunner,
+          );
+        }
+      }
+
+      if (updateRoleDTO.name)
+        await this.UpdateRoleNameDTO(
+          doesRoleReallyExists.id,
+          updateRoleDTO.name,
+          queryRunner,
+        );
+
       await queryRunner.commitTransaction();
+
+      const findUpdatedRole = await this.roleRepository.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!findUpdatedRole) {
+        throw new NotFoundException('Erro ao recuperar cargo atualizado');
+      }
+
+      return findUpdatedRole;
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
@@ -142,20 +176,12 @@ export class RoleService {
   }
 
   private async TakePermissions(
-    updatePermissionDTO: UpdatePermissionDTO[],
+    updatePermissionDTO: UpdatePermissionDTO,
     queryRunnerSub: QueryRunner,
   ) {
-    if (updatePermissionDTO.length === 0) return;
-
-    const permissionsIds: string[] = [];
-
-    for (const permission of updatePermissionDTO) {
-      permissionsIds.push(permission.id);
-    }
-
     const removePermissions = await queryRunnerSub.manager.delete(
       Permission,
-      permissionsIds,
+      updatePermissionDTO.id,
     );
 
     if (removePermissions.affected === 0) {
@@ -165,29 +191,21 @@ export class RoleService {
 
   private async AddPermissions(
     roleId: string,
-    updatePermissionDTO: UpdatePermissionDTO[],
+    updatePermissionDTO: UpdatePermissionDTO,
     queryRunnerSub: QueryRunner,
   ) {
-    if (updatePermissionDTO.length === 0) return;
+    const newPermissionData = {
+      action: updatePermissionDTO.action,
+      resource: updatePermissionDTO.resource,
+      role: roleId,
+    };
 
-    const newPermissions: Permission[] = [];
+    const createNewPermission = queryRunnerSub.manager.create(
+      Permission,
+      newPermissionData,
+    );
 
-    for (const permission of updatePermissionDTO) {
-      const newPermissionData = {
-        action: permission.action,
-        resource: permission.resource,
-        role: roleId,
-      };
-
-      const createNewPermission = queryRunnerSub.manager.create(
-        Permission,
-        newPermissionData,
-      );
-
-      newPermissions.push(createNewPermission);
-    }
-
-    await queryRunnerSub.manager.save(Permission, newPermissions);
+    await queryRunnerSub.manager.save(Permission, createNewPermission);
   }
 
   private async UpdateRoleNameDTO(

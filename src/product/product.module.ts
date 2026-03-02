@@ -1,6 +1,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from 'src/employee/employee.module';
+import { RoleModule } from 'src/role/role.module';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
@@ -12,6 +13,7 @@ import { ProductService } from './product.service';
   imports: [
     TypeOrmModule.forFeature([Product, SupplyRealTime, ProductIngredient]),
     EmployeeModule,
+    RoleModule,
   ],
   controllers: [ProductController],
   providers: [ProductService, ProductFindService, Logger],

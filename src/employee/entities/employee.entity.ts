@@ -3,6 +3,7 @@ import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
 import { RefreshTokenEmployee } from 'src/refresh-tokens/entities/refresh-token-employee.entity';
+import { Role } from 'src/role/entities/role.entity';
 import { Sale } from 'src/sale/entities/sale.entity';
 import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
@@ -16,7 +17,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Role } from './role.entity';
 
 @Entity()
 export class Employee {
