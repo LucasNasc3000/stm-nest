@@ -14,7 +14,7 @@ export class JWTBlacklist {
   @Column({ type: 'varchar', length: 50 })
   email: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text' })
   token: string;
 
   @CreateDateColumn()

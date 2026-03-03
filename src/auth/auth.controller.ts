@@ -3,17 +3,19 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/set-metadata.decorator';
+import { SkipCsrf } from './decorators/skip-csrf.decorator';
 import { LoginDTO } from './dto/login.dto';
 import { LogoutDTO } from './dto/logout.dto';
 import { TokenParam } from './params/token.param';
 
+@SkipCsrf()
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @SkipThrottle({ read: true, write: true })
-  @Public()
-  @Post('employee')
+  @Post()
   async LoginEmployee(
     @Res({ passthrough: true }) res: Response,
     @Body() loginDto: LoginDTO,
@@ -33,7 +35,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24, // 1 dia
-      path: '/refresh/employee',
+      path: '/refresh',
     });
 
     return {
@@ -46,8 +48,7 @@ export class AuthController {
   }
 
   @SkipThrottle({ read: true, write: true })
-  @Public()
-  @Post('logout/employee')
+  @Post('logout')
   async LogoutEmployee(
     @Res({ passthrough: true }) res: Response,
     @TokenParam() accessToken: string,

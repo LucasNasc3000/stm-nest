@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -24,6 +25,7 @@ export class RefreshTokenEmployee {
   @ManyToOne(() => Employee, (employee) => employee.refresh_tokens, {
     onDelete: 'RESTRICT',
   })
+  @JoinColumn({ name: 'employee_id' })
   employee: Employee;
 
   @CreateDateColumn()

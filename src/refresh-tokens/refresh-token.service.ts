@@ -159,8 +159,13 @@ export class RefreshTokensService {
           where: {
             id: employeeData.id,
           },
+          relations: {
+            role: true,
+          },
         },
       );
+
+      console.log(doesEmployeeReallyExists);
 
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
@@ -187,16 +192,22 @@ export class RefreshTokensService {
         );
       }
 
-      const create = await this.CreateEmployee(employeeData, queryRunner);
+      const create = await this.CreateEmployee(
+        doesEmployeeReallyExists,
+        queryRunner,
+      );
 
       accessToken = await this.SignJwtAsync(
-        employeeData.id,
+        doesEmployeeReallyExists.id,
         this.jwtConfiguration.jwtTtl,
-        { email: employeeData.email, roleId: employeeData.role.id },
+        {
+          email: doesEmployeeReallyExists.email,
+          roleId: doesEmployeeReallyExists.role.id,
+        },
       );
 
       refreshToken = await this.SignJwtAsync(
-        employeeData.id,
+        doesEmployeeReallyExists.id,
         this.jwtConfiguration.jwtRefreshTtl,
         { id: create.token_id },
       );

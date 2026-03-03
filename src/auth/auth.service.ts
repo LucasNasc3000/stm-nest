@@ -44,9 +44,14 @@ export class AuthService {
   ) {}
 
   async LoginEmployee(loginDTO: LoginDTO) {
-    const findEmployee = await this.employeeRepository.findOneBy({
-      email: loginDTO.email,
-      situation: EmployeeSituation.EMPLOYED,
+    const findEmployee = await this.employeeRepository.findOne({
+      where: {
+        email: loginDTO.email,
+        situation: EmployeeSituation.EMPLOYED,
+      },
+      relations: {
+        role: true,
+      },
     });
 
     if (!findEmployee) {
@@ -113,7 +118,7 @@ export class AuthService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar novo par de tokens: ${error.message}`);
+      this.logger.error(`Erro ao criar novo par de tokens: ${error.stack}`);
 
       // try {
       //   await this.emailsService.LogIssue('funcionário');
