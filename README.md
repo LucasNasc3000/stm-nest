@@ -1,99 +1,177 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Storage Manager System - API v2.0
+Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro e pequenas empresas do setor alimentício. Esta é uma API REST moderna construída com NestJS, TypeORM e PostgreSQL, oferecendo controle granular de acesso baseado em funções (RBAC - Role-Based Access Control).
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 🚀 Stack Tecnológica
+- Runtime: Node.js
+- Framework: NestJS 10
+- ORM: TypeORM 0.3
+- Banco de Dados: PostgreSQL
+- Autenticação: JWT (Access + Refresh Tokens)
+- Segurança: Helmet, CSRF Protection, Rate Limiting
+- Validação: class-validator, class-transformer
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Funcionalidades
+### Insumos (Supplies)
 
-## Description
+- Cadastrar novos insumos com rastreamento de peso e quantidade
+- Pesquisar insumos por nome, categoria, fornecedor, data de validade, preço
+- Atualizar dados dos insumos (informações gerais e preços separadamente)
+- Definir quantidade mínima de estoque (alertas automáticos)
+- Histórico completo de movimentações
+- Soft delete com campo is_active
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Produtos
 
-## Project setup
+- Criar produtos com ou sem receita (lista de insumos)
+- Gerenciar receitas de produtos (ingredientes e quantidades)
+- Atualizar produtos e suas receitas
+- Controle de estoque automático ao usar insumos
+- Soft delete com campo is_active
+- Rastreamento de criação por funcionário
 
-```bash
-$ npm install
+### Saídas (Outflows)
+
+- Registrar saídas de insumos ou produtos
+- Atualização automática de estoque
+- Rastreamento por tipo (SUPPLY/PRODUCT)
+- Pesquisa por data, hora, categoria, motivo, funcionário
+- Validação de estoque disponível antes de registrar saída
+
+### Vendas (Sales)
+
+- Registrar vendas com múltiplos itens
+- Atualizar dados da venda e preços
+- Pesquisar por data, hora, cliente, endereço, funcionário
+- Validação de estoque de produtos antes de finalizar venda
+
+### Funcionários (Employees)
+
+- Criar funcionários com funções (roles) específicas
+- Atualizar dados próprios ou de outros (conforme permissão)
+- Pesquisar por nome, email, função, situação
+- Sistema de hierarquia (chefe/subordinados)
+- Logs de autenticação
+
+### Sistema de Autenticação
+
+- Login com JWT (Access Token: 20min, Refresh Token: 24h)
+- Rotação automática de refresh tokens com detecção de reuso
+- Blacklist de tokens para logout
+- Cookies HTTP-only com proteção CSRF
+- Rate limiting específico para rotas de autenticação
+
+## 🔐 Sistema de Permissões (RBAC)
+O sistema usa Role-Based Access Control com duas entidades principais:
+Roles (Funções)
+Definem conjuntos de permissões que podem ser atribuídas a um cargo que será atribuído a um ou mais funcionários. Exemplos:
+
+`admin` - Acesso total ao sistema<br>
+`gerente` - Gerenciar produtos, insumos e vendas<br>
+`vendedor` - Apenas registrar vendas e visualizar produtos<br>
+
+### Permissions (Permissões)
+Permissões são uma combinação de ação + recurso:<br>
+<strong>Ações disponíveis:</strong><br>
+
+`READ` - Visualizar<br>
+`CREATE` - Criar<br>
+`UPDATE` - Atualizar<br>
+`DELETE` - Deletar<br>
+`EDIT_PRICES` - Editar preços (controle específico)<br>
+
+### Recursos disponíveis:
+
+`EMPLOYEES` - Funcionários<br>
+`PRODUCTS` - Produtos<br>
+`SUPPLIES` - Insumos<br>
+`OUTFLOWS` - Saídas<br>
+`SALES` - Vendas<br>
+
+<strong>Exemplo:</strong> Um funcionário com role "vendedor" pode ter as permissões:
+
+`READ` + `PRODUCTS`<br>
+`CREATE` + `SALES`<br>
+`READ` + `SALES`<br>
+<strong>Criando roles e permissões</strong><br>
+
+```
+// POST /roles
+{
+  "name": "vendedor",
+  "permissions": [
+    { "action": "READ", "resource": "PRODUCTS" },
+    { "action": "CREATE", "resource": "SALES" },
+    { "action": "READ", "resource": "SALES" }
+  ]
+}
 ```
 
-## Compile and run the project
+## 🛡️ Recursos de Segurança
+### CSRF Protection
 
-```bash
-# development
-$ npm run start
+- Double Submit Cookie pattern
+- Token gerado automaticamente
+- Validação em todas as requisições POST/PUT/PATCH/DELETE
+- Desabilitado em desenvolvimento para facilitar testes
 
-# watch mode
-$ npm run start:dev
+### Rate Limiting
+- Limites configurados por tipo de operação:<br>
 
-# production mode
-$ npm run start:prod
+- auth: 5 requisições/minuto (login)
+- write: 10 requisições/10 segundos (criação/atualização)
+- read: 50 requisições/10 segundos (consultas)
+- global: 100 requisições/minuto
+
+### CORS
+
+- Configurado para permitir credenciais
+- Lista de origens permitidas configurável via `.env`
+- Headers personalizados permitidos (X-CSRF-Token)
+
+### Cookies Seguros
+
+`httpOnly: true` para tokens de autenticação
+`sameSite: 'none'` em produção (cross-domain)
+`secure: true` apenas em HTTPS (produção)
+
+## 📦 Instalação e Configuração
+### Pré-requisitos
+
+- Node.js 18+
+- PostgreSQL 14+
+- npm ou yarn
+
+### Variáveis de Ambiente
+Crie um arquivo `.env` na raiz do projeto:<br>
 ```
+# Node
+NODE_ENV=development
 
-## Run tests
+# Database
+DATABASE_TYPE=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_NAME=controle_estoque
+DATABASE_PASSWORD=sua_senha
+DATABASE_AUTOLOADENTITIES=true
+DATABASE_SYNCHRONIZE=false  # SEMPRE false em produção
 
-```bash
-# unit tests
-$ npm run test
+# JWT
+JWT_SECRET=sua_chave_secreta_muito_segura_minimo_32_caracteres
+JWT_TOKEN_AUDIENCE=localhost:3000
+JWT_TOKEN_ISSUER=localhost:3000
+JWT_TTL=1200                    # 20 minutos (em segundos)
+JWT_REFRESH_TOKEN_TTL=86400     # 24 horas (em segundos)
 
-# e2e tests
-$ npm run test:e2e
+# CORS
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 
-# test coverage
-$ npm run test:cov
+# Rate Limiting (opcional - valores padrão já configurados)
+THROTTLE_AUTH_LIMIT=5
+THROTTLE_WRITE_LIMIT=10
+THROTTLE_READ_LIMIT=50
+
+# Port
+PORT=3000
 ```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
