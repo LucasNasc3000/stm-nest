@@ -51,9 +51,12 @@ export class ProductService {
       throw new UnauthorizedException('Funcionário não encontrado');
     }
 
-    const createProduct = this.productRepository.create(
-      createProductWithoutRecipeDTO,
-    );
+    const productData = {
+      ...createProductWithoutRecipeDTO,
+      employee: findEmployee,
+    };
+
+    const createProduct = this.productRepository.create(productData);
 
     const newProduct = await this.productRepository.save(createProduct);
 
