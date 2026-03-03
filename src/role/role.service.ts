@@ -91,6 +91,9 @@ export class RoleService {
         where: {
           id,
         },
+        relations: {
+          permissions: true,
+        },
       });
 
       if (!doesRoleReallyExists) {

@@ -1,17 +1,15 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsNotEmpty,
+  IsOptional,
   IsString,
   Length,
-  ValidateNested,
+  ValidateNested
 } from 'class-validator';
 import { UpdatePermissionDTO } from './update-permission.dto';
 
 export class UpdateRoleDTO {
-  @IsNotEmpty({
-    message: 'Campo "nome" não preenchido',
-  })
+  @IsOptional()
   @IsString({
     message: 'Campo nome deve estar no formato de texto',
   })
@@ -20,6 +18,7 @@ export class UpdateRoleDTO {
   })
   readonly name?: string;
 
+  @IsOptional()
   @IsArray({
     message: 'Permissões deve ser um array',
   })

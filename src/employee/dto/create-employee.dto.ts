@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -5,6 +6,7 @@ import {
   IsString,
   IsStrongPassword,
   Length,
+  ValidateNested,
 } from 'class-validator';
 import { Employee } from '../entities/employee.entity';
 import { RoleIdDTO } from './role.dto';
@@ -44,6 +46,9 @@ export class CreateEmployeeDTO {
   })
   readonly password: string;
 
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => RoleIdDTO)
   readonly role: RoleIdDTO;
 
   @IsOptional()
