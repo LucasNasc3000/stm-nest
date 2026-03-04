@@ -1,16 +1,18 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   HttpException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cache } from 'cache-manager';
 import { Permission } from 'src/role/entities/permission.entity';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { CreateRoleDTO } from './dto/create-role.dto';
-import { UpdatePermissionDTO } from './dto/update-permission.dto';
 import { UpdateRoleDTO } from './dto/update-role.dto';
 import { Role } from './entities/role.entity';
 
@@ -19,6 +21,9 @@ export class RoleService {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
     private readonly logger: Logger,
     private dataSource: DataSource,
   ) {}
@@ -116,17 +121,22 @@ export class RoleService {
         }
       }
 
-      for (const updatePermission of updateRoleDTO.updatePermissionDTO) {
-        if (updatePermission.take) {
-          await this.TakePermissions(updatePermission, queryRunner);
-        }
+      if (updateRoleDTO.updatePermissionDTO) {
+        for (const updatePermission of updateRoleDTO.updatePermissionDTO) {
+          if (updatePermission.take) {
+            doesRoleReallyExists.permissions.filter(
+              (permission) => permission.id !== updatePermission.id,
+            );
+          }
 
-        if (updatePermission.add) {
-          await this.AddPermissions(
-            doesRoleReallyExists.id,
-            updatePermission,
-            queryRunner,
-          );
+          if (updatePermission.add) {
+            const newPermission = queryRunner.manager.create(Permission, {
+              action: updatePermission.action,
+              resource: updatePermission.resource,
+            });
+
+            doesRoleReallyExists.permissions.push(newPermission);
+          }
         }
       }
 
@@ -137,7 +147,11 @@ export class RoleService {
           queryRunner,
         );
 
+      await queryRunner.manager.save(Role, doesRoleReallyExists);
+
       await queryRunner.commitTransaction();
+
+      await this.cacheManager.del(`role_permissions_${id}`);
 
       const findUpdatedRole = await this.roleRepository.findOne({
         where: {
@@ -167,39 +181,6 @@ export class RoleService {
     } finally {
       await queryRunner.release();
     }
-  }
-
-  private async TakePermissions(
-    updatePermissionDTO: UpdatePermissionDTO,
-    queryRunnerSub: QueryRunner,
-  ) {
-    const removePermissions = await queryRunnerSub.manager.delete(
-      Permission,
-      updatePermissionDTO.id,
-    );
-
-    if (removePermissions.affected === 0) {
-      throw new Error('Uma ou mais permissões não encontradas para deletar');
-    }
-  }
-
-  private async AddPermissions(
-    roleId: string,
-    updatePermissionDTO: UpdatePermissionDTO,
-    queryRunnerSub: QueryRunner,
-  ) {
-    const newPermissionData = {
-      action: updatePermissionDTO.action,
-      resource: updatePermissionDTO.resource,
-      role: roleId,
-    };
-
-    const createNewPermission = queryRunnerSub.manager.create(
-      Permission,
-      newPermissionData,
-    );
-
-    await queryRunnerSub.manager.save(Permission, createNewPermission);
   }
 
   private async UpdateRoleNameDTO(

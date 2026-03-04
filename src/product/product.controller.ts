@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
+import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -35,6 +36,7 @@ export class ProductController {
     private readonly productFindService: ProductFindService,
   ) {}
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/withoutRecipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })

@@ -2,17 +2,16 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsPositive,
 } from 'class-validator';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 
 export class UpdatePermissionDTO {
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @IsPositive()
-  readonly id: number;
+  readonly id?: number;
 
   @IsOptional()
   @IsEnum(Action, {

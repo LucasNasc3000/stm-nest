@@ -73,6 +73,8 @@ export class RoutePolicyGuard implements CanActivate {
 
     const cached = await this.cacheManager.get<Permission[]>(cacheKey);
 
+    console.log({ cached });
+
     if (cached) return cached;
 
     const role = await this.roleRepository.findOne({
@@ -83,6 +85,8 @@ export class RoutePolicyGuard implements CanActivate {
         permissions: true,
       },
     });
+
+    console.log(role);
 
     if (!role) {
       throw new UnauthorizedException('Cargo não encontrado');

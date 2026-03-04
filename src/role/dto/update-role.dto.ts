@@ -4,7 +4,7 @@ import {
   IsOptional,
   IsString,
   Length,
-  ValidateNested
+  ValidateNested,
 } from 'class-validator';
 import { UpdatePermissionDTO } from './update-permission.dto';
 
