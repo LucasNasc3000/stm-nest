@@ -308,7 +308,7 @@ POST   /sales
 GET    /sales/search/:campo
 PATCH  /sales/:id
 ```
-Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e permissões adequadas. Para testar uma rota sem autenticação use o decorator @Public() e caso queira pular a verificação de csrf use o @SkipCsrf(). ambos em `src/auth/decorators/`
+Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e permissões adequadas. Para testar uma rota sem autenticação use o decorator @Public() e caso queira pular a verificação de csrf use o @SkipCsrf(), ambos em `src/auth/decorators/`
 
 ## 📝 Notas da Versão 2.0
 ### Mudanças Principais da v1.0 → v2.0
