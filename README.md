@@ -10,6 +10,9 @@ Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro
 - Segurança: Helmet, CSRF Protection, Rate Limiting
 - Validação: class-validator, class-transformer
 
+## 📌 Status
+👨‍💻 Desenvolvimento ativo
+
 ## 📋 Funcionalidades
 ### Insumos (Supplies)
 
@@ -175,3 +178,147 @@ THROTTLE_READ_LIMIT=50
 # Port
 PORT=3000
 ```
+### Instalação - Modo Desenvolvimento
+
+```
+# 1. Clone o repositório
+git clone https://github.com/LucasNasc3000/stm-nest.git
+cd stm-nest
+
+# 2. Instale as dependências
+npm install
+
+# 3. Configure o PostgreSQL
+# Crie um banco de dados: CREATE DATABASE controle_estoque;
+
+# 4. Execute as migrações
+npm run migration:run
+
+# 5. Inicie o servidor em modo desenvolvimento
+npm run start:dev
+
+# Servidor estará rodando em http://localhost:3000
+```
+
+### Scripts Disponíveis
+```
+# Desenvolvimento
+npm run start:dev          # Inicia em modo watch
+npm run start:debug        # Inicia em modo debug
+
+# Produção
+npm run build              # Compila o projeto
+npm run start:prod         # Inicia versão compilada
+
+# Migrações
+npm run migration:generate # Gera nova migração
+npm run migration:run      # Executa migrações pendentes
+npm run migration:revert   # Reverte última migração
+
+# Testes
+npm run test              # Testes unitários
+npm run test:e2e          # Testes end-to-end
+npm run test:cov          # Cobertura de testes
+
+# Qualidade de Código
+npm run lint              # ESLint
+npm run format            # Prettier
+```
+
+## 🗄️ Estrutura do Banco de Dados
+### Principais Entidades
+
+- Employee: Funcionários do sistema
+- Role: Funções/cargos
+- Permission: Permissões granulares
+- SupplyRealTime: Estoque atual de insumos
+- SupplyHistory: Histórico de movimentações de insumos
+- Product: Produtos cadastrados
+- ProductIngredient: Receitas dos produtos
+- Outflow: Saídas de estoque
+- Sale: Vendas realizadas
+- SaleItems: Itens de cada venda
+- RefreshTokenEmployee: Tokens de autenticação
+- JWTBlacklist: Tokens invalidados
+- LogEmployee: Logs de acesso
+
+
+### 🔄 Migrações
+As migrações já estão no repositório. Para criar uma nova:<br>
+```
+# 1. Modifique suas entities
+# 2. Gere a migração
+npm run migration:generate
+
+# 3. Revise o arquivo gerado em migrations/
+# 4. Execute a migração
+npm run migration:run
+```
+
+### 📚 Endpoints Principais
+```
+### Autenticação
+
+POST   /auth              - Login
+POST   /auth/logout       - Logout
+POST   /refresh           - Renovar tokens
+
+
+### Funcionários
+
+POST   /employees                    - Criar funcionário
+GET    /employees/search/email/:email
+GET    /employees/search/name
+GET    /employees/search/role
+PATCH  /employees/update/self/:id
+PATCH  /employees/update/admin/:id
+
+
+### Funções e Permissões
+
+POST   /roles             - Criar role
+PATCH  /roles/:id         - Atualizar role
+
+
+### Insumos
+
+POST   /supplies          - Criar insumo
+GET    /supplies/search/:campo
+PATCH  /supplies/:id      - Atualizar insumo
+
+
+### Produtos
+
+POST   /products/create/withRecipe
+POST   /products/create/withoutRecipe
+GET    /products/search/:campo
+PATCH  /products/update/general/:id
+PATCH  /products/update/price/:id
+
+
+### Saídas
+
+POST   /outflows/create/supply
+POST   /outflows/create/product
+GET    /outflows/search/:campo
+
+
+### Vendas
+POST   /sales
+GET    /sales/search/:campo
+PATCH  /sales/:id
+```
+Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e permissões adequadas. Para testar uma rota sem autenticação use o decorator @Public() e caso queira pular a verificação de csrf use o @SkipCsrf(). ambos em `src/auth/decorators/`
+
+## 📝 Notas da Versão 2.0
+### Mudanças Principais da v1.0 → v2.0
+
+- Framework: Express → NestJS
+- ORM: Sequelize → TypeORM
+- Banco: MySQL → PostgreSQL
+- Permissões: Strings hardcoded → RBAC com entidades
+- Autenticação: JWT simples → JWT + Refresh Tokens + CSRF
+- Validação: Removido campo CPF (desnecessário para o contexto)
+- Soft Delete: deletedAt → is_active (apenas Product e SupplyRealTime)
+- Segurança: Adicionado rate limiting, helmet, CORS configurável
+- Arquitetura: Monolítico → Modular (NestJS modules)
