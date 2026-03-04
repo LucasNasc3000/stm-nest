@@ -319,7 +319,7 @@ Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e per
 - Segurança: Adicionado rate limiting, helmet, CORS configurável
 - Arquitetura: Monolítico → Modular (NestJS modules)
 
-<strong><----------------------------------------------------------------- English Version -----------------------------------------------------------------></strong>
+<strong><-------------------------------------------------------------- English Version -------------------------------------------------------></strong>
 
 # Storage Manager System - API v2.0
 Inventory and sales control system developed for managing micro and small businesses in the food sector. This is a modern REST API built with NestJS, TypeORM, and PostgreSQL, offering granular role-based access control (RBAC).
