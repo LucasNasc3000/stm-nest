@@ -133,9 +133,9 @@ Permissões são uma combinação de ação + recurso:<br>
 
 ### Cookies Seguros
 
-`httpOnly: true` para tokens de autenticação
-`sameSite: 'none'` em produção (cross-domain)
-`secure: true` apenas em HTTPS (produção)
+`httpOnly: true` para tokens de autenticação<br>
+`sameSite: 'none'` em produção (cross-domain)<br>
+`secure: true` apenas em HTTPS (produção)<br>
 
 ## 📦 Instalação e Configuração
 ### Pré-requisitos
