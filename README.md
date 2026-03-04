@@ -539,53 +539,53 @@ npm run migration:generate # Generate a new migration
 npm run migration:run      # Execute pending migrations
 npm run migration:revert   # Revert last migration
 
-# Qualidade de Código
+# Code quality
 npm run lint              # ESLint
 npm run format            # Prettier
 ```
 
-## 🗄️ Estrutura do Banco de Dados
-### Principais Entidades
+## 🗄️ Database Structure
+### Main Entities
 
-- Employee: Funcionários do sistema
-- Role: Funções/cargos
-- Permission: Permissões granulares
-- SupplyRealTime: Estoque atual de insumos
-- SupplyHistory: Histórico de movimentações de insumos
-- Product: Produtos cadastrados
-- ProductIngredient: Receitas dos produtos
-- Outflow: Saídas de estoque
-- Sale: Vendas realizadas
-- SaleItems: Itens de cada venda
-- RefreshTokenEmployee: Tokens de autenticação
-- JWTBlacklist: Tokens invalidados
-- LogEmployee: Logs de acesso
+- Employee: System employees
+- Role: Functions/positions
+- Permission: Granular permissions
+- SupplyRealTime: Current stock of supplies
+- SupplyHistory: History of supply movements
+- Product: Registered products
+- ProductIngredient: Product recipes
+- Outflow: Stock outflows
+- Sale: Sales made
+- SaleItems: Items from each sale
+- RefreshTokenEmployee: Authentication tokens
+- JWTBlacklist: Invalidated tokens
+- LogEmployee: Access logs
 
 
-### 🔄 Migrações
-As migrações já estão no repositório. Para criar uma nova:<br>
+### 🔄 Migrations
+All migrations are already in repository. To create a new one:<br>
 ```
-# 1. Modifique suas entities
-# 2. Gere a migração
+# 1. Modifique your entities
+# 2. Generate the migration
 npm run migration:generate
 
-# 3. Revise o arquivo gerado em migrations/
-# 4. Execute a migração
+# 3. Review the file generated in migrations/
+# 4. Run the migration
 npm run migration:run
 ```
 
-### 📚 Endpoints Principais
+### 📚 Main Endpoints
 ```
-### Autenticação
+### Auth
 
 POST   /auth              - Login
 POST   /auth/logout       - Logout
-POST   /refresh           - Renovar tokens
+POST   /refresh           - Reissue tokens
 
 
-### Funcionários
+### Employees
 
-POST   /employees                    - Criar funcionário
+POST   /employees                    - Create employee
 GET    /employees/search/email/:email
 GET    /employees/search/name
 GET    /employees/search/role
@@ -593,51 +593,51 @@ PATCH  /employees/update/self/:id
 PATCH  /employees/update/admin/:id
 
 
-### Funções e Permissões
+### Roles and Permissions
 
-POST   /roles             - Criar role
-PATCH  /roles/:id         - Atualizar role
-
-
-### Insumos
-
-POST   /supplies          - Criar insumo
-GET    /supplies/search/:campo
-PATCH  /supplies/:id      - Atualizar insumo
+POST   /roles             - Create role
+PATCH  /roles/:id         - Update role
 
 
-### Produtos
+### Supplies
+
+POST   /supplies          - Create supply
+GET    /supplies/search/:field
+PATCH  /supplies/:id      - Update supply
+
+
+### Products
 
 POST   /products/create/withRecipe
 POST   /products/create/withoutRecipe
-GET    /products/search/:campo
+GET    /products/search/:field
 PATCH  /products/update/general/:id
 PATCH  /products/update/price/:id
 
 
-### Saídas
+### Outflows
 
 POST   /outflows/create/supply
 POST   /outflows/create/product
-GET    /outflows/search/:campo
+GET    /outflows/search/:field
 
 
-### Vendas
+### Sales
 POST   /sales
-GET    /sales/search/:campo
+GET    /sales/search/:field
 PATCH  /sales/:id
 ```
-Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e permissões adequadas. Para testar uma rota sem autenticação use o decorator @Public() e caso queira pular a verificação de csrf use o @SkipCsrf(), ambos em `src/auth/decorators/`
+All routes (except `/auth` and `/refresh`) require authentication via JWT and appropriate permissions. To test a route without authentication, use the @Public() decorator, and if you want to skip the CSRF check, use @SkipCsrf(), both located in `src/auth/decorators/`
 
-## 📝 Notas da Versão 2.0
-### Mudanças Principais da v1.0 → v2.0
+## 📝 Version Notes 2.0
+### Main Changes from v1.0 → v2.0
 
 - Framework: Express → NestJS
 - ORM: Sequelize → TypeORM
-- Banco: MySQL → PostgreSQL
-- Permissões: Strings hardcoded → RBAC com entidades
-- Autenticação: JWT simples → JWT + Refresh Tokens + CSRF
-- Validação: Removido campo CPF (desnecessário para o contexto)
-- Soft Delete: deletedAt → is_active (apenas Product e SupplyRealTime)
-- Segurança: Adicionado rate limiting, helmet, CORS configurável
-- Arquitetura: Monolítico → Modular (NestJS modules)
+- Database: MySQL → PostgreSQL
+- Permissions: Hardcoded Strings → RBAC with entities
+- Authentication: Simple JWT → JWT + Refresh Tokens + CSRF
+- Validation: Removed CPF field (unnecessary for the context)
+- Soft Delete: deletedAt → is_active (only Product and SupplyRealTime)
+- Security: Added rate limiting, helmet, configurable CORS
+- Architecture: Monolithic → Modular (NestJS modules)
