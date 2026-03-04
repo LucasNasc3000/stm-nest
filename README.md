@@ -2,7 +2,7 @@
 Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro e pequenas empresas do setor alimentício. Esta é uma API REST moderna construída com NestJS, TypeORM e PostgreSQL, oferecendo controle granular de acesso baseado em funções (RBAC - Role-Based Access Control).
 
 ## 📌 Status
-👨‍💻 Desenvolvimento ativo
+👨‍💻 Desenvolvimento Ativo
 
 ## 🚀 Stack Tecnológica
 - Runtime: Node.js
@@ -65,8 +65,9 @@ Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro
 
 ## 🔐 Sistema de Permissões (RBAC)
 O sistema usa Role-Based Access Control com duas entidades principais:
-Roles (Funções)
-Definem conjuntos de permissões que podem ser atribuídas a um cargo que será atribuído a um ou mais funcionários. Exemplos:
+- Roles (Funções)
+- Permissions (Permissões)
+Conjuntos de permissões são criados e atribuídos a um cargo que será atribuído a um ou mais funcionários. Exemplos:
 
 `admin` - Acesso total ao sistema<br>
 `gerente` - Gerenciar produtos, insumos e vendas<br>
@@ -215,10 +216,328 @@ npm run migration:generate # Gera nova migração
 npm run migration:run      # Executa migrações pendentes
 npm run migration:revert   # Reverte última migração
 
-# Testes
-npm run test              # Testes unitários
-npm run test:e2e          # Testes end-to-end
-npm run test:cov          # Cobertura de testes
+# Qualidade de Código
+npm run lint              # ESLint
+npm run format            # Prettier
+```
+
+## 🗄️ Estrutura do Banco de Dados
+### Principais Entidades
+
+- Employee: Funcionários do sistema
+- Role: Funções/cargos
+- Permission: Permissões granulares
+- SupplyRealTime: Estoque atual de insumos
+- SupplyHistory: Histórico de movimentações de insumos
+- Product: Produtos cadastrados
+- ProductIngredient: Receitas dos produtos
+- Outflow: Saídas de estoque
+- Sale: Vendas realizadas
+- SaleItems: Itens de cada venda
+- RefreshTokenEmployee: Tokens de autenticação
+- JWTBlacklist: Tokens invalidados
+- LogEmployee: Logs de acesso
+
+
+### 🔄 Migrações
+As migrações já estão no repositório. Para criar uma nova:<br>
+```
+# 1. Modifique suas entities
+# 2. Gere a migração
+npm run migration:generate
+
+# 3. Revise o arquivo gerado em migrations/
+# 4. Execute a migração
+npm run migration:run
+```
+
+### 📚 Endpoints Principais
+```
+### Autenticação
+
+POST   /auth              - Login
+POST   /auth/logout       - Logout
+POST   /refresh           - Renovar tokens
+
+
+### Funcionários
+
+POST   /employees                    - Criar funcionário
+GET    /employees/search/email/:email
+GET    /employees/search/name
+GET    /employees/search/role
+PATCH  /employees/update/self/:id
+PATCH  /employees/update/admin/:id
+
+
+### Funções e Permissões
+
+POST   /roles             - Criar role
+PATCH  /roles/:id         - Atualizar role
+
+
+### Insumos
+
+POST   /supplies          - Criar insumo
+GET    /supplies/search/:campo
+PATCH  /supplies/:id      - Atualizar insumo
+
+
+### Produtos
+
+POST   /products/create/withRecipe
+POST   /products/create/withoutRecipe
+GET    /products/search/:campo
+PATCH  /products/update/general/:id
+PATCH  /products/update/price/:id
+
+
+### Saídas
+
+POST   /outflows/create/supply
+POST   /outflows/create/product
+GET    /outflows/search/:campo
+
+
+### Vendas
+POST   /sales
+GET    /sales/search/:campo
+PATCH  /sales/:id
+```
+Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e permissões adequadas. Para testar uma rota sem autenticação use o decorator @Public() e caso queira pular a verificação de csrf use o @SkipCsrf(), ambos em `src/auth/decorators/`
+
+## 📝 Notas da Versão 2.0
+### Mudanças Principais da v1.0 → v2.0
+
+- Framework: Express → NestJS
+- ORM: Sequelize → TypeORM
+- Banco: MySQL → PostgreSQL
+- Permissões: Strings hardcoded → RBAC com entidades
+- Autenticação: JWT simples → JWT + Refresh Tokens + CSRF
+- Validação: Removido campo CPF (desnecessário para o contexto)
+- Soft Delete: deletedAt → is_active (apenas Product e SupplyRealTime)
+- Segurança: Adicionado rate limiting, helmet, CORS configurável
+- Arquitetura: Monolítico → Modular (NestJS modules)
+
+<strong><----------------------------------------------------------------- English Version -----------------------------------------------------------------></strong>
+
+# Storage Manager System - API v2.0
+Inventory and sales control system developed for managing micro and small businesses in the food sector. This is a modern REST API built with NestJS, TypeORM, and PostgreSQL, offering granular role-based access control (RBAC).
+
+## 📌 Status
+👨‍💻 Active Development
+
+## 🚀 Stack
+- Runtime: Node.js
+- Framework: NestJS 10
+- ORM: TypeORM 0.3
+- Database: PostgreSQL
+- Auth: JWT (Access + Refresh Tokens)
+- Security: Helmet, CSRF Protection, Rate Limiting
+- Data Validation: class-validator, class-transformer<br>
+
+## 📋 Funcionalities
+### Supplies
+
+- Register new supplies with weight and quantity tracking
+- Search supplies by name, category, supplier, expiration date, price
+- Update supply data (general information and prices separately)
+- Define minimum stock quantity (automatic alerts)
+- Complete history of transactions
+- Soft delete with is_active field
+
+### Products
+
+- Create products with or without a recipe (ingredient list)
+- Manage product recipes (ingredients and quantities)
+- Update products and their recipes
+- Automatic inventory control when using ingredients
+- Soft delete with is_active field
+- Creation tracking by employee
+
+### Outflows
+
+- Register the release of supplies or products
+- Automatic inventory update
+- Tracking by type (SUPPLY/PRODUCT)
+- Search by date, time, category, reason, employee
+- Validation of available stock before registering the release
+
+### Sales
+
+- Register sales with multiple items
+- Update sales data and prices
+- Search by date, time, customer, address, employee
+- Validate product inventory before finalizing the sale
+
+### Employees
+
+- Create employees with specific roles
+- Update your own or others' data (according to permissions)
+- Search by name, email, role, status
+- Hierarchy system (boss/subordinates)
+- Authentication logs
+
+### Auth System
+
+- Login with JWT (Access Token: 20 min, Refresh Token: 24 h)
+- Automatic rotation of refresh tokens with reuse detection
+- Token blacklist for logout
+- HTTP-only cookies with CSRF protection
+- Rate limiting specific to authentication routes
+
+## 🔐 Permission System (RBAC)
+The system uses Role-Based Access Control with two main entities:
+- Roles
+- Permissions
+Sets of permissions are created and assigned to a role that will be assigned to one or more employees. Examples:
+
+`admin` - Total access<br>
+`gerente` - Manage products, supplies and sales<br>
+`vendedor` - Only register sales e view products<br>
+
+### Permissions
+Permissions are combinations between action + resource:<br>
+<strong>Actions available:</strong><br>
+
+`READ`<br>
+`CREATE`<br>
+`UPDATE`<br>
+`DELETE`<br>
+`EDIT_PRICES`<br>
+
+### Resources allowed:
+
+`EMPLOYEES`<br>
+`PRODUCTS`<br>
+`SUPPLIES`<br>
+`OUTFLOWS`<br>
+`SALES`<br>
+
+<strong>Example:</strong> An employee with "salesperson" role may have the following permissions:
+
+`READ` + `PRODUCTS`<br>
+`CREATE` + `SALES`<br>
+`READ` + `SALES`<br>
+<strong>Creating roles and permissions</strong><br>
+
+```
+// POST /roles
+{
+  "name": "salesperson",
+  "permissions": [
+    { "action": "READ", "resource": "PRODUCTS" },
+    { "action": "CREATE", "resource": "SALES" },
+    { "action": "READ", "resource": "SALES" }
+  ]
+}
+```
+
+## 🛡️ Security Features
+### CSRF Protection
+
+- Double Submit Cookie pattern
+- Automatically generated token
+- Validation on all POST/PUT/PATCH/DELETE requests
+- Disabled in development to facilitate testing
+
+### Rate Limiting
+- Limits configured by operation type:<br>
+
+- auth: 5 requests/minute (login)
+- write: 10 requests/10 seconds (creation/update)
+- read: 50 requests/10 seconds (queries)
+- global: 100 requests/minute
+
+### CORS
+
+- Configured to allow credentials
+- Configurable list of allowed origins via `.env`
+- Custom headers allowed (X-CSRF-Token)
+
+### Secure Cookies
+
+`httpOnly: true` for auth tokens<br>
+`sameSite: 'none'` in production (cross-domain)<br>
+`secure: true` only on HTTPS (production)<br>
+
+## 📦 Instalation and configuration
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+
+- npm or yarn
+
+### Env Variables
+Create an `.env` file in the root of the project:<br>
+```
+# Node
+NODE_ENV=development
+
+# Database
+DATABASE_TYPE=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_NAME=-storage_manager
+DATABASE_PASSWORD=your_password
+DATABASE_AUTOLOADENTITIES=true
+DATABASE_SYNCHRONIZE=false  # ALWAYS false in production
+
+# JWT
+JWT_SECRET=your_secret_min_32_characters
+JWT_TOKEN_AUDIENCE=localhost:3000
+JWT_TOKEN_ISSUER=localhost:3000
+JWT_TTL=1200                    # 20 minutes (in seconds)
+JWT_REFRESH_TOKEN_TTL=86400     # 24 hours (in seconds)
+
+# CORS
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+
+# Rate Limiting (optional - default values already configured)
+THROTTLE_AUTH_LIMIT=5
+THROTTLE_WRITE_LIMIT=10
+THROTTLE_READ_LIMIT=50
+
+# Port
+PORT=3000
+```
+### Instalation - Development Mode
+
+```
+# 1. Clone the repository
+git clone https://github.com/LucasNasc3000/stm-nest.git
+cd stm-nest
+
+# 2. Install the dependencies
+npm install
+
+# 3. Configure PostgreSQL
+# Run the statement: CREATE DATABASE storage_manager;
+
+# 4. Execute the migrations
+npm run migration:run
+
+# 5. Start the server in development mode
+npm run start:dev
+
+# Server running on http://localhost:3000
+```
+
+### Available Scripts
+```
+# Development
+npm run start:dev          # Watch mode
+npm run start:debug        # Debug mode
+
+# Production
+npm run build              # Compile the project
+npm run start:prod         # Start compiled version
+
+# Migrations
+npm run migration:generate # Generate a new migration
+npm run migration:run      # Execute pending migrations
+npm run migration:revert   # Revert last migration
 
 # Qualidade de Código
 npm run lint              # ESLint
