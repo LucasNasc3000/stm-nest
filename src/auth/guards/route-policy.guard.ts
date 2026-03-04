@@ -38,7 +38,6 @@ export class RoutePolicyGuard implements CanActivate {
       RequiredPermission | undefined
     >(CHECK_PERMISSION_KEY, context.getHandler());
 
-    // Se o controller ou método não tiver o permissões configuradas a request passa daqui
     if (!routePolicyRequired) return true;
 
     const token = request[REQUEST_TOKEN_PAYLOAD_KEY];
@@ -79,6 +78,9 @@ export class RoutePolicyGuard implements CanActivate {
     const role = await this.roleRepository.findOne({
       where: {
         id: roleId,
+      },
+      relations: {
+        permissions: true,
       },
     });
 

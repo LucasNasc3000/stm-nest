@@ -19,9 +19,6 @@ export class RoleService {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-
-    @InjectRepository(Permission)
-    private readonly permissionRepository: Repository<Permission>,
     private readonly logger: Logger,
     private dataSource: DataSource,
   ) {}
@@ -34,15 +31,10 @@ export class RoleService {
     try {
       const permissions: Permission[] = [];
 
-      const createRole = queryRunner.manager.create(Role, createRoleDTO);
-
-      const newRole = await queryRunner.manager.save(Role, createRole);
-
       for (const permission of createRoleDTO.permissions) {
         const permissionData = {
           action: permission.action,
           resource: permission.resource,
-          role: newRole,
         };
 
         const createPermission = queryRunner.manager.create(
@@ -53,17 +45,16 @@ export class RoleService {
         permissions.push(createPermission);
       }
 
-      const newPermissions = await queryRunner.manager.save(
-        Permission,
-        permissions,
-      );
+      const createRole = queryRunner.manager.create(Role, {
+        name: createRoleDTO.name,
+        permissions: permissions,
+      });
+
+      const newRole = await queryRunner.manager.save(Role, createRole);
 
       await queryRunner.commitTransaction();
 
-      return {
-        role: newRole,
-        rolePermissions: newPermissions,
-      };
+      return newRole;
     } catch (error) {
       await queryRunner.rollbackTransaction();
 

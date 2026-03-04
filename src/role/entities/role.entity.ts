@@ -17,7 +17,9 @@ export class Role {
   @Column({ type: 'varchar', length: 100, unique: true })
   name: string;
 
-  @ManyToMany(() => Permission, (permission) => permission.roles)
+  @ManyToMany(() => Permission, (permission) => permission.roles, {
+    cascade: true,
+  })
   @JoinTable()
   permissions: Permission[];
 

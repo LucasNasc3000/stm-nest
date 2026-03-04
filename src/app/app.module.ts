@@ -37,6 +37,7 @@ import { AppService } from './app.service';
           password: appConfigParam.password,
           autoLoadEntities: appConfigParam.autoLoadEntities,
           synchronize: appConfigParam.synchronize,
+          logging: ['query', 'schema', 'info', 'error', 'warn'],
         };
       },
     }),
