@@ -1,6 +1,9 @@
 # Storage Manager System - API v2.0
 Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro e pequenas empresas do setor alimentício. Esta é uma API REST moderna construída com NestJS, TypeORM e PostgreSQL, oferecendo controle granular de acesso baseado em funções (RBAC - Role-Based Access Control).
 
+## 📌 Status
+👨‍💻 Desenvolvimento ativo
+
 ## 🚀 Stack Tecnológica
 - Runtime: Node.js
 - Framework: NestJS 10
@@ -8,10 +11,7 @@ Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro
 - Banco de Dados: PostgreSQL
 - Autenticação: JWT (Access + Refresh Tokens)
 - Segurança: Helmet, CSRF Protection, Rate Limiting
-- Validação: class-validator, class-transformer
-
-## 📌 Status
-👨‍💻 Desenvolvimento ativo
+- Validação: class-validator, class-transformer<br>
 
 ## 📋 Funcionalidades
 ### Insumos (Supplies)
