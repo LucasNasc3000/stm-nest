@@ -129,7 +129,7 @@ export class SupplyService {
           .toString();
 
         const updatedQuantity =
-          doesSupplyAlreadyExists.quantity - createSupplyDTO.quantity;
+          doesSupplyAlreadyExists.quantity + createSupplyDTO.quantity;
 
         const supplyUpdate = await queryRunner.manager.update(
           SupplyRealTime,
