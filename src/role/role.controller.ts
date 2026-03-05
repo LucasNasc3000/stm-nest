@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
-import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateRoleDTO } from './dto/create-role.dto';
@@ -20,7 +19,6 @@ import { RoleService } from './role.service';
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @SetRoutePolicy({ action: Action.CREATE, resource: Resource.EMPLOYEES })
   @Post()
@@ -28,8 +26,6 @@ export class RoleController {
     return this.roleService.CreateRole(body);
   }
 
-  // Colocar permissão depois de testar
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   UpdateRole(@Param('id') id: string, @Body() body: UpdateRoleDTO) {

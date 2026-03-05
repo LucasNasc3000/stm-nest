@@ -45,20 +45,6 @@ export class CreateSupplyDTO {
   readonly quantity: number;
 
   @IsNotEmpty({
-    message: 'Campo "preço" não preenchido',
-  })
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
-    return value;
-  })
-  @IsDecimalString({
-    message: 'O campo peso total deve ser um string decima ex: 59.99',
-  })
-  readonly totalWeight: string;
-
-  @IsNotEmpty({
     message: 'Campo "preço unitário" não preenchido',
   })
   @Transform(({ value }) => {
@@ -125,19 +111,4 @@ export class CreateSupplyDTO {
     message: 'campo "motivo" deve ter no máximo 50 caracteres',
   })
   readonly reason: string;
-
-  @IsNotEmpty({
-    message: 'Campo "preço total por registro" não preenchido',
-  })
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
-    return value;
-  })
-  @IsDecimalString({
-    message:
-      'O campo peso total por registro deve ser um string decima ex: 59.99',
-  })
-  readonly totalWeightPerRegister: string;
 }

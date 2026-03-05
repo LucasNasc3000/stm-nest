@@ -52,7 +52,7 @@ export class SupplyRealTime {
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 
-  @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealtime)
+  @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealTime)
   supplyHistory: SupplyHistory[];
 
   @OneToMany(() => Outflow, (outflow) => outflow.supplyRealTime)

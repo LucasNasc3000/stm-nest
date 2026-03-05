@@ -71,7 +71,7 @@ export class SupplyHistory {
     onDelete: 'RESTRICT',
     nullable: false,
   })
-  supplyRealtime: SupplyRealTime;
+  supplyRealTime: SupplyRealTime;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

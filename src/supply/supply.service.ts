@@ -12,7 +12,9 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Like, QueryRunner, Repository } from 'typeorm';
+import { CreateSupplyHistoryDTO } from './dto/create-supply-history.dto';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -70,11 +72,21 @@ export class SupplyService {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
 
+      const getDate = ReturnDateAndTimeForeignFormat();
+
+      const weightPerUnitSupplyRealTime = new Decimal(
+        createSupplyDTO.weightPerUnit,
+      );
+
+      const totalWeight = weightPerUnitSupplyRealTime
+        .mul(createSupplyDTO.quantity)
+        .toString();
+
       const data = {
         category: createSupplyDTO.category,
         name: createSupplyDTO.name,
         quantity: createSupplyDTO.quantity,
-        totalWeight: createSupplyDTO.totalWeight,
+        totalWeight,
         weightPerUnit: createSupplyDTO.weightPerUnit,
         supplier: createSupplyDTO.supplier,
         expirationDate: createSupplyDTO.expirationDate,
@@ -82,6 +94,11 @@ export class SupplyService {
         lowStock: createSupplyDTO.lowStock,
         price: createSupplyDTO.price,
       };
+
+      const weightPerUnitDecimal = new Decimal(createSupplyDTO.weightPerUnit);
+      const totalWeightPerRegister = weightPerUnitDecimal
+        .mul(createSupplyDTO.quantity)
+        .toString();
 
       const doesSupplyAlreadyExists = await queryRunner.manager.findOne(
         SupplyRealTime,
@@ -95,7 +112,7 @@ export class SupplyService {
       );
 
       if (doesSupplyAlreadyExists) {
-        const weightPerUnitDecimal = new Decimal(
+        const weightPerUnitDecimalSupplyExists = new Decimal(
           doesSupplyAlreadyExists.weightPerUnit,
         );
 
@@ -103,7 +120,7 @@ export class SupplyService {
           doesSupplyAlreadyExists.totalWeight,
         );
 
-        const addToTotalWeight = weightPerUnitDecimal.mul(
+        const addToTotalWeight = weightPerUnitDecimalSupplyExists.mul(
           createSupplyDTO.quantity,
         );
 
@@ -125,8 +142,11 @@ export class SupplyService {
 
         const supplyHistoryData = {
           ...data,
+          date: getDate[0],
           reason: createSupplyDTO.reason,
-          totalWeightPerRegister: createSupplyDTO.totalWeightPerRegister,
+          totalWeightPerRegister,
+          employee: doesEmployeeReallyExists,
+          supplyRealTime: doesSupplyAlreadyExists,
         };
 
         await this.SaveSupplyHistory(supplyHistoryData, queryRunner);
@@ -157,8 +177,11 @@ export class SupplyService {
 
       const supplyHistoryData = {
         ...data,
+        date: getDate[0],
         reason: createSupplyDTO.reason,
-        totalWeightPerRegister: createSupplyDTO.totalWeightPerRegister,
+        totalWeightPerRegister,
+        employee: doesEmployeeReallyExists,
+        supplyRealTime: newSupplyRealTime,
       };
 
       const newSupplyHistory = await this.SaveSupplyHistory(
@@ -190,7 +213,7 @@ export class SupplyService {
   }
 
   async SaveSupplyHistory(
-    createSupplyHistoryDTO: CreateSupplyDTO,
+    createSupplyHistoryDTO: CreateSupplyHistoryDTO,
     queryRunnerSub: QueryRunner,
   ) {
     const supplyHistoryCreate = queryRunnerSub.manager.create(
