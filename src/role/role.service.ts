@@ -102,7 +102,6 @@ export class RoleService {
             where: {
               id: permission.id,
             },
-            lock: { mode: 'pessimistic_write' },
           },
         );
 
@@ -121,20 +120,39 @@ export class RoleService {
       }
 
       if (updateRoleDTO.updatePermissionDTO) {
-        for (const updatePermission of updateRoleDTO.updatePermissionDTO) {
-          if (updatePermission.take) {
-            doesRoleReallyExists.permissions.filter(
-              (permission) => permission.id !== updatePermission.id,
-            );
-          }
+        const toAdd = updateRoleDTO.updatePermissionDTO.filter((p) => p.add);
+        const toTakeIds = updateRoleDTO.updatePermissionDTO
+          .filter((p) => p.take)
+          .map((p) => p.id);
 
-          if (updatePermission.add) {
-            const newPermission = queryRunner.manager.create(Permission, {
-              action: updatePermission.action,
-              resource: updatePermission.resource,
-            });
+        doesRoleReallyExists.permissions =
+          doesRoleReallyExists.permissions.filter(
+            (p) => !toTakeIds.includes(p.id),
+          );
 
-            doesRoleReallyExists.permissions.push(newPermission);
+        if (toAdd.length > 0) {
+          const add = toAdd.map((p) => ({
+            action: p.action,
+            resource: p.resource,
+          }));
+
+          await queryRunner.manager.upsert(Permission, add, [
+            'action',
+            'resource',
+          ]);
+
+          const savedPermissions = await queryRunner.manager.find(Permission, {
+            where: add,
+          });
+
+          for (const p of savedPermissions) {
+            if (
+              !doesRoleReallyExists.permissions.find(
+                (existing) => existing.id === p.id,
+              )
+            ) {
+              doesRoleReallyExists.permissions.push(p);
+            }
           }
         }
       }
