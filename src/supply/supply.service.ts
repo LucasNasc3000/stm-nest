@@ -12,7 +12,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
-import { DataSource, Like, Repository } from 'typeorm';
+import { DataSource, Like, QueryRunner, Repository } from 'typeorm';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -70,6 +70,19 @@ export class SupplyService {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
 
+      const data = {
+        category: createSupplyDTO.category,
+        name: createSupplyDTO.name,
+        quantity: createSupplyDTO.quantity,
+        totalWeight: createSupplyDTO.totalWeight,
+        weightPerUnit: createSupplyDTO.weightPerUnit,
+        supplier: createSupplyDTO.supplier,
+        expirationDate: createSupplyDTO.expirationDate,
+        employee: doesEmployeeReallyExists,
+        lowStock: createSupplyDTO.lowStock,
+        price: createSupplyDTO.price,
+      };
+
       const doesSupplyAlreadyExists = await queryRunner.manager.findOne(
         SupplyRealTime,
         {
@@ -110,6 +123,14 @@ export class SupplyService {
           },
         );
 
+        const supplyHistoryData = {
+          ...data,
+          reason: createSupplyDTO.reason,
+          totalWeightPerRegister: createSupplyDTO.totalWeightPerRegister,
+        };
+
+        await this.SaveSupplyHistory(supplyHistoryData, queryRunner);
+
         if (!supplyUpdate || supplyUpdate.affected < 1) {
           throw new InternalServerErrorException(
             'Erro ao atualizar insumo existente',
@@ -123,19 +144,6 @@ export class SupplyService {
           supplyRealTime: supplyUpdate,
         };
       }
-
-      const data = {
-        category: createSupplyDTO.category,
-        name: createSupplyDTO.name,
-        quantity: createSupplyDTO.quantity,
-        totalWeight: createSupplyDTO.totalWeight,
-        weightPerUnit: createSupplyDTO.weightPerUnit,
-        supplier: createSupplyDTO.supplier,
-        expirationDate: createSupplyDTO.expirationDate,
-        employee: doesEmployeeReallyExists,
-        lowStock: createSupplyDTO.lowStock,
-        price: createSupplyDTO.price,
-      };
 
       const supplyRealTimeCreate = queryRunner.manager.create(
         SupplyRealTime,
@@ -153,13 +161,10 @@ export class SupplyService {
         totalWeightPerRegister: createSupplyDTO.totalWeightPerRegister,
       };
 
-      const supplyHistoryCreate = queryRunner.manager.create(
-        SupplyHistory,
+      const newSupplyHistory = await this.SaveSupplyHistory(
         supplyHistoryData,
+        queryRunner,
       );
-
-      const newSupplyHistory =
-        await queryRunner.manager.save(supplyHistoryCreate);
 
       await queryRunner.commitTransaction();
 
@@ -182,6 +187,18 @@ export class SupplyService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async SaveSupplyHistory(
+    createSupplyHistoryDTO: CreateSupplyDTO,
+    queryRunnerSub: QueryRunner,
+  ) {
+    const supplyHistoryCreate = queryRunnerSub.manager.create(
+      SupplyHistory,
+      createSupplyHistoryDTO,
+    );
+
+    await queryRunnerSub.manager.save(supplyHistoryCreate);
   }
 
   async Update(

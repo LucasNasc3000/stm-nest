@@ -69,6 +69,7 @@ export class SupplyHistory {
 
   @ManyToOne(() => SupplyRealTime, (supply) => supply.supplyHistory, {
     onDelete: 'RESTRICT',
+    nullable: false,
   })
   supplyRealtime: SupplyRealTime;
 

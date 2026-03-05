@@ -3,7 +3,6 @@ import {
   IsDateString,
   IsInt,
   IsNotEmpty,
-  IsNumberString,
   IsPositive,
   IsString,
   Length,
@@ -48,22 +47,28 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'Campo "preço" não preenchido',
   })
-  @IsString({
-    message: 'O campo "preço" deve estar no formato de texto',
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   })
-  @IsNumberString({
-    no_symbols: true,
+  @IsDecimalString({
+    message: 'O campo peso total deve ser um string decima ex: 59.99',
   })
   readonly totalWeight: string;
 
   @IsNotEmpty({
     message: 'Campo "preço unitário" não preenchido',
   })
-  @IsString({
-    message: 'O campo "preço unitário" deve estar no formato de texto',
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   })
-  @IsNumberString({
-    no_symbols: true,
+  @IsDecimalString({
+    message: 'O campo peso unitário deve ser um string decima ex: 59.99',
   })
   readonly weightPerUnit: string;
 
@@ -124,12 +129,15 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'Campo "preço total por registro" não preenchido',
   })
-  @IsString({
-    message:
-      'O campo "preço total por registro" deve estar no formato de texto',
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   })
-  @IsNumberString({
-    no_symbols: true,
+  @IsDecimalString({
+    message:
+      'O campo peso total por registro deve ser um string decima ex: 59.99',
   })
   readonly totalWeightPerRegister: string;
 }
