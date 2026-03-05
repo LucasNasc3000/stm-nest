@@ -7,7 +7,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
-import { Public } from 'src/auth/decorators/set-metadata.decorator';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
@@ -21,7 +20,7 @@ import { RoleService } from './role.service';
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Public()
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @SetRoutePolicy({ action: Action.CREATE, resource: Resource.EMPLOYEES })
   @Post()

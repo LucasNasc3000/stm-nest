@@ -34,28 +34,27 @@ export class RoleService {
     await queryRunner.startTransaction();
 
     try {
-      const permissions: Permission[] = [];
+      const permissions = createRoleDTO.permissions.map((p) => ({
+        action: p.action,
+        resource: p.resource,
+      }));
 
-      for (const permission of createRoleDTO.permissions) {
-        const permissionData = {
-          action: permission.action,
-          resource: permission.resource,
-        };
+      const newRole = await queryRunner.manager.upsert(
+        Permission,
+        permissions,
+        ['action', 'resource'],
+      );
 
-        const createPermission = queryRunner.manager.create(
-          Permission,
-          permissionData,
-        );
-
-        permissions.push(createPermission);
-      }
+      const savedPermissions = await queryRunner.manager.find(Permission, {
+        where: permissions,
+      });
 
       const createRole = queryRunner.manager.create(Role, {
         name: createRoleDTO.name,
-        permissions: permissions,
+        permissions: savedPermissions,
       });
 
-      const newRole = await queryRunner.manager.save(Role, createRole);
+      await queryRunner.manager.save(Role, createRole);
 
       await queryRunner.commitTransaction();
 
