@@ -38,7 +38,7 @@ export class SupplyHistory {
   @Column({ type: 'date', name: 'expiration_date' })
   expirationDate: string;
 
-  @ManyToOne(() => Employee, (employee) => employee.supplies, {
+  @ManyToOne(() => Employee, (employee) => employee.suppliesHistory, {
     onDelete: 'RESTRICT',
     nullable: true,
   })
@@ -60,12 +60,6 @@ export class SupplyHistory {
     name: 'total_weight_per_register',
   })
   totalWeightPerRegister: string;
-
-  @ManyToOne(() => Employee, (employee) => employee.suppliesHistory, {
-    onDelete: 'RESTRICT',
-    nullable: true,
-  })
-  registeredBy: Employee;
 
   @ManyToOne(() => SupplyRealTime, (supply) => supply.supplyHistory, {
     onDelete: 'RESTRICT',
