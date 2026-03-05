@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
@@ -23,7 +22,7 @@ import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
-import { SearchByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
+import { PaginationByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
 import { UpdatePriceSupplyRealtimeDTO } from './dto/update-price-supply-realtime.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
 import { SupplyHistory } from './entities/supply-history.entity';
@@ -225,12 +224,12 @@ export class SupplyService {
   }
 
   async Update(
-    supplyId: UrlUuidDTO,
+    supplyId: string,
     updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
   ) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
-        id: supplyId.id,
+        id: supplyId,
         is_active: true,
       },
     });
@@ -239,17 +238,9 @@ export class SupplyService {
       throw new NotFoundException('Insumo não encontrado');
     }
 
-    const allowedData = {
-      category: updateSupplyRealtimeDTO.category,
-      name: updateSupplyRealtimeDTO.name,
-      supplier: updateSupplyRealtimeDTO.supplier,
-      expirationDate: updateSupplyRealtimeDTO.expirationDate,
-      lowStock: updateSupplyRealtimeDTO.lowStock,
-    };
-
     const supplyUpdate = await this.supplyRealTimeRepository.preload({
-      id: supplyId.id,
-      ...allowedData,
+      id: supplyId,
+      ...updateSupplyRealtimeDTO,
     });
 
     const supplyUpdated =
@@ -265,12 +256,12 @@ export class SupplyService {
   }
 
   async UpdatePrice(
-    supplyId: UrlUuidDTO,
+    supplyId: string,
     updatePriceSupplyRealtimeDTO: UpdatePriceSupplyRealtimeDTO,
   ) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
-        id: supplyId.id,
+        id: supplyId,
         is_active: true,
       },
     });
@@ -280,7 +271,7 @@ export class SupplyService {
     }
 
     const supplyUpdate = await this.supplyRealTimeRepository.preload({
-      id: supplyId.id,
+      id: supplyId,
       price: updatePriceSupplyRealtimeDTO.price,
     });
 
@@ -296,10 +287,10 @@ export class SupplyService {
     return supplyUpdated;
   }
 
-  async FindById(id: UrlUuidDTO) {
+  async FindById(id: string) {
     const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
       where: {
-        id: id.id,
+        id,
         is_active: true,
       },
       relations: {
@@ -472,15 +463,23 @@ export class SupplyService {
     return [total, ...supplyFindByPrice];
   }
 
-  async FindByWeightPerUnit(weightPerUnit: SearchByWeightPerUnitDTO) {
-    const supplyRealTimeFindByWeighPerUnit =
-      await this.supplyRealTimeRepository.findOne({
-        where: {
-          weightPerUnit: weightPerUnit.weightPerUnit,
-          is_active: true,
-        },
+  async FindByWeightPerUnit(
+    paginationByWeightPerUnitDTO: PaginationByWeightPerUnitDTO,
+  ) {
+    const { limit, offset, value } = paginationByWeightPerUnitDTO;
+
+    console.log(typeof value);
+
+    const [supplyRealTimeFindByWeighPerUnit, total] =
+      await this.supplyRealTimeRepository.findAndCount({
+        take: limit,
+        skip: offset,
         order: {
           id: 'desc',
+        },
+        where: {
+          weightPerUnit: Like(`${value}%`),
+          is_active: true,
         },
         relations: {
           employee: true,
@@ -497,7 +496,7 @@ export class SupplyService {
       throw new NotFoundException('Insumo não encontrado');
     }
 
-    return supplyRealTimeFindByWeighPerUnit;
+    return [total, ...supplyRealTimeFindByWeighPerUnit];
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
