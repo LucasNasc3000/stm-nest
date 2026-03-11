@@ -1,10 +1,15 @@
 {
   "name": "stm-nest",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "description": "Sistema de controle de estoque e vendas para restaurantes - API REST com NestJS",
+  "author": "Lucas Nascimento Fortunato <lucasfortunato328@gmail.com>",
+  "private": false,
+  "homepage": "https://github.com/LucasNasc3000/stm-nest/blob/master/README.md",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LucasNasc3000/stm-nest"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

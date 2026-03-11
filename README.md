@@ -1,4 +1,7 @@
 # Storage Manager System - API v2.0
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
 Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro e pequenas empresas do setor alimentício. Esta é uma API REST moderna construída com NestJS, TypeORM e PostgreSQL, oferecendo controle granular de acesso baseado em funções (RBAC - Role-Based Access Control).
 
 ## 📌 Status
