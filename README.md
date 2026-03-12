@@ -669,8 +669,8 @@ All routes (except `/auth` and `/refresh`) require authentication via JWT and ap
 
 ## 👨‍💻 Author
 
-**Lucas Nascimento Fortunato**
-📧 lucasfortunato328@gmail.com
+**Lucas Nascimento Fortunato**<br>
+📧 lucasfortunato328@gmail.com<br>
 💼 [LinkedIn](https://www.linkedin.com/in/lucas-nascimento-fortunato-b63162297)
 
 ## 📄 License
