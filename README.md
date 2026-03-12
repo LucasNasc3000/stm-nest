@@ -653,7 +653,7 @@ All routes (except `/auth` and `/refresh`) require authentication via JWT and ap
 
 **Lucas Nascimento Fortunato**
 📧 lucasfortunato328@gmail.com
-💼 [LinkedIn](www.linkedin.com/in/lucas-nascimento-fortunato-b63162297)
+💼 [LinkedIn](https://www.linkedin.com/in/lucas-nascimento-fortunato-b63162297)
 
 ## 📄 Licença
 
