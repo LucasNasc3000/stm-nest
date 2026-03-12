@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 
 export class PaginationByPriceDTO {
   @IsInt({
@@ -23,14 +24,15 @@ export class PaginationByPriceDTO {
   @Type(() => Number)
   offset: number;
 
-  @IsNotEmpty({
-    message: 'campo "preço" não preenchido',
+  @IsNotEmpty()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   })
-  @IsString({
-    message: 'campo "preço" deve estar em formato de texto',
-  })
-  @Length(0, 150, {
-    message: 'campo "preço" deve ter no máximo 150 caracteres',
+  @IsDecimalString({
+    message: 'O campo preço por registro deve ser um string decima ex: 59.99',
   })
   value: string;
 }

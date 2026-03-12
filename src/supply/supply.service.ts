@@ -12,7 +12,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
-import { DataSource, Like, QueryRunner, Repository } from 'typeorm';
+import { DataSource, Like, QueryRunner, Raw, Repository } from 'typeorm';
 import { CreateSupplyHistoryDTO } from './dto/create-supply-history.dto';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -436,7 +436,9 @@ export class SupplyService {
           id: 'desc',
         },
         where: {
-          price: value,
+          price: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
+            value: `${value}%`,
+          }),
           is_active: true,
         },
         relations: {
@@ -468,8 +470,6 @@ export class SupplyService {
   ) {
     const { limit, offset, value } = paginationByWeightPerUnitDTO;
 
-    console.log(typeof value);
-
     const [supplyRealTimeFindByWeighPerUnit, total] =
       await this.supplyRealTimeRepository.findAndCount({
         take: limit,
@@ -478,7 +478,9 @@ export class SupplyService {
           id: 'desc',
         },
         where: {
-          weightPerUnit: Like(`${value}%`),
+          weightPerUnit: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
+            value: `${value}%`,
+          }),
           is_active: true,
         },
         relations: {
@@ -542,7 +544,7 @@ export class SupplyService {
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
     const { limit, offset, value } = paginatioByExpDateDTO;
 
-    const supplyFindByExpDate =
+    const [supplyFindByExpDate, total] =
       await this.supplyRealTimeRepository.findAndCount({
         take: limit,
         skip: offset,
@@ -574,7 +576,7 @@ export class SupplyService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return supplyFindByExpDate;
+    return [total, ...supplyFindByExpDate];
   }
 
   async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {

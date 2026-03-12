@@ -32,8 +32,7 @@ export class PaginationByWeightPerUnitDTO {
     return value;
   })
   @IsDecimalString({
-    message:
-      'O campo peso total por registro deve ser um string decima ex: 59.99',
+    message: 'O campo peso unitário deve ser um string decima ex: 59.99',
   })
   value: string;
 }

@@ -65,7 +65,6 @@ export class SupplyController {
     return this.supplyService.UpdatePrice(id, updateSupplyRealtimePriceDTO);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -73,7 +72,6 @@ export class SupplyController {
     return this.supplyService.FindById(id);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/supplier/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -81,7 +79,6 @@ export class SupplyController {
     return this.supplyService.FindBySupplier(paginationBySupplierDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -89,7 +86,6 @@ export class SupplyController {
     return this.supplyService.FindByName(paginationByNameDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/category/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -97,7 +93,6 @@ export class SupplyController {
     return this.supplyService.FindByCategory(paginationByCategoryDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/price/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -105,7 +100,6 @@ export class SupplyController {
     return this.supplyService.FindByPrice(paginationByPriceDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/weightPerUnit/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -115,7 +109,6 @@ export class SupplyController {
     return this.supplyService.FindByWeightPerUnit(paginationByWeightPerUnitDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -123,7 +116,6 @@ export class SupplyController {
     return this.supplyService.FindByEmployee(paginationByEmployeeDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/expirationDate/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
@@ -133,7 +125,6 @@ export class SupplyController {
     return this.supplyService.FindByExpirationDate(paginationByExpDateDto);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ write: true, auth: true })
   @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
