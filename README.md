@@ -1,7 +1,8 @@
 # Storage Manager System - API v2.0
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)<br>
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)](https://www.postgresql.org/)<br>
 Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro e pequenas empresas do setor alimentício. Esta é uma API REST moderna construída com NestJS, TypeORM e PostgreSQL, oferecendo controle granular de acesso baseado em funções (RBAC - Role-Based Access Control).
 
 ## 📌 Status
@@ -241,6 +242,9 @@ npm run format            # Prettier
 - JWTBlacklist: Tokens invalidados
 - LogEmployee: Logs de acesso
 
+### Relacionamentos
+<img src="https://github.com/LucasNasc3000/stm-nest/blob/master/images/stm-nest-db%20-%20public.png" width=820 heigth=820/>
+
 
 ### 🔄 Migrações
 As migrações já estão no repositório. Para criar uma nova:<br>
@@ -322,7 +326,7 @@ Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e per
 - Segurança: Adicionado rate limiting, helmet, CORS configurável
 - Arquitetura: Monolítico → Modular (NestJS modules)
 
-<strong><-------------------------------------------------------------- English Version -------------------------------------------------------></strong>
+<strong><--------------------------------------------- English Version -------------------------------------------------------></strong>
 
 # Storage Manager System - API v2.0
 Inventory and sales control system developed for managing micro and small businesses in the food sector. This is a modern REST API built with NestJS, TypeORM, and PostgreSQL, offering granular role-based access control (RBAC).
@@ -644,3 +648,15 @@ All routes (except `/auth` and `/refresh`) require authentication via JWT and ap
 - Soft Delete: deletedAt → is_active (only Product and SupplyRealTime)
 - Security: Added rate limiting, helmet, configurable CORS
 - Architecture: Monolithic → Modular (NestJS modules)
+
+## 👨‍💻 Autor
+
+**Lucas Nascimento Fortunato**
+📧 lucasfortunato328@gmail.com
+💼 [LinkedIn](www.linkedin.com/in/lucas-nascimento-fortunato-b63162297)
+
+## 📄 Licença
+
+Este projeto está licenciado sob a **AGPL-3.0-only**.
+
+💡 Para Estudantes: Sinta-se à vontade para clonar, estudar e rodar este projeto localmente. Você não tem obrigações de publicar suas alterações se o uso for apenas para aprendizado pessoal. Se decidir hospedar uma versão modificada publicamente, lembre-se das diretrizes da AGPLv3 sobre o compartilhamento do fonte.
