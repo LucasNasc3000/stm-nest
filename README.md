@@ -326,9 +326,25 @@ Todas as rotas (exceto `/auth` e `/refresh`) exigem autenticação via JWT e per
 - Segurança: Adicionado rate limiting, helmet, CORS configurável
 - Arquitetura: Monolítico → Modular (NestJS modules)
 
+## 👨‍💻 Autor
+
+**Lucas Nascimento Fortunato**<br>
+📧 lucasfortunato328@gmail.com<br>
+💼 [LinkedIn](https://www.linkedin.com/in/lucas-nascimento-fortunato-b63162297)
+
+## 📄 Licença
+
+Este projeto está licenciado sob a **AGPL-3.0-only**.
+
+💡 Para Estudantes: Sinta-se à vontade para clonar, estudar e rodar este projeto localmente. Você não tem obrigações de publicar suas alterações se o uso for apenas para aprendizado pessoal. Se decidir hospedar uma versão modificada publicamente, lembre-se das diretrizes da AGPLv3 sobre o compartilhamento do fonte.
+
 <strong><--------------------------------------------- English Version -------------------------------------------------------></strong>
 
 # Storage Manager System - API v2.0
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)](https://www.postgresql.org/)<br>
 Inventory and sales control system developed for managing micro and small businesses in the food sector. This is a modern REST API built with NestJS, TypeORM, and PostgreSQL, offering granular role-based access control (RBAC).
 
 ## 📌 Status
@@ -568,6 +584,8 @@ npm run format            # Prettier
 - JWTBlacklist: Invalidated tokens
 - LogEmployee: Access logs
 
+### Relationships
+<img src="https://github.com/LucasNasc3000/stm-nest/blob/master/images/stm-nest-db%20-%20public.png" width=820 heigth=820/>
 
 ### 🔄 Migrations
 All migrations are already in repository. To create a new one:<br>
@@ -649,14 +667,14 @@ All routes (except `/auth` and `/refresh`) require authentication via JWT and ap
 - Security: Added rate limiting, helmet, configurable CORS
 - Architecture: Monolithic → Modular (NestJS modules)
 
-## 👨‍💻 Autor
+## 👨‍💻 Author
 
 **Lucas Nascimento Fortunato**
 📧 lucasfortunato328@gmail.com
 💼 [LinkedIn](https://www.linkedin.com/in/lucas-nascimento-fortunato-b63162297)
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está licenciado sob a **AGPL-3.0-only**.
+This project is licensed under **AGPL-3.0-only**.
 
-💡 Para Estudantes: Sinta-se à vontade para clonar, estudar e rodar este projeto localmente. Você não tem obrigações de publicar suas alterações se o uso for apenas para aprendizado pessoal. Se decidir hospedar uma versão modificada publicamente, lembre-se das diretrizes da AGPLv3 sobre o compartilhamento do fonte.
+💡 For Students: Feel free to clone, study, and run this project locally. You are under no obligation to publish your changes if the use is solely for personal learning. If you decide to host a modified version publicly, remember the AGPLv3 guidelines regarding source sharing.
