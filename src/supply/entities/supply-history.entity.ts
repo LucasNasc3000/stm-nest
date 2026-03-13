@@ -26,9 +26,6 @@ export class SupplyHistory {
   @Column({ type: 'integer' })
   quantity: number;
 
-  @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_weight' })
-  totalWeight: string;
-
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'weight_per_unit' })
   weightPerUnit: string;
 

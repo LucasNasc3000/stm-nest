@@ -77,7 +77,7 @@ export class SupplyService {
         createSupplyDTO.weightPerUnit,
       );
 
-      const totalWeight = weightPerUnitSupplyRealTime
+      const totalWeightValue = weightPerUnitSupplyRealTime
         .mul(createSupplyDTO.quantity)
         .toString();
 
@@ -85,7 +85,7 @@ export class SupplyService {
         category: createSupplyDTO.category,
         name: createSupplyDTO.name,
         quantity: createSupplyDTO.quantity,
-        totalWeight,
+        totalWeight: totalWeightValue,
         weightPerUnit: createSupplyDTO.weightPerUnit,
         supplier: createSupplyDTO.supplier,
         expirationDate: createSupplyDTO.expirationDate,
@@ -93,11 +93,6 @@ export class SupplyService {
         lowStock: createSupplyDTO.lowStock,
         price: createSupplyDTO.price,
       };
-
-      const weightPerUnitDecimal = new Decimal(createSupplyDTO.weightPerUnit);
-      const totalWeightPerRegister = weightPerUnitDecimal
-        .mul(createSupplyDTO.quantity)
-        .toString();
 
       const doesSupplyAlreadyExists = await queryRunner.manager.findOne(
         SupplyRealTime,
@@ -139,22 +134,25 @@ export class SupplyService {
           },
         );
 
-        const supplyHistoryData = {
-          ...data,
-          date: getDate[0],
-          reason: createSupplyDTO.reason,
-          totalWeightPerRegister,
-          employee: doesEmployeeReallyExists,
-          supplyRealTime: doesSupplyAlreadyExists,
-        };
-
-        await this.SaveSupplyHistory(supplyHistoryData, queryRunner);
-
         if (!supplyUpdate || supplyUpdate.affected < 1) {
           throw new InternalServerErrorException(
             'Erro ao atualizar insumo existente',
           );
         }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { totalWeight, ...withoutTotalWeight } = data;
+
+        const supplyHistoryData = {
+          ...withoutTotalWeight,
+          date: getDate[0],
+          reason: createSupplyDTO.reason,
+          totalWeightPerRegister: totalWeightValue,
+          employee: doesEmployeeReallyExists,
+          supplyRealTime: doesSupplyAlreadyExists,
+        };
+
+        await this.SaveSupplyHistory(supplyHistoryData, queryRunner);
 
         await queryRunner.commitTransaction();
 
@@ -174,11 +172,14 @@ export class SupplyService {
         supplyRealTimeCreate,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { totalWeight, ...withoutTotalWeight } = data;
+
       const supplyHistoryData = {
-        ...data,
+        ...withoutTotalWeight,
         date: getDate[0],
         reason: createSupplyDTO.reason,
-        totalWeightPerRegister,
+        totalWeightPerRegister: totalWeightValue,
         employee: doesEmployeeReallyExists,
         supplyRealTime: newSupplyRealTime,
       };
