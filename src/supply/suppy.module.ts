@@ -4,6 +4,7 @@ import { EmployeeModule } from 'src/employee/employee.module';
 import { RoleModule } from 'src/role/role.module';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
+import { SupplyFindService } from './supply-find.service';
 import { SupplyController } from './supply.controller';
 import { SupplyService } from './supply.service';
 
@@ -14,6 +15,6 @@ import { SupplyService } from './supply.service';
     RoleModule,
   ],
   controllers: [SupplyController],
-  providers: [SupplyService, Logger],
+  providers: [SupplyService, SupplyFindService, Logger],
 })
 export class SupplyModule {}

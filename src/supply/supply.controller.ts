@@ -26,12 +26,16 @@ import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { PaginationByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
 import { UpdatePriceSupplyRealtimeDTO } from './dto/update-price-supply-realtime.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
+import { SupplyFindService } from './supply-find.service';
 import { SupplyService } from './supply.service';
 
 @UseGuards(RoutePolicyGuard)
 @Controller('supplies')
 export class SupplyController {
-  constructor(private readonly supplyService: SupplyService) {}
+  constructor(
+    private readonly supplyService: SupplyService,
+    private readonly supplyFindService: SupplyFindService,
+  ) {}
 
   @SkipThrottle({ read: true, auth: true })
   @Post()
@@ -69,35 +73,35 @@ export class SupplyController {
   @Get('search/id/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindById(@Param('id') id: string) {
-    return this.supplyService.FindById(id);
+    return this.supplyFindService.FindById(id);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/supplier/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindBySupplier(@Query() paginationBySupplierDto: PaginationBySupplierDTO) {
-    return this.supplyService.FindBySupplier(paginationBySupplierDto);
+    return this.supplyFindService.FindBySupplier(paginationBySupplierDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
-    return this.supplyService.FindByName(paginationByNameDto);
+    return this.supplyFindService.FindByName(paginationByNameDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/category/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
-    return this.supplyService.FindByCategory(paginationByCategoryDto);
+    return this.supplyFindService.FindByCategory(paginationByCategoryDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/price/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
-    return this.supplyService.FindByPrice(paginationByPriceDto);
+    return this.supplyFindService.FindByPrice(paginationByPriceDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -106,14 +110,16 @@ export class SupplyController {
   FindByWeightPerUnit(
     @Query() paginationByWeightPerUnitDto: PaginationByWeightPerUnitDTO,
   ) {
-    return this.supplyService.FindByWeightPerUnit(paginationByWeightPerUnitDto);
+    return this.supplyFindService.FindByWeightPerUnit(
+      paginationByWeightPerUnitDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
-    return this.supplyService.FindByEmployee(paginationByEmployeeDto);
+    return this.supplyFindService.FindByEmployee(paginationByEmployeeDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -122,13 +128,13 @@ export class SupplyController {
   FindByExpirationDate(
     @Query() paginationByExpDateDto: PaginationByExpDateDTO,
   ) {
-    return this.supplyService.FindByExpirationDate(paginationByExpDateDto);
+    return this.supplyFindService.FindByExpirationDate(paginationByExpDateDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
-    return this.supplyService.FindByDate(paginationByDateDto);
+    return this.supplyFindService.FindByDate(paginationByDateDto);
   }
 }
