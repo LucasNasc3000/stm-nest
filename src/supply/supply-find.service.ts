@@ -27,7 +27,7 @@ export class SupplyFindService {
     private readonly supplyHistoryRepository: Repository<SupplyHistory>,
   ) {}
 
-  async FindById(id: string) {
+  async FindByIdSupplyRealTime(id: string) {
     const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
       where: {
         id,
@@ -49,6 +49,29 @@ export class SupplyFindService {
     }
 
     return supplyRealTimeFindById;
+  }
+
+  async FindByIdSupplyHistory(id: string) {
+    const supplyHistoryFindById = await this.supplyHistoryRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        employee: true,
+      },
+      select: {
+        employee: {
+          id: true,
+          email: true,
+        },
+      },
+    });
+
+    if (!supplyHistoryFindById) {
+      throw new NotFoundException('Insumo não encontrado');
+    }
+
+    return supplyHistoryFindById;
   }
 
   async FindBySupplier(paginationBySupplierDTO: PaginationBySupplierDTO) {

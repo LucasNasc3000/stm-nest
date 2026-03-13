@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  Max,
+  Min,
+} from 'class-validator';
+import { SupplySearch } from 'src/common/enums/supply-search.enum';
 
 export class PaginationByExpDateDTO {
   @IsInt({
@@ -28,4 +36,12 @@ export class PaginationByExpDateDTO {
   })
   @IsDateString()
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "supplySearch" não preenchido',
+  })
+  @IsEnum(SupplySearch, {
+    message: 'Tipo de registro inválido',
+  })
+  supplyType: SupplySearch;
 }

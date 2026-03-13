@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import { SupplySearch } from 'src/common/enums/supply-search.enum';
 
 export class PaginationByEmployeeDTO {
   @IsInt({
@@ -30,4 +31,12 @@ export class PaginationByEmployeeDTO {
     message: 'Id do funcionário deve ser um uuid',
   })
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "supplySearch" não preenchido',
+  })
+  @IsEnum(SupplySearch, {
+    message: 'Tipo de registro inválido',
+  })
+  supplyType: SupplySearch;
 }

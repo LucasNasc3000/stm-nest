@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
+import { SupplySearch } from 'src/common/enums/supply-search.enum';
 
 export class PaginationByWeightPerUnitDTO {
   @IsInt({
@@ -35,4 +36,12 @@ export class PaginationByWeightPerUnitDTO {
     message: 'O campo peso unitário deve ser um string decima ex: 59.99',
   })
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "supplySearch" não preenchido',
+  })
+  @IsEnum(SupplySearch, {
+    message: 'Tipo de registro inválido',
+  })
+  supplyType: SupplySearch;
 }

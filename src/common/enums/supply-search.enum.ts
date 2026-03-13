@@ -1,0 +1,4 @@
+export enum SupplySearch {
+  SUPPLY_REAL_TIME = 'SUPPLY_REAL_TIME',
+  SUPPLY_HISTORY = 'SUPPLY_HISTORY',
+}

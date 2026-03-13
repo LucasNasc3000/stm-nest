@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Max,
+  Min,
+} from 'class-validator';
+import { SupplySearch } from 'src/common/enums/supply-search.enum';
 
 export class PaginationByCategoryDTO {
   @IsInt({
@@ -33,4 +42,12 @@ export class PaginationByCategoryDTO {
     message: 'campo "categoria" deve ter no máximo 50 caracteres',
   })
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "supplySearch" não preenchido',
+  })
+  @IsEnum(SupplySearch, {
+    message: 'Tipo de registro inválido',
+  })
+  supplyType: SupplySearch;
 }

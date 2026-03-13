@@ -70,10 +70,17 @@ export class SupplyController {
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('search/id/:id')
+  @Get('search/id/supplyRealTime/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindById(@Param('id') id: string) {
-    return this.supplyFindService.FindById(id);
+  FindByIdSupplyRealTime(@Param('id') id: string) {
+    return this.supplyFindService.FindByIdSupplyRealTime(id);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/id/supplyHistory/:id')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  FindByIdSupplyHistory(@Param('id') id: string) {
+    return this.supplyFindService.FindByIdSupplyHistory(id);
   }
 
   @SkipThrottle({ write: true, auth: true })
