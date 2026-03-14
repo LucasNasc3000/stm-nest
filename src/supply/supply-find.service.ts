@@ -249,7 +249,7 @@ export class SupplyFindService {
 
     query
       .leftJoinAndSelect('supply.employee', 'employee')
-      .andWhere('supply.employee ILIKE :employee', { employee: `${value}%` })
+      .andWhere('supply.employee = :employee', { employee: value })
       .orderBy('supply.id', 'DESC')
       .take(limit)
       .skip(offset);
@@ -276,8 +276,8 @@ export class SupplyFindService {
 
     query
       .leftJoinAndSelect('supply.employee', 'employee')
-      .andWhere('supply.expiration_date ILIKE :expirationDate', {
-        expirationDate: `${value}%`,
+      .andWhere('supply.expiration_date = :expirationDate', {
+        expirationDate: value,
       })
       .orderBy('supply.id', 'DESC')
       .take(limit)
