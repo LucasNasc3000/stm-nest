@@ -39,6 +39,7 @@ export class SupplyController {
     private readonly supplyFindService: SupplyFindService,
   ) {}
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post()
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.CREATE })
@@ -111,6 +112,13 @@ export class SupplyController {
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.supplyFindService.FindByPrice(paginationByPriceDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/totalPrice/')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  FindByTotalPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
+    return this.supplyFindService.FindByTotalPrice(paginationByPriceDto);
   }
 
   @SkipThrottle({ write: true, auth: true })

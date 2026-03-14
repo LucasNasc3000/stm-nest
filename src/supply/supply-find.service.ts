@@ -211,6 +211,35 @@ export class SupplyFindService {
     return [total, ...supplyFindByPrice];
   }
 
+  async FindByTotalPrice(paginationByPriceDTO: PaginationByPriceDTO) {
+    const { limit, offset, value, supplyType } = paginationByPriceDTO;
+
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('CAST(supply.total_price AS TEXT) LIKE :totalPrice', {
+        totalPrice: `${value}%`,
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByPrice, total] = await query.getManyAndCount();
+
+    if (!supplyFindByPrice) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (supplyFindByPrice.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return [total, ...supplyFindByPrice];
+  }
+
   async FindByWeightPerUnit(
     paginationByWeightPerUnitDTO: PaginationByWeightPerUnitDTO,
   ) {

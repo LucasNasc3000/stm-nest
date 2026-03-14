@@ -25,9 +25,6 @@ export class SupplyService {
   constructor(
     @InjectRepository(SupplyRealTime)
     private readonly supplyRealTimeRepository: Repository<SupplyRealTime>,
-
-    @InjectRepository(SupplyHistory)
-    private readonly supplyHistoryRepository: Repository<SupplyHistory>,
     private readonly employeesService: EmployeeService,
     private dataSource: DataSource,
     private readonly logger: Logger,
@@ -73,6 +70,10 @@ export class SupplyService {
         .mul(createSupplyDTO.quantity)
         .toString();
 
+      const priceDecimal = new Decimal(createSupplyDTO.price);
+
+      const totalPrice = priceDecimal.mul(createSupplyDTO.quantity).toString();
+
       const data = {
         category: createSupplyDTO.category,
         name: createSupplyDTO.name,
@@ -84,6 +85,7 @@ export class SupplyService {
         employee: doesEmployeeReallyExists,
         lowStock: createSupplyDTO.lowStock,
         price: createSupplyDTO.price,
+        totalPrice,
       };
 
       const doesSupplyAlreadyExists = await queryRunner.manager.findOne(
@@ -117,12 +119,19 @@ export class SupplyService {
         const updatedQuantity =
           doesSupplyAlreadyExists.quantity + createSupplyDTO.quantity;
 
+        const currentTotalPrice = new Decimal(
+          doesSupplyAlreadyExists.totalPrice,
+        );
+
+        const updatedTotalPrice = currentTotalPrice.add(totalPrice).toString();
+
         const supplyUpdate = await queryRunner.manager.update(
           SupplyRealTime,
           doesSupplyAlreadyExists.id,
           {
             totalWeight: newTotalWeight,
             quantity: updatedQuantity,
+            totalPrice: updatedTotalPrice,
           },
         );
 

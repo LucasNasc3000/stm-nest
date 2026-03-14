@@ -47,6 +47,9 @@ export class SupplyHistory {
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 
+  @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
+  totalPrice: string;
+
   @Column({ type: 'varchar', length: 50 })
   reason: string;
 

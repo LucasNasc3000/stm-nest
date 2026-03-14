@@ -49,6 +49,9 @@ export class SupplyRealTime {
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 
+  @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
+  totalPrice: string;
+
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 
