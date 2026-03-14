@@ -12,6 +12,7 @@ import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
+import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { PaginationByTotalWeightDTO } from './dto/pagination-totalweight.dto';
 import { PaginationByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
@@ -130,27 +131,16 @@ export class SupplyFindService {
   async FindByName(paginationByNameDTO: PaginationByNameDTO) {
     const { limit, offset, value, supplyType } = paginationByNameDTO;
 
-    const [supplyFindByName, total] =
-      await this.supplyRealTimeRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          name: Like(`${value}%`),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('supply.name ILIKE :name', { name: `${value}%` })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByName, total] = await query.getManyAndCount();
 
     if (!supplyFindByName) {
       throw new InternalServerErrorException(
@@ -168,27 +158,16 @@ export class SupplyFindService {
   async FindByCategory(paginationByCategoryDTO: PaginationByCategoryDTO) {
     const { limit, offset, value, supplyType } = paginationByCategoryDTO;
 
-    const [supplyFindByCategory, total] =
-      await this.supplyRealTimeRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          category: Like(`${value}%`),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('supply.category ILIKE :category', { category: `${value}%` })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByCategory, total] = await query.getManyAndCount();
 
     if (!supplyFindByCategory) {
       throw new InternalServerErrorException(
@@ -206,29 +185,18 @@ export class SupplyFindService {
   async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
     const { limit, offset, value, supplyType } = paginationByPriceDTO;
 
-    const [supplyFindByPrice, total] =
-      await this.supplyRealTimeRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          price: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
-            value: `${value}%`,
-          }),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('CAST(supply.price AS TEXT) LIKE :price', {
+        price: `${value}%`,
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByPrice, total] = await query.getManyAndCount();
 
     if (!supplyFindByPrice) {
       throw new InternalServerErrorException(
@@ -248,153 +216,118 @@ export class SupplyFindService {
   ) {
     const { limit, offset, value, supplyType } = paginationByWeightPerUnitDTO;
 
-    const [supplyRealTimeFindByWeighPerUnit, total] =
-      await this.supplyRealTimeRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          weightPerUnit: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
-            value: `${value}%`,
-          }),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(supplyType);
 
-    if (!supplyRealTimeFindByWeighPerUnit) {
-      throw new NotFoundException('Insumos não encontrado');
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('CAST(supply.weight_per_unit AS TEXT) LIKE :weightPerUnit', {
+        weightPerUnit: `${value}%`,
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByWeightPerUnit, total] = await query.getManyAndCount();
+
+    if (!supplyFindByWeightPerUnit) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
     }
 
-    return [total, ...supplyRealTimeFindByWeighPerUnit];
-  }
-
-  async FindByTotalWeight(
-    paginationByTotalWeightDTO: PaginationByTotalWeightDTO,
-  ) {
-    const { limit, offset, value, supplyType } = paginationByTotalWeightDTO;
-
-    const [supplyRealTimeFindByTotalWeight, total] =
-      await this.supplyRealTimeRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          totalWeight: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
-            value: `${value}%`,
-          }),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
-
-    if (!supplyRealTimeFindByTotalWeight) {
-      throw new NotFoundException('Insumos não encontrado');
+    if (supplyFindByWeightPerUnit.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyRealTimeFindByTotalWeight];
+    return [total, ...supplyFindByWeightPerUnit];
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
     const { limit, offset, value, supplyType } = paginationByEmployeeDTO;
 
-    const [supplyRealTimeFindByEmployee, total] =
-      await this.supplyRealTimeRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          employee: {
-            id: value,
-          },
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(supplyType);
 
-    if (!supplyRealTimeFindByEmployee) {
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('supply.employee ILIKE :employee', { employee: `${value}%` })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByEmployee, total] = await query.getManyAndCount();
+
+    if (!supplyFindByEmployee) {
       throw new InternalServerErrorException(
         'Erro desconhecido ao tentar pesquisar por insumos',
       );
     }
 
-    if (supplyRealTimeFindByEmployee.length < 1) {
+    if (supplyFindByEmployee.length < 1) {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyRealTimeFindByEmployee];
+    return [total, ...supplyFindByEmployee];
   }
 
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
     const { limit, offset, value, supplyType } = paginatioByExpDateDTO;
 
-    const [supplyFindByExpDate, total] =
-      await this.supplyRealTimeRepository.findAndCount({
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('supply.expiration_date ILIKE :expirationDate', {
+        expirationDate: `${value}%`,
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByExpirationDate, total] = await query.getManyAndCount();
+
+    if (!supplyFindByExpirationDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (supplyFindByExpirationDate.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return [total, ...supplyFindByExpirationDate];
+  }
+
+  async FindByReason(paginationByReasonDTO: PaginationByReasonDTO) {
+    const { limit, offset, value } = paginationByReasonDTO;
+
+    const [supplyFindByReason, total] =
+      await this.supplyHistoryRepository.findAndCount({
         take: limit,
         skip: offset,
         order: {
           id: 'desc',
         },
         where: {
-          expirationDate: value,
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
+          reason: Like(`${value}%`),
         },
       });
 
-    if (!supplyFindByExpDate) {
+    if (!supplyFindByReason) {
       throw new InternalServerErrorException(
         'Erro desconhecido ao tentar pesquisar por insumos',
       );
     }
 
-    if (supplyFindByExpDate.length < 1) {
+    if (supplyFindByReason.length < 1) {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByExpDate];
+    return [total, ...supplyFindByReason];
   }
 
   async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
-    const { limit, offset, value, supplyType } = paginatioByDateDTO;
+    const { limit, offset, value } = paginatioByDateDTO;
 
     const supplyFindByExpDate = await this.supplyHistoryRepository.findAndCount(
       {
@@ -429,5 +362,43 @@ export class SupplyFindService {
     }
 
     return supplyFindByExpDate;
+  }
+
+  async FindByTotalWeightPerRegister(
+    paginationByTotalWeightDTO: PaginationByTotalWeightDTO,
+  ) {
+    const { limit, offset, value } = paginationByTotalWeightDTO;
+
+    const [supplyHistoryFindByTotalWeightPerRegister, total] =
+      await this.supplyHistoryRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          totalWeightPerRegister: Raw(
+            (alias) => `CAST(${alias} AS TEXT) LIKE :value`,
+            {
+              value: `${value}%`,
+            },
+          ),
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!supplyHistoryFindByTotalWeightPerRegister) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    return [total, ...supplyHistoryFindByTotalWeightPerRegister];
   }
 }

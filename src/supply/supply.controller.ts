@@ -22,7 +22,9 @@ import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
+import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
+import { PaginationByTotalWeightDTO } from './dto/pagination-totalweight.dto';
 import { PaginationByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
 import { UpdatePriceSupplyRealtimeDTO } from './dto/update-price-supply-realtime.dto';
 import { UpdateSupplyRealtimeDTO } from './dto/update-supply-realtime.dto';
@@ -143,5 +145,23 @@ export class SupplyController {
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
     return this.supplyFindService.FindByDate(paginationByDateDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/reason/')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  FindByReason(@Query() paginationByReasonDto: PaginationByReasonDTO) {
+    return this.supplyFindService.FindByReason(paginationByReasonDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/totalWeightPerRegister/')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  FindByTotalWeightPerRegister(
+    @Query() paginationByTotalWeightDto: PaginationByTotalWeightDTO,
+  ) {
+    return this.supplyFindService.FindByTotalWeightPerRegister(
+      paginationByTotalWeightDto,
+    );
   }
 }
