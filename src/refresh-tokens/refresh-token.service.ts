@@ -16,6 +16,7 @@ import {
   RefreshTokenPayload,
 } from 'src/common/interfaces/jwt-payload.interface';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { LogsService } from 'src/logs-register/log.service';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { RefreshTokenEmployee } from './entities/refresh-token-employee.entity';
 
@@ -31,6 +32,7 @@ export class RefreshTokensService {
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     private readonly jwtService: JwtService,
+    private readonly logsService: LogsService,
     private readonly logger: Logger,
     private dataSource: DataSource,
   ) {}
@@ -165,8 +167,6 @@ export class RefreshTokensService {
         },
       );
 
-      console.log(doesEmployeeReallyExists);
-
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
@@ -211,6 +211,14 @@ export class RefreshTokensService {
         this.jwtConfiguration.jwtRefreshTtl,
         { id: create.token_id },
       );
+
+      const dataForLog = {
+        name: employeeData.name,
+        email: employeeData.email,
+        employee: employeeData,
+      };
+
+      await this.logsService.CreateLogEmployee(dataForLog, queryRunner);
 
       await queryRunner.commitTransaction();
 

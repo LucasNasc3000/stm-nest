@@ -104,7 +104,7 @@ export class AuthService {
         employee: employeeData,
       };
 
-      await this.logService.CreateLogEmployee(dataForLog);
+      await this.logService.CreateLogEmployee(dataForLog, queryRunner);
 
       await queryRunner.commitTransaction();
 
