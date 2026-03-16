@@ -71,23 +71,6 @@ export class ProductController {
   }
 
   @SkipThrottle({ read: true, auth: true })
-  @Post('create/recipe')
-  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
-  CreateRecipe(
-    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
-    @Body() body: any,
-  ) {
-    const { productId, createRecipe, useStockSupplies } = body;
-
-    return this.productService.CreateRecipe(
-      tokenPayloadDTO,
-      productId,
-      createRecipe,
-      useStockSupplies,
-    );
-  }
-
-  @SkipThrottle({ read: true, auth: true })
   @Patch('update/general/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
