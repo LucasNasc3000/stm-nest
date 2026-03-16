@@ -1,17 +1,21 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
   IsString,
   Length,
+  ValidateNested,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
 export class UpdateProductDTO {
+  @IsOptional()
   @IsString({
     message: 'campo "nome" deve estar em formato de texto',
   })
@@ -20,6 +24,7 @@ export class UpdateProductDTO {
   })
   readonly name?: string;
 
+  @IsOptional()
   @IsString({
     message: 'campo "categoria" deve estar em formato de texto',
   })
@@ -28,6 +33,7 @@ export class UpdateProductDTO {
   })
   readonly category?: string;
 
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
@@ -37,9 +43,11 @@ export class UpdateProductDTO {
   })
   readonly unities?: number;
 
+  @IsOptional()
   @IsDateString()
   readonly expirationDate?: string;
 
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
@@ -49,6 +57,7 @@ export class UpdateProductDTO {
   })
   readonly lowStock?: number;
 
+  @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'string') {
       return value.trim();
@@ -60,6 +69,7 @@ export class UpdateProductDTO {
   })
   readonly price?: string;
 
+  @IsOptional()
   @IsBoolean()
   readonly disableProduct?: boolean;
 
@@ -69,6 +79,7 @@ export class UpdateProductDTO {
   @IsBoolean()
   readonly useStockSupplies: boolean;
 
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "adicionar unidades" deve ser um número inteiro',
@@ -78,6 +89,7 @@ export class UpdateProductDTO {
   })
   readonly addUnities?: number;
 
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "tirar unidades" deve ser um número inteiro',
@@ -87,5 +99,11 @@ export class UpdateProductDTO {
   })
   readonly takeUnities?: number;
 
+  @IsOptional()
+  @IsArray({
+    message: 'Ingredientes devem estar em um array',
+  })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateProductIngredientDTO)
   readonly productIngredient?: UpdateProductIngredientDTO[];
 }

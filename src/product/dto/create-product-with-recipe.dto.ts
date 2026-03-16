@@ -1,11 +1,13 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsInt,
   IsNotEmpty,
   IsPositive,
   IsString,
   Length,
+  ValidateNested,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { CreateProductIngredientDTO } from './create-product-ingredient.dto';
@@ -77,5 +79,13 @@ export class CreateProductWithRecipeDTO {
   })
   readonly price: string;
 
+  @IsNotEmpty({
+    message: 'Campo "ingredientes" não preenchido',
+  })
+  @IsArray({
+    message: 'Ingredientes devem estar em um array',
+  })
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductIngredientDTO)
   readonly productIngredient: CreateProductIngredientDTO[];
 }
