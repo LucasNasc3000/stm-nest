@@ -72,12 +72,13 @@ export class ProductController {
     );
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/general/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
-    @Param('id') id: UrlUuidDTO,
+    @Param('id') id: string,
     @Body() updateProductDTO: UpdateProductDTO,
   ) {
     return this.productService.Update(tokenPayloadDTO, id, updateProductDTO);

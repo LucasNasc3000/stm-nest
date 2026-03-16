@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
 import { IsInt, IsPositive, IsUUID } from 'class-validator';
-import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
 export class UpdateProductUnitiesDTO {
   @IsUUID(4, {
@@ -25,6 +24,4 @@ export class UpdateProductUnitiesDTO {
     message: 'campo "tirar unidades" deve ser maior que zero',
   })
   readonly takeUnities?: number;
-
-  readonly productIngredient: UpdateProductIngredientDTO[];
 }

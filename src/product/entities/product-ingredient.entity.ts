@@ -19,12 +19,13 @@ export class ProductIngredient {
 
   @ManyToOne(() => SupplyRealTime, (supplyRealTime) => supplyRealTime.recipes, {
     onDelete: 'RESTRICT',
+    nullable: false,
   })
   supplyRealTime: SupplyRealTime;
 
   @ManyToOne(() => Product, (product) => product.recipe, {
     onDelete: 'RESTRICT',
-    nullable: false,
+    nullable: true,
   })
   product: Product;
 

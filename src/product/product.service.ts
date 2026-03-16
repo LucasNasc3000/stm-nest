@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   HttpException,
@@ -103,7 +104,6 @@ export class ProductService {
       const data = {
         name: createProductWithRecipe.name,
         category: createProductWithRecipe.category,
-        unities: createProductWithRecipe.unities,
         expirationDate: createProductWithRecipe.expirationDate,
         lowStock: createProductWithRecipe.lowStock,
         price: createProductWithRecipe.price,
@@ -330,7 +330,7 @@ export class ProductService {
 
   async Update(
     tokenPayloadDTO: TokenPayloadDTO,
-    productId: UrlUuidDTO,
+    productId: string,
     updateProductDTO: UpdateProductDTO,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -340,8 +340,6 @@ export class ProductService {
     const updatesPerformed = [];
 
     try {
-      const { id } = productId;
-
       const findEmployee = await queryRunner.manager.findOne(Employee, {
         where: {
           id: tokenPayloadDTO.sub,
@@ -354,7 +352,7 @@ export class ProductService {
 
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
-          id: id,
+          id: productId,
           is_active: true,
         },
         lock: { mode: 'pessimistic_write' },
@@ -364,31 +362,63 @@ export class ProductService {
         throw new NotFoundException('Produto não encontrado');
       }
 
-      if (updateProductDTO.productIngredient.length > 0) {
+      const findProductIngredient = await queryRunner.manager.find(
+        ProductIngredient,
+        {
+          where: {
+            product: {
+              id: findProduct.id,
+              is_active: true,
+            },
+            isActive: true,
+          },
+          relations: {
+            supplyRealTime: true,
+          },
+        },
+      );
+
+      if (findProductIngredient.length < 1) {
+        throw new NotFoundException('Receita não encontrada');
+      }
+
+      if (!findProductIngredient) {
+        throw new InternalServerErrorException('Erro ao buscar receita');
+      }
+
+      if (updateProductDTO.productIngredient) {
         await this.UpdateProductIngredient(
           updateProductDTO.productIngredient,
           queryRunner,
         );
       }
 
-      if (updateProductDTO.unities) {
+      if (updateProductDTO.addUnities || updateProductDTO.takeUnities) {
         const updateProductUnitesData = {
           id: findProduct.id,
           addUnities: updateProductDTO.addUnities,
           takeUnities: updateProductDTO.takeUnities,
-          productIngredient: updateProductDTO.productIngredient,
         };
 
         await this.UpdateUnities(
           updateProductUnitesData,
           findProduct,
+          findProductIngredient,
           findEmployee,
           updateProductDTO.useStockSupplies,
           queryRunner,
         );
       }
 
-      await this.UpdateRegularData(findProduct, updateProductDTO, queryRunner);
+      const {
+        useStockSupplies,
+        addUnities,
+        takeUnities,
+        productIngredient,
+        ...productData
+      } = updateProductDTO;
+
+      await this.UpdateRegularData(findProduct, productData, queryRunner);
 
       for (let i = 0; i < Object.keys(updateProductDTO).length; i++) {
         updatesPerformed.push(Object.keys(updateProductDTO));
@@ -398,7 +428,7 @@ export class ProductService {
 
       const findUpdatedProduct = await this.productRepository.findOne({
         where: {
-          id: productId.id,
+          id: productId,
           is_active: true,
         },
       });
@@ -460,12 +490,12 @@ export class ProductService {
   private async UpdateUnities(
     updateProductUnitiesDTO: UpdateProductUnitiesDTO,
     product: Product,
+    recipe: ProductIngredient[],
     employee: Employee,
     useStockSupplies: boolean,
     queryRunner: QueryRunner,
   ) {
-    const { addUnities, takeUnities, productIngredient, id } =
-      updateProductUnitiesDTO;
+    const { addUnities, takeUnities, id } = updateProductUnitiesDTO;
 
     if (addUnities && takeUnities) {
       throw new BadRequestException(
@@ -478,12 +508,12 @@ export class ProductService {
 
     // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
     if (useStockSupplies && addUnities > 0) {
-      for (const ingredient of productIngredient) {
+      for (const ingredient of recipe) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
           SupplyRealTime,
           {
             where: {
-              id: ingredient.supplyId,
+              id: ingredient.supplyRealTime.id,
               is_active: true,
             },
             lock: { mode: 'pessimistic_write' },
@@ -492,7 +522,7 @@ export class ProductService {
 
         if (!doesSupplyReallyExists) {
           throw new NotFoundException(
-            `Insumo ${ingredient.supplyId} não encontrado`,
+            `Insumo ${ingredient.supplyRealTime.id} não encontrado`,
           );
         }
 
@@ -520,6 +550,12 @@ export class ProductService {
         if (updatedQuantity < 0) {
           throw new BadRequestException(
             `Quantidade insuficiente do insumo ${doesSupplyReallyExists.name}`,
+          );
+        }
+
+        if (Number(newTotalWeight) < 0) {
+          throw new BadRequestException(
+            `Peso do insumo ${doesSupplyReallyExists.name} não pode ser menor que 0`,
           );
         }
 
@@ -564,6 +600,8 @@ export class ProductService {
           unities: updatedQuantityByAddUnities,
           employee,
           supplyRealTime: doesSupplyReallyExists,
+          product,
+          ingredient,
         };
 
         const outflowCreate = queryRunner.manager.create(Outflow, data);

@@ -23,7 +23,7 @@ export class Product {
   @Column({ type: 'varchar', length: 100 })
   category: string;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', default: 0 })
   unities: number;
 
   @Column({ type: 'date', name: 'expiration_date' })
