@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
 import {
-  IsBoolean,
   IsDateString,
   IsInt,
   IsNotEmpty,
@@ -77,12 +76,6 @@ export class CreateProductWithRecipeDTO {
     message: 'O campo preco deve ser um string decima ex: 59.99',
   })
   readonly price: string;
-
-  @IsNotEmpty({
-    message: 'O campo "usar insumos em estoque é obrigatório"',
-  })
-  @IsBoolean()
-  readonly useStockSupplies: boolean;
 
   readonly productIngredient: CreateProductIngredientDTO[];
 }
