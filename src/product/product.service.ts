@@ -174,7 +174,7 @@ export class ProductService {
 
   async CreateWithRecipeAndRegisteredSupplies(
     tokenPayloadDTO: TokenPayloadDTO,
-    createProductWithRecipe: CreateProductWithRecipeDTO,
+    createProductWithRecipeDTO: CreateProductWithRecipeDTO,
   ) {
     const findEmployee = await this.employeesService.FindById(
       tokenPayloadDTO.sub,
@@ -188,7 +188,8 @@ export class ProductService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const productIngredientData: ProductIngredient[] = [];
+    const outflows: Outflow[] = [];
+    const newRecipe: ProductIngredient[] = [];
 
     try {
       const doesEmployeeReallyExists = await queryRunner.manager.findOne(
@@ -205,19 +206,19 @@ export class ProductService {
       }
 
       const data = {
-        name: createProductWithRecipe.name,
-        category: createProductWithRecipe.category,
-        unities: createProductWithRecipe.unities,
-        expirationDate: createProductWithRecipe.expirationDate,
-        lowStock: createProductWithRecipe.lowStock,
-        price: createProductWithRecipe.price,
+        name: createProductWithRecipeDTO.name,
+        category: createProductWithRecipeDTO.category,
+        unities: createProductWithRecipeDTO.unities,
+        expirationDate: createProductWithRecipeDTO.expirationDate,
+        lowStock: createProductWithRecipeDTO.lowStock,
+        price: createProductWithRecipeDTO.price,
       };
 
       const createProduct = queryRunner.manager.create(Product, data);
 
       const newProduct = await queryRunner.manager.save(Product, createProduct);
 
-      for (const supply of createProductWithRecipe.productIngredient) {
+      for (const supply of createProductWithRecipeDTO.productIngredient) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
           SupplyRealTime,
           {
@@ -231,7 +232,7 @@ export class ProductService {
 
         if (!doesSupplyReallyExists) {
           throw new UnauthorizedException(
-            `Insumo ${supply.supplyId} da receita do produto ${createProductWithRecipe.name} não encontrado`,
+            `Insumo ${supply.supplyId} da receita do produto ${createProductWithRecipeDTO.name} não encontrado`,
           );
         }
 
@@ -263,26 +264,9 @@ export class ProductService {
 
         if (!supplyUpdate || supplyUpdate.affected < 1) {
           throw new InternalServerErrorException(
-            `Erro ao atualizar insumo ${doesSupplyReallyExists.name} da receita do produto ${createProductWithRecipe.name}`,
+            `Erro ao atualizar insumo ${doesSupplyReallyExists.name} da receita do produto ${createProductWithRecipeDTO.name}`,
           );
         }
-
-        const dateAndHour = ReturnDateAndTimeForeignFormat();
-
-        const outflowData = {
-          date: dateAndHour[0],
-          hour: dateAndHour[1],
-          name: doesSupplyReallyExists.name,
-          category: doesSupplyReallyExists.category,
-          reason: 'Cadastro de produto',
-          unities: createProductWithRecipe.unities,
-          employee: doesEmployeeReallyExists,
-          supplyRealTime: doesSupplyReallyExists,
-        };
-
-        const createOutflow = queryRunner.manager.create(Outflow, outflowData);
-
-        await queryRunner.manager.save(Outflow, createOutflow);
 
         const productIngredientDataLoop = {
           supplyRealTime: doesSupplyReallyExists,
@@ -296,13 +280,35 @@ export class ProductService {
           productIngredientDataLoop,
         );
 
-        productIngredientData.push(createProductIngredient);
+        const newRecipeLoop = await queryRunner.manager.save(
+          ProductIngredient,
+          createProductIngredient,
+        );
+
+        newRecipe.push(newRecipeLoop);
+
+        const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+        const outflowData = {
+          date: dateAndHour[0],
+          hour: dateAndHour[1],
+          name: doesSupplyReallyExists.name,
+          category: doesSupplyReallyExists.category,
+          reason: `Cadastro do produto ${newProduct.name}`,
+          unities: createProductWithRecipeDTO.unities,
+          employee: doesEmployeeReallyExists,
+          supplyRealTime: doesSupplyReallyExists,
+          targetType: OutflowType.SUPPLY,
+          product: newProduct,
+          ingredient: newRecipeLoop,
+        };
+
+        const createOutflow = queryRunner.manager.create(Outflow, outflowData);
+
+        outflows.push(createOutflow);
       }
 
-      const newRecipe = await queryRunner.manager.save(
-        ProductIngredient,
-        productIngredientData,
-      );
+      await queryRunner.manager.save(Outflow, outflows);
 
       await queryRunner.commitTransaction();
 
