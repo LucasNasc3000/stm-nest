@@ -265,31 +265,30 @@ export class OutflowService {
         // enviar e email e continuar transação
       }
 
-      const quantityUpdate =
-        doesSupplyReallyExists.quantity - createOutflowDTO.unities;
-
-      const weighPerUnitDecimal = new Decimal(
-        doesSupplyReallyExists.weightPerUnit,
-      );
-
       const totalWeightDecimal = new Decimal(
         doesSupplyReallyExists.totalWeight,
       );
 
-      const outflowTotalWeight = weighPerUnitDecimal.mul(
+      const updatedTotalWeight = totalWeightDecimal.sub(
         createOutflowDTO.unities,
       );
 
-      const updatedTotalWeight = totalWeightDecimal
-        .sub(outflowTotalWeight)
-        .toString();
+      if (updatedTotalWeight.lessThan(0)) {
+        throw new BadRequestException(
+          `Estoque insuficiente para ${createOutflowDTO.name}`,
+        );
+      }
+
+      const updatedQuantity = Math.ceil(
+        updatedTotalWeight.div(doesSupplyReallyExists.weightPerUnit).toNumber(),
+      );
 
       const updateSupply = await queryRunner.manager.update(
         SupplyRealTime,
         doesSupplyReallyExists.id,
         {
-          quantity: quantityUpdate,
-          totalWeight: updatedTotalWeight,
+          quantity: updatedQuantity,
+          totalWeight: updatedTotalWeight.toString(),
         },
       );
 

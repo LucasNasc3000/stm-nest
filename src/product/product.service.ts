@@ -240,24 +240,23 @@ export class ProductService {
           doesSupplyReallyExists.totalWeight,
         );
 
-        const weightPerUnitDecimal = new Decimal(
-          doesSupplyReallyExists.weightPerUnit,
+        const newTotalWeight = totalWeightDecimal.sub(supply.quantity);
+
+        if (newTotalWeight.lessThan(0)) {
+          throw new BadRequestException(
+            `Estoque insuficiente para ${supply.supplyId}`,
+          );
+        }
+
+        const updatedQuantity = Math.ceil(
+          newTotalWeight.div(doesSupplyReallyExists.weightPerUnit).toNumber(),
         );
-
-        const totalWeightPerOutflow = weightPerUnitDecimal.mul(supply.quantity);
-
-        const newTotalWeight = totalWeightDecimal
-          .sub(totalWeightPerOutflow)
-          .toString();
-
-        const updatedQuantity =
-          doesSupplyReallyExists.quantity - supply.quantity;
 
         const supplyUpdate = await queryRunner.manager.update(
           SupplyRealTime,
           doesSupplyReallyExists.id,
           {
-            totalWeight: newTotalWeight,
+            totalWeight: newTotalWeight.toString(),
             quantity: updatedQuantity,
           },
         );
@@ -295,7 +294,7 @@ export class ProductService {
           name: doesSupplyReallyExists.name,
           category: doesSupplyReallyExists.category,
           reason: `Cadastro do produto ${newProduct.name}`,
-          unities: createProductWithRecipeDTO.unities,
+          unities: supply.quantity,
           employee: doesEmployeeReallyExists,
           supplyRealTime: doesSupplyReallyExists,
           targetType: OutflowType.SUPPLY,
@@ -534,26 +533,19 @@ export class ProductService {
           doesSupplyReallyExists.totalWeight,
         );
 
-        const weightPerUnitDecimal = new Decimal(
-          doesSupplyReallyExists.weightPerUnit,
-        );
-
         const updatedQuantityByAddUnities = ingredient.quantity * addUnities;
 
-        const totalWeightPerOutflow = weightPerUnitDecimal.mul(
+        const newTotalWeight = totalWeightDecimal.sub(
           updatedQuantityByAddUnities,
         );
 
-        const newTotalWeight = totalWeightDecimal
-          .sub(totalWeightPerOutflow)
-          .toString();
+        const updatedQuantity = Math.ceil(
+          newTotalWeight.div(doesSupplyReallyExists.weightPerUnit).toNumber(),
+        );
 
-        const updatedQuantity =
-          doesSupplyReallyExists.quantity - updatedQuantityByAddUnities;
-
-        if (updatedQuantity < 0) {
+        if (newTotalWeight.lessThan(0)) {
           throw new BadRequestException(
-            `Quantidade insuficiente do insumo ${doesSupplyReallyExists.name}`,
+            `Estoque insuficiente para ${doesSupplyReallyExists.name}`,
           );
         }
 
@@ -581,7 +573,7 @@ export class ProductService {
           SupplyRealTime,
           doesSupplyReallyExists.id,
           {
-            totalWeight: newTotalWeight,
+            totalWeight: newTotalWeight.toString(),
             quantity: updatedQuantity,
           },
         );
