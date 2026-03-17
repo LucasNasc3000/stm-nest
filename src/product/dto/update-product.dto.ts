@@ -11,7 +11,6 @@ import {
   Length,
   ValidateNested,
 } from 'class-validator';
-import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
 export class UpdateProductDTO {
@@ -56,18 +55,6 @@ export class UpdateProductDTO {
     message: 'campo "Quantidade mínima" deve ser maior que zero',
   })
   readonly lowStock?: number;
-
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
-    return value;
-  })
-  @IsDecimalString({
-    message: 'O campo preco deve ser um string decima ex: 59.99',
-  })
-  readonly price?: string;
 
   @IsOptional()
   @IsBoolean()

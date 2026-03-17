@@ -11,7 +11,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
@@ -456,13 +455,12 @@ export class ProductService {
     }
   }
 
-  async UpdatePrice(idParam: UrlUuidDTO, priceParam: UpdatePriceProductDTO) {
-    const { id } = idParam;
+  async UpdatePrice(idParam: string, priceParam: UpdatePriceProductDTO) {
     const { price } = priceParam;
 
     const findProduct = await this.productRepository.findOne({
       where: {
-        id,
+        id: idParam,
         is_active: true,
       },
     });
@@ -472,7 +470,7 @@ export class ProductService {
     }
 
     const productUpdate = await this.productRepository.preload({
-      id,
+      id: idParam,
       price,
     });
 
@@ -503,7 +501,7 @@ export class ProductService {
       );
     }
 
-    let productUnities: number = 0;
+    let productUnities: number = product.unities;
     const outflows: Outflow[] = [];
 
     // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
@@ -608,57 +606,57 @@ export class ProductService {
 
         outflows.push(outflowCreate);
       }
+    }
 
-      if (addUnities) productUnities += addUnities;
+    if (addUnities) productUnities += addUnities;
 
-      if (takeUnities) {
-        productUnities -= takeUnities;
+    if (takeUnities) {
+      productUnities -= takeUnities;
 
-        if (productUnities < 0) {
-          throw new BadRequestException(
-            'A quantidade do produto em estoque não pode ser negativa',
-          );
-        }
-
-        if (productUnities === 0) {
-          // avisar que acabou
-        }
-
-        if (productUnities <= product.lowStock) {
-          // avisar e mandar quantidade que sobrou
-        }
-
-        const dateAndHour = ReturnDateAndTimeForeignFormat();
-
-        const data = {
-          targetType: OutflowType.PRODUCT,
-          date: dateAndHour[0],
-          hour: dateAndHour[1],
-          name: product.name,
-          category: product.category,
-          reason: `Baixa no estoque do produto ${product.name}`,
-          unities: takeUnities,
-          employee,
-          product,
-        };
-
-        const outflowCreate = queryRunner.manager.create(Outflow, data);
-
-        outflows.push(outflowCreate);
+      if (productUnities < 0) {
+        throw new BadRequestException(
+          'A quantidade do produto em estoque não pode ser negativa',
+        );
       }
 
-      await queryRunner.manager.save(Outflow, outflows);
+      if (productUnities === 0) {
+        // avisar que acabou
+      }
 
-      if (addUnities || takeUnities) {
-        const updateProduct = await queryRunner.manager.update(Product, id, {
-          unities: productUnities,
-        });
+      if (productUnities <= product.lowStock) {
+        // avisar e mandar quantidade que sobrou
+      }
 
-        if (!updateProduct || updateProduct.affected < 1) {
-          throw new InternalServerErrorException(
-            'Erro ao atualizar quantidade do produto',
-          );
-        }
+      const dateAndHour = ReturnDateAndTimeForeignFormat();
+
+      const data = {
+        targetType: OutflowType.PRODUCT,
+        date: dateAndHour[0],
+        hour: dateAndHour[1],
+        name: product.name,
+        category: product.category,
+        reason: `Baixa no estoque do produto ${product.name}`,
+        unities: takeUnities,
+        employee,
+        product,
+      };
+
+      const outflowCreate = queryRunner.manager.create(Outflow, data);
+
+      outflows.push(outflowCreate);
+    }
+
+    await queryRunner.manager.save(Outflow, outflows);
+
+    if (addUnities || takeUnities) {
+      const updateProduct = await queryRunner.manager.update(Product, id, {
+        unities: productUnities,
+      });
+
+      if (!updateProduct || updateProduct.affected < 1) {
+        throw new InternalServerErrorException(
+          'Erro ao atualizar quantidade do produto',
+        );
       }
     }
   }
