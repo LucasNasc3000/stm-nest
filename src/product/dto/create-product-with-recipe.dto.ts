@@ -42,6 +42,9 @@ export class CreateProductWithRecipeDTO {
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
   })
+  @IsPositive({
+    message: 'campo "unidades" deve ser maior que zero',
+  })
   readonly unities: number;
 
   @IsNotEmpty({

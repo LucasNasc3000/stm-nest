@@ -106,6 +106,7 @@ export class ProductService {
         expirationDate: createProductWithRecipe.expirationDate,
         lowStock: createProductWithRecipe.lowStock,
         price: createProductWithRecipe.price,
+        unities: 0,
       };
 
       const createProduct = queryRunner.manager.create(Product, data);
