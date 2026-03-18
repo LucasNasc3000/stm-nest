@@ -27,7 +27,6 @@ import { PaginationByHourDTO } from './dto/pagination-hour.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationByTypeDTO } from './dto/pagination-type.dto';
-import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { Outflow } from './entities/outflow.entity';
 
 @Injectable()
@@ -553,43 +552,6 @@ export class OutflowService {
     }
 
     return [total, ...outflowFindByCategory];
-  }
-
-  async FindByUnities(paginationByUnities: PaginationByUnitiesDTO) {
-    const { limit, offset, value } = paginationByUnities;
-
-    const [outflowFindByUnities, total] =
-      await this.outflowRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          unities: +value,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
-
-    if (!outflowFindByUnities) {
-      throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por saídas',
-      );
-    }
-
-    if (outflowFindByUnities.length < 1) {
-      throw new NotFoundException('Saídas não encontradas');
-    }
-
-    return [total, ...outflowFindByUnities];
   }
 
   async FindByReason(paginationByReason: PaginationByReasonDTO) {

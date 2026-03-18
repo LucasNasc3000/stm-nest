@@ -21,7 +21,6 @@ import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
-import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { UpdatePriceProductDTO } from './dto/update-product-price.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductFindService } from './product-find.service';
@@ -113,13 +112,6 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.productFindService.FindByPrice(paginationByPriceDto);
-  }
-
-  @SkipThrottle({ write: true, auth: true })
-  @Get('search/unities/')
-  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByUnities(@Query() paginationByUnitiesDto: PaginationByUnitiesDTO) {
-    return this.productFindService.FindByUnities(paginationByUnitiesDto);
   }
 
   @SkipThrottle({ write: true, auth: true })

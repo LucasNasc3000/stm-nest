@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, Matches, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 
 export class PaginationByHourDTO {
   @IsInt({
@@ -23,13 +23,9 @@ export class PaginationByHourDTO {
   @Type(() => Number)
   offset: number;
 
-  // Source - https://stackoverflow.com/a
-  // Posted by M00SH
-  // Retrieved 2026-01-19, License - CC BY-SA 4.0
-
   @IsNotEmpty({
     message: '"campo "hora" não preenchido',
   })
-  @Matches(/^(1[0-2]|0?[1-9]):([0-5]?[0-9]):([0-5]?[0-9])$/)
+  @IsString()
   readonly value: string;
 }

@@ -5,13 +5,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeService } from 'src/employee/employee.service';
-import { Like, Repository } from 'typeorm';
+import { Like, Raw, Repository } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
-import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -98,44 +97,6 @@ export class ProductFindService {
     return [total, ...productFindByCategory];
   }
 
-  async FindByUnities(paginationByUnities: PaginationByUnitiesDTO) {
-    const { limit, offset, value } = paginationByUnities;
-
-    const [productFindByUnities, total] =
-      await this.productRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          unities: +value,
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
-
-    if (!productFindByUnities) {
-      throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por produtos',
-      );
-    }
-
-    if (productFindByUnities.length < 1) {
-      throw new NotFoundException('Produtos não encontradas');
-    }
-
-    return [total, ...productFindByUnities];
-  }
-
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
     const { limit, offset, value } = paginatioByExpDateDTO;
 
@@ -184,7 +145,9 @@ export class ProductFindService {
           id: 'desc',
         },
         where: {
-          price: value,
+          price: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
+            value: `${value}%`,
+          }),
           is_active: true,
         },
         relations: {

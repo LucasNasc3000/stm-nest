@@ -1,11 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-  IsDateString,
-  IsNotEmpty,
-  IsString,
-  Length,
-  Matches,
-} from 'class-validator';
+import { IsDateString, IsNotEmpty, IsString, Length } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SaleItemsDTO } from './sale-items.dto';
 
@@ -16,11 +10,9 @@ export class CreateSaleDTO {
   @IsDateString()
   readonly date: string;
 
-  // Source - https://stackoverflow.com/a
-  // Posted by M00SH
-  // Retrieved 2026-01-19, License - CC BY-SA 4.0
-
-  @Matches(/^(1[0-2]|0?[1-9]):([0-5]?[0-9]):([0-5]?[0-9])$/)
+  @IsNotEmpty({
+    message: 'campo "hora" não preenchido',
+  })
   readonly hour: string;
 
   @IsNotEmpty({

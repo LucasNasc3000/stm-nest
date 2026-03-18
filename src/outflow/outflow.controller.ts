@@ -22,7 +22,6 @@ import { PaginationByHourDTO } from './dto/pagination-hour.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationByTypeDTO } from './dto/pagination-type.dto';
-import { PaginationByUnitiesDTO } from './dto/pagination-unities.dto';
 import { OutflowService } from './outflow.service';
 
 @UseGuards(RoutePolicyGuard)
@@ -90,13 +89,6 @@ export class OutflowController {
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   FindByHour(@Query() paginationByHourDto: PaginationByHourDTO) {
     return this.outflowsService.FindByHour(paginationByHourDto);
-  }
-
-  @SkipThrottle({ write: true, auth: true })
-  @Get('search/unities/')
-  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByUnities(@Query() paginationByUnitiesDto: PaginationByUnitiesDTO) {
-    return this.outflowsService.FindByUnities(paginationByUnitiesDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
