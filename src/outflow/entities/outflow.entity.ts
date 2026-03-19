@@ -1,3 +1,4 @@
+import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
@@ -32,8 +33,11 @@ export class Outflow {
   @Column({ type: 'varchar', length: 50 })
   category: string;
 
-  @Column({ type: 'varchar', length: 120 })
-  reason: string;
+  @Column({ type: 'enum', enum: OutflowReason })
+  reason: OutflowReason;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  notes: string;
 
   @Column({ type: 'integer' })
   unities: number;

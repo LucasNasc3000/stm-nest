@@ -3,10 +3,14 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
   IsString,
   Length,
+  MaxLength,
+  ValidateIf,
 } from 'class-validator';
+import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 
 export class CreateOutflowDTO {
@@ -43,13 +47,10 @@ export class CreateOutflowDTO {
   @IsNotEmpty({
     message: 'campo "motivo" não preenchido',
   })
-  @IsString({
-    message: 'campo "motivo" deve estar em formato de texto',
+  @IsEnum(OutflowReason, {
+    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(OutflowReason).join(', ')}`,
   })
-  @Length(0, 50, {
-    message: 'campo "motivo" deve ter no máximo 50 caracteres',
-  })
-  readonly reason: string;
+  readonly reason: OutflowReason;
 
   @IsNotEmpty({
     message: 'campo "unidades" não preenchido',
@@ -62,4 +63,13 @@ export class CreateOutflowDTO {
     message: 'campo "unidades" deve ser maior que zero',
   })
   readonly unities: number;
+
+  @IsOptional()
+  @ValidateIf((o) => o.reason === OutflowReason.OTHER)
+  @IsNotEmpty({
+    message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
+  })
+  @IsString()
+  @MaxLength(500)
+  readonly notes?: string;
 }

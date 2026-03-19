@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
-import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -35,7 +34,6 @@ export class ProductController {
     private readonly productFindService: ProductFindService,
   ) {}
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/withoutRecipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
@@ -46,7 +44,6 @@ export class ProductController {
     return this.productService.CreateWithoutRecipe(tokenPayloadDTO, body);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/withRecipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
@@ -57,7 +54,6 @@ export class ProductController {
     return this.productService.CreateWithRecipe(tokenPayloadDTO, body);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/withRecipe/registeredSupplies')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
@@ -71,7 +67,6 @@ export class ProductController {
     );
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/general/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
@@ -83,7 +78,6 @@ export class ProductController {
     return this.productService.Update(tokenPayloadDTO, id, updateProductDTO);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })

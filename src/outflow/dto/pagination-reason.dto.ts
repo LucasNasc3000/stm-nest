@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 
 export class PaginationByReasonDTO {
   @IsInt({
@@ -26,11 +27,8 @@ export class PaginationByReasonDTO {
   @IsNotEmpty({
     message: 'campo "motivo" não preenchido',
   })
-  @IsString({
-    message: 'campo "motivo" deve estar em formato de texto',
+  @IsEnum(OutflowReason, {
+    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(OutflowReason).join(', ')}`,
   })
-  @Length(0, 90, {
-    message: 'campo "motivo" deve ter no máximo 90 caracteres',
-  })
-  value: string;
+  value: OutflowReason;
 }
