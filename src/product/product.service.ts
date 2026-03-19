@@ -11,6 +11,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
@@ -295,8 +296,7 @@ export class ProductService {
           hour: dateAndHour[1],
           name: doesSupplyReallyExists.name,
           category: doesSupplyReallyExists.category,
-          reason: createProductWithRecipeDTO.reason,
-          notes: createProductWithRecipeDTO.notes || null,
+          reason: OutflowReason.PRODUCT_REGISTER,
           unities: supply.quantity,
           employee: doesEmployeeReallyExists,
           supplyRealTime: doesSupplyReallyExists,

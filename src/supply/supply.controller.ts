@@ -50,6 +50,7 @@ export class SupplyController {
     return this.supplyService.Create(body, tokenPayloadDTO);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.UPDATE })

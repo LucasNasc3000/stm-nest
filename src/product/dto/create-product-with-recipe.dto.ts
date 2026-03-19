@@ -2,19 +2,15 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
   Length,
-  MaxLength,
-  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
-import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { CreateProductIngredientDTO } from './create-product-ingredient.dto';
 
 export class CreateProductWithRecipeDTO {
@@ -91,19 +87,4 @@ export class CreateProductWithRecipeDTO {
   @ValidateNested({ each: true })
   @Type(() => CreateProductIngredientDTO)
   readonly productIngredient: CreateProductIngredientDTO[];
-
-  @IsOptional()
-  @IsEnum(OutflowReason, {
-    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(OutflowReason).join(', ')}`,
-  })
-  readonly reason?: OutflowReason;
-
-  @IsOptional()
-  @ValidateIf((o) => o.reason === OutflowReason.OTHER)
-  @IsNotEmpty({
-    message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
-  })
-  @IsString()
-  @MaxLength(500)
-  readonly notes?: string;
 }
