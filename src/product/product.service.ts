@@ -104,7 +104,7 @@ export class ProductService {
         name: createProductWithRecipe.name,
         category: createProductWithRecipe.category,
         expirationDate: createProductWithRecipe.expirationDate,
-        lowStock: createProductWithRecipe.lowStock,
+        lowStock: createProductWithRecipe.lowStock || null,
         price: createProductWithRecipe.price,
         unities: 0,
       };
@@ -211,8 +211,9 @@ export class ProductService {
         category: createProductWithRecipeDTO.category,
         unities: createProductWithRecipeDTO.unities,
         expirationDate: createProductWithRecipeDTO.expirationDate,
-        lowStock: createProductWithRecipeDTO.lowStock,
+        lowStock: createProductWithRecipeDTO.lowStock || null,
         price: createProductWithRecipeDTO.price,
+        employee: doesEmployeeReallyExists,
       };
 
       const createProduct = queryRunner.manager.create(Product, data);

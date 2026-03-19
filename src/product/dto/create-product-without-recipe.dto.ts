@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
   IsString,
   Length,
@@ -50,9 +51,7 @@ export class CreateProductWithoutRecipeDTO {
   @IsDateString()
   readonly expirationDate: string;
 
-  @IsNotEmpty({
-    message: 'campo "Quantidade mínima" não preenchido',
-  })
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
@@ -60,7 +59,7 @@ export class CreateProductWithoutRecipeDTO {
   @IsPositive({
     message: 'campo "Quantidade mínima" deve ser maior que zero',
   })
-  readonly lowStock: number;
+  readonly lowStock?: number;
 
   @IsNotEmpty({
     message: 'Campo "preço" não preenchido',

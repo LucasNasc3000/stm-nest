@@ -18,6 +18,7 @@ import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
@@ -112,6 +113,13 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
     return this.productFindService.FindByPrice(paginationByPriceDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/employee/')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
+    return this.productFindService.FindByEmployee(paginationByEmployeeDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
