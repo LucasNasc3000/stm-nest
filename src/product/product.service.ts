@@ -360,7 +360,6 @@ export class ProductService {
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
           id: productId,
-          is_active: true,
         },
         lock: { mode: 'pessimistic_write' },
       });
@@ -375,7 +374,6 @@ export class ProductService {
           where: {
             product: {
               id: findProduct.id,
-              is_active: true,
             },
             isActive: true,
           },
@@ -445,7 +443,6 @@ export class ProductService {
       const findUpdatedProduct = await this.productRepository.findOne({
         where: {
           id: productId,
-          is_active: true,
         },
       });
 

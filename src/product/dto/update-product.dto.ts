@@ -62,6 +62,10 @@ export class UpdateProductDTO {
 
   @IsOptional()
   @IsBoolean()
+  readonly is_active?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
   readonly disableProduct?: boolean;
 
   @ValidateIf((o) => o.addUnities > 0)
