@@ -3,14 +3,18 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
   Length,
+  MaxLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
 export class UpdateProductDTO {
@@ -60,11 +64,12 @@ export class UpdateProductDTO {
   @IsBoolean()
   readonly disableProduct?: boolean;
 
+  @ValidateIf((o) => o.addUnities > 0)
   @IsNotEmpty({
     message: 'O campo "usar insumos em estoque é obrigatório"',
   })
   @IsBoolean()
-  readonly useStockSupplies: boolean;
+  readonly useStockSupplies?: boolean;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -85,6 +90,23 @@ export class UpdateProductDTO {
     message: 'campo "tirar unidades" deve ser maior que zero',
   })
   readonly takeUnities?: number;
+
+  @ValidateIf((o) => o.takeUnities > 0)
+  @IsNotEmpty({
+    message: 'campo "motivo" não preenchido',
+  })
+  @IsEnum(OutflowReason, {
+    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(OutflowReason).join(', ')}`,
+  })
+  readonly reason?: OutflowReason;
+
+  @ValidateIf((o) => o.reason === OutflowReason.OTHER)
+  @IsNotEmpty({
+    message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
+  })
+  @IsString()
+  @MaxLength(500)
+  readonly notes?: string;
 
   @IsOptional()
   @IsArray({

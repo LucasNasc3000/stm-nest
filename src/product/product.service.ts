@@ -401,10 +401,12 @@ export class ProductService {
       }
 
       if (updateProductDTO.addUnities || updateProductDTO.takeUnities) {
-        const updateProductUnitesData = {
+        const updateProductUnitesData: UpdateProductUnitiesDTO = {
           id: findProduct.id,
           addUnities: updateProductDTO.addUnities,
           takeUnities: updateProductDTO.takeUnities,
+          reason: updateProductDTO.reason,
+          notes: updateProductDTO.notes,
         };
 
         await this.UpdateUnities(
@@ -417,11 +419,18 @@ export class ProductService {
         );
       }
 
+      if (updateProductDTO.disableProduct === true) {
+        await this.DisableProduct(findProduct, queryRunner);
+      }
+
       const {
         useStockSupplies,
         addUnities,
         takeUnities,
         productIngredient,
+        reason,
+        notes,
+        disableProduct,
         ...productData
       } = updateProductDTO;
 
@@ -766,6 +775,23 @@ export class ProductService {
     if (!productUpdate || productUpdate.affected < 1) {
       throw new InternalServerErrorException(
         `Erro ao tentar atualizar produto: ${product.name}`,
+      );
+    }
+  }
+
+  private async DisableProduct(product: Product, queryRunner: QueryRunner) {
+    const productUpdate = await queryRunner.manager.update(
+      Product,
+      product.id,
+      {
+        id: product.id,
+        is_active: false,
+      },
+    );
+
+    if (!productUpdate || productUpdate.affected < 1) {
+      throw new InternalServerErrorException(
+        `Erro ao tentar excluir produto: ${product.name}`,
       );
     }
   }

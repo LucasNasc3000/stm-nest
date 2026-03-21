@@ -3,7 +3,6 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsPositive,
   IsString,
   Length,
@@ -64,7 +63,6 @@ export class CreateOutflowDTO {
   })
   readonly unities: number;
 
-  @IsOptional()
   @ValidateIf((o) => o.reason === OutflowReason.OTHER)
   @IsNotEmpty({
     message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
