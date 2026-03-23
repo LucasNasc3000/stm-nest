@@ -14,7 +14,7 @@ import { OutflowType } from 'src/common/enums/outflow-type.enum';
 
 export class CreateOutflowDTO {
   @IsNotEmpty({
-    message: 'campo "data" não preenchido',
+    message: 'campo "tipo de saída" não preenchido',
   })
   @IsEnum(OutflowType, {
     message: 'Tipo de saída inválido',

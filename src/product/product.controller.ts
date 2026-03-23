@@ -69,7 +69,6 @@ export class ProductController {
     );
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/general/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })

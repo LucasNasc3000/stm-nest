@@ -198,19 +198,6 @@ export class OutflowService {
       throw new UnauthorizedException('Funcionário não encontrado');
     }
 
-    const supplyExists = await this.supplyHistoryRepository.findOne({
-      where: {
-        name: createOutflowDTO.name,
-        category: createOutflowDTO.category,
-      },
-    });
-
-    if (!supplyExists) {
-      throw new NotFoundException(
-        `Ocorreu um erro interno ou o insumo ${createOutflowDTO.name} não está cadastrado`,
-      );
-    }
-
     if (createOutflowDTO.targetType !== OutflowType.SUPPLY) {
       throw new BadRequestException('O tipo de saída deve ser "SUPPLY"');
     }
@@ -255,40 +242,12 @@ export class OutflowService {
         createOutflowDTO,
       );
 
-      if (quantityCheck === 'Stock_out') {
-        throw new BadRequestException(
-          `Estoque insuficiente para ${createOutflowDTO.name}`,
-        );
-      }
-
-      if (quantityCheck === 'Low_stock') {
-        // enviar e email e continuar transação
-      }
-
-      const totalWeightDecimal = new Decimal(
-        doesSupplyReallyExists.totalWeight,
-      );
-
-      const updatedTotalWeight = totalWeightDecimal.sub(
-        createOutflowDTO.unities,
-      );
-
-      if (updatedTotalWeight.lessThan(0)) {
-        throw new BadRequestException(
-          `Estoque insuficiente para ${createOutflowDTO.name}`,
-        );
-      }
-
-      const updatedQuantity = Math.ceil(
-        updatedTotalWeight.div(doesSupplyReallyExists.weightPerUnit).toNumber(),
-      );
-
       const updateSupply = await queryRunner.manager.update(
         SupplyRealTime,
         doesSupplyReallyExists.id,
         {
-          quantity: updatedQuantity,
-          totalWeight: updatedTotalWeight.toString(),
+          quantity: quantityCheck.updatedQuantity,
+          totalWeight: quantityCheck.updatedTotalWeight,
         },
       );
 
@@ -341,11 +300,32 @@ export class OutflowService {
   }
 
   QuantityCheck(supply: SupplyRealTime, outflow: CreateOutflowDTO) {
-    const sub = supply.quantity - outflow.unities;
+    const totalWeightDecimal = new Decimal(supply.totalWeight);
 
-    if (sub < 1) return 'Stock_out';
+    const updatedTotalWeight = totalWeightDecimal.sub(outflow.unities);
 
-    if (sub > 0 && sub <= supply.lowStock) return 'Low_stock';
+    if (updatedTotalWeight.lessThan(0)) {
+      throw new BadRequestException(
+        `Estoque insuficiente para ${outflow.name}`,
+      );
+    }
+
+    const updatedQuantity = Math.ceil(
+      updatedTotalWeight.div(supply.weightPerUnit).toNumber(),
+    );
+
+    if (updatedQuantity === 0) {
+      // Email de "Stock-out"
+    }
+
+    if (updatedQuantity > 0 && updatedQuantity <= supply.lowStock) {
+      // Email de "Low-stock"
+    }
+
+    return {
+      updatedTotalWeight: updatedTotalWeight.toString(),
+      updatedQuantity,
+    };
   }
 
   async FindById(id: UrlUuidDTO) {
