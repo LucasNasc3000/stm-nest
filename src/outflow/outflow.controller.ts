@@ -13,7 +13,6 @@ import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -55,7 +54,7 @@ export class OutflowController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/:id')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindById(@Param('id') id: UrlUuidDTO) {
+  FindById(@Param('id') id: string) {
     return this.outflowsService.FindById(id);
   }
 

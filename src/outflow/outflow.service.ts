@@ -10,13 +10,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Raw, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -292,10 +291,10 @@ export class OutflowService {
     };
   }
 
-  async FindById(id: UrlUuidDTO) {
+  async FindById(id: string) {
     const outflowFindById = await this.outflowRepository.findOne({
       where: {
-        id: id.id,
+        id,
       },
       relations: {
         employee: true,
@@ -400,7 +399,9 @@ export class OutflowService {
           id: 'desc',
         },
         where: {
-          hour: value,
+          hour: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
+            value: `${value}%`,
+          }),
         },
         relations: {
           employee: true,
