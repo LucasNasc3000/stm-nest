@@ -601,7 +601,7 @@ export class ProductService {
           hour: dateAndHour[1],
           name: doesSupplyReallyExists.name,
           category: doesSupplyReallyExists.category,
-          reason: updateProductUnitiesDTO.reason,
+          reason: OutflowReason.PRODUCT_REGISTER,
           notes: updateProductUnitiesDTO.notes || null,
           unities: updatedQuantityByAddUnities,
           employee,
