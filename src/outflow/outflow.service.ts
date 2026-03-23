@@ -12,10 +12,8 @@ import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
-import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Product } from 'src/product/entities/product.entity';
-import { SupplyHistory } from 'src/supply/entities/supply-history.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, Repository } from 'typeorm';
@@ -34,14 +32,6 @@ export class OutflowService {
   constructor(
     @InjectRepository(Outflow)
     private readonly outflowRepository: Repository<Outflow>,
-
-    @InjectRepository(SupplyHistory)
-    private readonly supplyHistoryRepository: Repository<SupplyHistory>,
-
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
-
-    private readonly employeesService: EmployeeService,
     private dataSource: DataSource,
     private readonly logger: Logger,
   ) {}
@@ -50,26 +40,6 @@ export class OutflowService {
     createOutflowDTO: CreateOutflowDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
-
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
-    }
-
-    const productExists = await this.productRepository.findOne({
-      where: {
-        name: createOutflowDTO.name,
-      },
-    });
-
-    if (!productExists) {
-      throw new NotFoundException(
-        `Ocorreu um erro interno ou o insumo ${createOutflowDTO.name} não está cadastrado`,
-      );
-    }
-
     if (createOutflowDTO.targetType !== OutflowType.PRODUCT) {
       throw new BadRequestException('O tipo de saída deve ser "PRODUCT"');
     }
@@ -123,13 +93,15 @@ export class OutflowService {
         differenceBetween <= doesProductReallyExists.lowStock
       ) {
         if (differenceBetween === 0) {
-          // avisar que acabou
+          // Email de "Stock-out"
         }
 
-        if (differenceBetween <= doesProductReallyExists.lowStock) {
-          // mandar o aviso e a quantidade que sobrou
+        if (
+          differenceBetween > 0 &&
+          differenceBetween <= doesProductReallyExists.lowStock
+        ) {
+          // Email de "Low-stock" e quantidade restante
         }
-        // Mandar email avisando da quantidade do produto
       }
 
       const productUpdate = await queryRunner.manager.update(
@@ -190,14 +162,6 @@ export class OutflowService {
     createOutflowDTO: CreateOutflowDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
-
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
-    }
-
     if (createOutflowDTO.targetType !== OutflowType.SUPPLY) {
       throw new BadRequestException('O tipo de saída deve ser "SUPPLY"');
     }
