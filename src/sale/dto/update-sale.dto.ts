@@ -1,6 +1,7 @@
-import { IsString, Length } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 
 export class UpdateSaleDTO {
+  @IsOptional()
   @IsString({
     message: 'campo "nome do cliente" deve estar em formato de texto',
   })
@@ -9,6 +10,17 @@ export class UpdateSaleDTO {
   })
   readonly clientName?: string;
 
+  @IsOptional()
+  @IsString({
+    message: 'campo "email" deve estar em formato de texto',
+  })
+  @IsEmail()
+  @Length(13, 50, {
+    message: 'O campo "email" deve ter no mínimo 13 e no máximo 50 caracteres',
+  })
+  readonly clientEmail?: string;
+
+  @IsOptional()
   @IsString({
     message: 'campo "telefone" deve estar em formato de texto',
   })
@@ -17,6 +29,7 @@ export class UpdateSaleDTO {
   })
   readonly phoneNumber?: string;
 
+  @IsOptional()
   @IsString({
     message: 'campo "endereço" deve estar em formato de texto',
   })

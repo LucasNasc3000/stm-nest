@@ -20,7 +20,6 @@ import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
-import { UpdatePriceSaleDTO } from './dto/update-price-sale.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
 import { SaleItems } from './entities/sale-items.entity';
 import { Sale } from './entities/sale.entity';
@@ -162,36 +161,6 @@ export class SaleService {
     if (!supplyUpdate || !saleUpdated) {
       throw new InternalServerErrorException(
         'Erro ao tentar atualizar registro da venda',
-      );
-    }
-
-    return saleUpdated;
-  }
-
-  async UpdatePrice(
-    saleId: UrlUuidDTO,
-    updatePriceSaleDTO: UpdatePriceSaleDTO,
-  ) {
-    const findSale = await this.salesRepository.findOne({
-      where: {
-        id: saleId.id,
-      },
-    });
-
-    if (!findSale) {
-      throw new NotFoundException('Registro de venda não encontrado');
-    }
-
-    const supplyUpdate = await this.salesRepository.preload({
-      id: saleId.id,
-      price: updatePriceSaleDTO.price,
-    });
-
-    const saleUpdated = await this.salesRepository.save(supplyUpdate);
-
-    if (!supplyUpdate || !saleUpdated) {
-      throw new InternalServerErrorException(
-        'Erro ao tentar atualizar preço do registro da venda',
       );
     }
 

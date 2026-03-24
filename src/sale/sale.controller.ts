@@ -22,7 +22,6 @@ import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
-import { UpdatePriceSaleDTO } from './dto/update-price-sale.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
 import { SaleService } from './sale.service';
 
@@ -40,17 +39,6 @@ export class SaleController {
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
     return this.salesService.Create(tokenPayloadDTO, body);
-  }
-
-  @SkipCsrf()
-  @SkipThrottle({ read: true, auth: true })
-  @Patch(':id')
-  @SetRoutePolicy({ resource: Resource.SALES, action: Action.EDIT_PRICES })
-  UpdatePrice(
-    @Param('id') id: UrlUuidDTO,
-    @Body() updatePriceSaleDTO: UpdatePriceSaleDTO,
-  ) {
-    return this.salesService.UpdatePrice(id, updatePriceSaleDTO);
   }
 
   @SkipCsrf()

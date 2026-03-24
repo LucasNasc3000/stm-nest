@@ -32,7 +32,7 @@ export class CreateSaleDTO {
   @Length(13, 50, {
     message: 'O campo "email" deve ter no mínimo 13 e no máximo 50 caracteres',
   })
-  readonly email?: string;
+  readonly clientEmail?: string;
 
   @IsOptional()
   @Matches(/^\(\d{2}\) \d{4,5}-\d{4}$/, {
