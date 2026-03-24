@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsDateString,
   IsInt,
@@ -84,6 +85,7 @@ export class CreateProductWithRecipeDTO {
   @IsArray({
     message: 'Ingredientes devem estar em um array',
   })
+  @ArrayMinSize(1, { message: 'A receita deve ter ao menos 1 produto' })
   @ValidateNested({ each: true })
   @Type(() => CreateProductIngredientDTO)
   readonly productIngredient: CreateProductIngredientDTO[];

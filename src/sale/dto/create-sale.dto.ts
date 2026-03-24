@@ -1,5 +1,13 @@
-import { Transform } from 'class-transformer';
-import { IsDateString, IsNotEmpty, IsString, Length } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsDateString,
+  IsNotEmpty,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SaleItemsDTO } from './sale-items.dto';
 
@@ -49,7 +57,7 @@ export class CreateSaleDTO {
   readonly address: string;
 
   @IsNotEmpty({
-    message: 'Campo "preço" não preenchido',
+    message: 'campo "preço" não preenchido',
   })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
@@ -62,5 +70,14 @@ export class CreateSaleDTO {
   })
   readonly price: string;
 
+  @IsNotEmpty({
+    message: 'campo "itens" não preenchido',
+  })
+  @IsArray({
+    message: 'Ingredientes devem estar em um array',
+  })
+  @ArrayMinSize(1, { message: 'A venda deve ter ao menos 1 item' })
+  @ValidateNested({ each: true })
+  @Type(() => SaleItemsDTO)
   readonly saleItems: SaleItemsDTO[];
 }

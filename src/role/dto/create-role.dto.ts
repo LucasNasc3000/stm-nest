@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsNotEmpty,
   IsString,
@@ -25,6 +26,9 @@ export class CreateRoleDTO {
   })
   @IsArray({
     message: 'Permissões deve ser um array',
+  })
+  @ArrayMinSize(1, {
+    message: 'Deve haver ao menos uma permissão (Recurso e Ação)',
   })
   @ValidateNested({ each: true }) // <--- ESSENCIAL: Valida cada item do array
   @Type(() => CreatePermissionDTO)

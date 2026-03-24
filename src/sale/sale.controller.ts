@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
+import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -30,6 +31,7 @@ import { SaleService } from './sale.service';
 export class SaleController {
   constructor(private readonly salesService: SaleService) {}
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post()
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.CREATE })
@@ -40,6 +42,7 @@ export class SaleController {
     return this.salesService.Create(tokenPayloadDTO, body);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.EDIT_PRICES })
@@ -50,6 +53,7 @@ export class SaleController {
     return this.salesService.UpdatePrice(id, updatePriceSaleDTO);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
