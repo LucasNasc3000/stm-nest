@@ -2,7 +2,6 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
-  IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -13,17 +12,6 @@ import {
 import { SaleItemsDTO } from './sale-items.dto';
 
 export class CreateSaleDTO {
-  @IsNotEmpty({
-    message: 'campo "data" não preenchido',
-  })
-  @IsDateString()
-  readonly date: string;
-
-  @IsNotEmpty({
-    message: 'campo "hora" não preenchido',
-  })
-  readonly hour: string;
-
   @IsNotEmpty({
     message: 'campo "nome do cliente" não preenchido',
   })

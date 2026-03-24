@@ -1,3 +1,4 @@
+import { IsEmail } from 'class-validator';
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
   Column,
@@ -17,6 +18,10 @@ export class Sale {
 
   @Column({ type: 'varchar', length: 125, name: 'client_name' })
   clientName: string;
+
+  @Column({ type: 'varchar', length: 50, name: 'client_email', nullable: true })
+  @IsEmail()
+  clientEmail: string;
 
   @Column({ type: 'varchar', length: 14, name: 'phone_number', nullable: true })
   phoneNumber: string;
