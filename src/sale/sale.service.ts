@@ -49,8 +49,6 @@ export class SaleService {
     await queryRunner.startTransaction();
 
     const dataSale = {
-      date: createSaleDTO.date,
-      hour: createSaleDTO.hour,
       clientName: createSaleDTO.clientName,
       phoneNumber: createSaleDTO.phoneNumber,
       address: createSaleDTO.address,

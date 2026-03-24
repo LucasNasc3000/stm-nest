@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -22,6 +23,16 @@ export class CreateSaleDTO {
     message: 'campo "nome do cliente" deve ter no máximo 125 caracteres',
   })
   readonly clientName: string;
+
+  @IsOptional()
+  @IsString({
+    message: 'campo "email" deve estar em formato de texto',
+  })
+  @IsEmail()
+  @Length(13, 50, {
+    message: 'O campo "email" deve ter no mínimo 13 e no máximo 50 caracteres',
+  })
+  readonly email?: string;
 
   @IsOptional()
   @Matches(/^\(\d{2}\) \d{4,5}-\d{4}$/, {
