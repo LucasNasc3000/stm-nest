@@ -1,10 +1,12 @@
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { SaleItems } from './sale-items.entity';
 
@@ -13,19 +15,13 @@ export class Sale {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'date' })
-  date: string;
-
-  @Column({ type: 'time', precision: 0 })
-  hour: string;
-
   @Column({ type: 'varchar', length: 125, name: 'client_name' })
   clientName: string;
 
-  @Column({ type: 'varchar', length: 14, name: 'phone_number' })
+  @Column({ type: 'varchar', length: 14, name: 'phone_number', nullable: true })
   phoneNumber: string;
 
-  @Column({ type: 'varchar', length: 125 })
+  @Column({ type: 'varchar', length: 125, nullable: true })
   address: string;
 
   @OneToMany(() => SaleItems, (saleItems) => saleItems.sale)
@@ -39,4 +35,10 @@ export class Sale {
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
+
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  updatedAt: Date;
 }

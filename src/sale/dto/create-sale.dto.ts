@@ -1,14 +1,15 @@
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
   IsDateString,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Length,
+  Matches,
   ValidateNested,
 } from 'class-validator';
-import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SaleItemsDTO } from './sale-items.dto';
 
 export class CreateSaleDTO {
@@ -34,8 +35,9 @@ export class CreateSaleDTO {
   })
   readonly clientName: string;
 
-  @IsNotEmpty({
-    message: 'campo "telefone" não preenchido',
+  @IsOptional()
+  @Matches(/^\(\d{2}\) \d{4,5}-\d{4}$/, {
+    message: 'campo "telefone" deve estar no formato (00) 00000-0000',
   })
   @IsString({
     message: 'campo "telefone" deve estar em formato de texto',
@@ -43,32 +45,16 @@ export class CreateSaleDTO {
   @Length(15, 15, {
     message: 'campo "telefone" deve ter estar no formato (00) 00000 0000',
   })
-  readonly phoneNumber: string;
+  readonly phoneNumber?: string;
 
-  @IsNotEmpty({
-    message: 'campo "endereço" não preenchido',
-  })
+  @IsOptional()
   @IsString({
     message: 'campo "endereço" deve estar em formato de texto',
   })
-  @Length(0, 125, {
-    message: 'campo "endereço" deve ter no máximo 125 caracteres',
+  @Length(8, 125, {
+    message: 'campo "endereço" deve ter entre 8 e 125 caracteres',
   })
-  readonly address: string;
-
-  @IsNotEmpty({
-    message: 'campo "preço" não preenchido',
-  })
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
-    return value;
-  })
-  @IsDecimalString({
-    message: 'O campo preco deve ser um string decima ex: 59.99',
-  })
-  readonly price: string;
+  readonly address?: string;
 
   @IsNotEmpty({
     message: 'campo "itens" não preenchido',
