@@ -17,8 +17,8 @@ export class SaleItems {
   @Column({ type: 'integer' })
   quantity: number;
 
-  @Column({ type: 'numeric', precision: 10, scale: 2 })
-  price: string;
+  @Column({ type: 'numeric', precision: 10, scale: 2, name: 'price_at_sale' })
+  priceAtSale: string;
 
   @ManyToOne(() => Product, (product) => product.sales, {
     onDelete: 'RESTRICT',

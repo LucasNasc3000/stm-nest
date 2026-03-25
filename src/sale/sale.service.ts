@@ -47,23 +47,6 @@ export class SaleService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const totalPrice = createSaleDTO.saleItems.reduce(
-      (sum, item) => sum.add(item.price),
-      new Decimal(0),
-    );
-
-    const dataSale = {
-      clientName: createSaleDTO.clientName,
-      clientEmail: createSaleDTO.clientEmail || null,
-      phoneNumber: createSaleDTO.phoneNumber || null,
-      address: createSaleDTO.address || null,
-      status: createSaleDTO.status,
-      saleItems: null,
-      price: totalPrice.toString(),
-    };
-
-    const dataSaleItems: SaleItems[] = [];
-
     try {
       const doesEmployeeReallyExists = await queryRunner.manager.findOne(
         Employee,
@@ -77,6 +60,21 @@ export class SaleService {
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
+
+      const dataSale = {
+        clientName: createSaleDTO.clientName,
+        clientEmail: createSaleDTO.clientEmail || null,
+        phoneNumber: createSaleDTO.phoneNumber || null,
+        address: createSaleDTO.address || null,
+        status: createSaleDTO.status,
+        saleItems: null,
+        totalPrice: '00.00',
+        employee: doesEmployeeReallyExists,
+      };
+
+      const prices = [];
+
+      const dataSaleItems: SaleItems[] = [];
 
       const createSale = queryRunner.manager.create(Sale, dataSale);
 
@@ -106,9 +104,25 @@ export class SaleService {
           // Enviar email avisando da quantidade
         }
 
+        const productUpdate = await queryRunner.manager.update(
+          Product,
+          itemExists.id,
+          {
+            unities: differenceBetween,
+          },
+        );
+
+        if (!productUpdate || productUpdate.affected === 0) {
+          throw new InternalServerErrorException('Erro ao atualizar produto');
+        }
+
+        prices.push({
+          price: itemExists.price,
+        });
+
         const data = {
           quantity: item.quantity,
-          price: item.price,
+          priceAtSale: itemExists.price,
           product: itemExists,
           sale: newSale,
         };
@@ -116,6 +130,21 @@ export class SaleService {
         const createSaleItems = queryRunner.manager.create(SaleItems, data);
 
         dataSaleItems.push(createSaleItems);
+      }
+
+      const totalPrice = prices.reduce(
+        (sum, item) => sum.add(item.price),
+        new Decimal(0),
+      );
+
+      const newSaleUpdate = await queryRunner.manager.update(Sale, newSale.id, {
+        totalPrice: totalPrice.toString(),
+      });
+
+      if (!newSaleUpdate || newSaleUpdate.affected === 0) {
+        throw new InternalServerErrorException(
+          'Erro ao atualizar preço total da venda',
+        );
       }
 
       await queryRunner.manager.save(SaleItems, dataSaleItems);

@@ -40,13 +40,13 @@ export class Sale {
   })
   employee: Employee;
 
-  @Column({ type: 'numeric', precision: 10, scale: 2 })
-  price: string;
+  @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
+  totalPrice: string;
 
   @Column({ type: 'enum', enum: SaleStatus })
   status: SaleStatus;
 
-  @Column({ type: 'enum', enum: SaleReason })
+  @Column({ type: 'enum', enum: SaleReason, nullable: true })
   reason: SaleReason;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
