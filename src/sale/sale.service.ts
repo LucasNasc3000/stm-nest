@@ -35,14 +35,6 @@ export class SaleService {
   ) {}
 
   async Create(tokenPayloadDTO: TokenPayloadDTO, createSaleDTO: CreateSaleDTO) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
-
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
-    }
-
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -61,24 +53,8 @@ export class SaleService {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
 
-      const dataSale = {
-        clientName: createSaleDTO.clientName,
-        clientEmail: createSaleDTO.clientEmail || null,
-        phoneNumber: createSaleDTO.phoneNumber || null,
-        address: createSaleDTO.address || null,
-        status: createSaleDTO.status,
-        saleItems: null,
-        totalPrice: '00.00',
-        employee: doesEmployeeReallyExists,
-      };
-
-      const prices = [];
-
-      const dataSaleItems: SaleItems[] = [];
-
-      const createSale = queryRunner.manager.create(Sale, dataSale);
-
-      const newSale = await queryRunner.manager.save(Sale, createSale);
+      let totalPrice = new Decimal(0);
+      const saleItemsData: Partial<SaleItems>[] = [];
 
       for (const item of createSaleDTO.saleItems) {
         const itemExists = await queryRunner.manager.findOne(Product, {
@@ -93,7 +69,7 @@ export class SaleService {
 
         const differenceBetween = itemExists.unities - item.quantity;
 
-        if (differenceBetween < 1) {
+        if (differenceBetween < 0) {
           // Mandar email avisando da quantidade
           throw new BadRequestException(
             `Produto ${item.product} com estoque insuficiente de ${itemExists.unities} unidades`,
@@ -116,43 +92,41 @@ export class SaleService {
           throw new InternalServerErrorException('Erro ao atualizar produto');
         }
 
-        prices.push({
-          price: itemExists.price,
-        });
+        totalPrice = totalPrice.add(
+          new Decimal(itemExists.price).mul(item.quantity),
+        );
 
-        const data = {
+        saleItemsData.push({
           quantity: item.quantity,
           priceAtSale: itemExists.price,
           product: itemExists,
-          sale: newSale,
-        };
-
-        const createSaleItems = queryRunner.manager.create(SaleItems, data);
-
-        dataSaleItems.push(createSaleItems);
+        });
       }
 
-      const totalPrice = prices.reduce(
-        (sum, item) => sum.add(item.price),
-        new Decimal(0),
+      const dataSale = {
+        clientName: createSaleDTO.clientName,
+        clientEmail: createSaleDTO.clientEmail || null,
+        phoneNumber: createSaleDTO.phoneNumber || null,
+        address: createSaleDTO.address || null,
+        status: createSaleDTO.status,
+        saleItems: null,
+        totalPrice: totalPrice.toString(),
+        employee: doesEmployeeReallyExists,
+      };
+
+      const newSale = await queryRunner.manager.save(Sale, dataSale);
+
+      const createSaleItems = saleItemsData.map((itemData) =>
+        queryRunner.manager.create(SaleItems, { ...itemData, sale: newSale }),
       );
 
-      const newSaleUpdate = await queryRunner.manager.update(Sale, newSale.id, {
-        totalPrice: totalPrice.toString(),
-      });
-
-      if (!newSaleUpdate || newSaleUpdate.affected === 0) {
-        throw new InternalServerErrorException(
-          'Erro ao atualizar preço total da venda',
-        );
-      }
-
-      await queryRunner.manager.save(SaleItems, dataSaleItems);
+      await queryRunner.manager.save(SaleItems, createSaleItems);
 
       await queryRunner.commitTransaction();
 
       return {
-        ...newSale,
+        sale: newSale,
+        items: createSaleItems,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
