@@ -14,7 +14,6 @@ import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
@@ -45,7 +44,7 @@ export class SaleController {
   @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
-  Update(@Param('id') id: UrlUuidDTO, @Body() updateSaleDTO: UpdateSaleDTO) {
+  Update(@Param('id') id: string, @Body() updateSaleDTO: UpdateSaleDTO) {
     return this.salesService.Update(id, updateSaleDTO);
   }
 

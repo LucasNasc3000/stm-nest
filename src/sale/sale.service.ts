@@ -8,11 +8,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
-import { DataSource, Like, Repository } from 'typeorm';
+import { Between, DataSource, Like, Repository } from 'typeorm';
 import { Product } from '../product/entities/product.entity';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
@@ -47,11 +47,19 @@ export class SaleService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    const totalPrice = createSaleDTO.saleItems.reduce(
+      (sum, item) => sum.add(item.price),
+      new Decimal(0),
+    );
+
     const dataSale = {
       clientName: createSaleDTO.clientName,
-      phoneNumber: createSaleDTO.phoneNumber,
-      address: createSaleDTO.address,
+      clientEmail: createSaleDTO.clientEmail || null,
+      phoneNumber: createSaleDTO.phoneNumber || null,
+      address: createSaleDTO.address || null,
+      status: createSaleDTO.status,
       saleItems: null,
+      price: totalPrice.toString(),
     };
 
     const dataSaleItems: SaleItems[] = [];
@@ -134,10 +142,10 @@ export class SaleService {
     }
   }
 
-  async Update(saleId: UrlUuidDTO, updateSaleDTO: UpdateSaleDTO) {
+  async Update(id: string, updateSaleDTO: UpdateSaleDTO) {
     const findSale = await this.salesRepository.findOne({
       where: {
-        id: saleId.id,
+        id,
       },
     });
 
@@ -149,10 +157,12 @@ export class SaleService {
       clientName: updateSaleDTO.clientName,
       phoneNumber: updateSaleDTO.phoneNumber,
       address: updateSaleDTO.address,
+      status: updateSaleDTO.status,
+      notes: updateSaleDTO.notes || null,
     };
 
     const supplyUpdate = await this.salesRepository.preload({
-      id: saleId.id,
+      id,
       ...allowedData,
     });
 
@@ -177,7 +187,10 @@ export class SaleService {
         id: 'desc',
       },
       where: {
-        date: value,
+        createdAt: Between(
+          new Date(`${value}T00:00:00`),
+          new Date(`${value}T23:59:59`),
+        ),
       },
       relations: {
         employee: true,
@@ -206,25 +219,16 @@ export class SaleService {
   async FindByHour(paginationByHour: PaginationByHourDTO) {
     const { limit, offset, value } = paginationByHour;
 
-    const [salesFindByHour, total] = await this.salesRepository.findAndCount({
-      take: limit,
-      skip: offset,
-      order: {
-        id: 'desc',
-      },
-      where: {
-        hour: value,
-      },
-      relations: {
-        employee: true,
-      },
-      select: {
-        employee: {
-          id: true,
-          email: true,
-        },
-      },
-    });
+    const query = this.salesRepository
+      .createQueryBuilder('sale')
+      .where('EXTRACT(HOUR FROM sale.createdAt) = :hour', { hour: value })
+      .leftJoinAndSelect('sale.employee', 'employee')
+      .leftJoinAndSelect('sale.product', 'product')
+      .orderBy('sale.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [salesFindByHour, total] = await query.getManyAndCount();
 
     if (!salesFindByHour) {
       throw new InternalServerErrorException(

@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -10,6 +11,7 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
+import { SaleStatus } from 'src/common/enums/sale-status.enum';
 import { SaleItemsDTO } from './sale-items.dto';
 
 export class CreateSaleDTO {
@@ -54,6 +56,14 @@ export class CreateSaleDTO {
     message: 'campo "endereço" deve ter entre 8 e 125 caracteres',
   })
   readonly address?: string;
+
+  @IsNotEmpty({
+    message: 'campo "status" não preenchido',
+  })
+  @IsEnum(SaleStatus, {
+    message: `campo status deve ser uma das seguintes opções: ${Object.values(SaleStatus).join(', ')}`,
+  })
+  readonly status: SaleStatus;
 
   @IsNotEmpty({
     message: 'campo "itens" não preenchido',
