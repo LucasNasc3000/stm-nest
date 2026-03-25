@@ -197,6 +197,7 @@ export class SaleService {
       },
       relations: {
         employee: true,
+        saleItems: true,
       },
       select: {
         employee: {
@@ -226,7 +227,8 @@ export class SaleService {
       .createQueryBuilder('sale')
       .where('EXTRACT(HOUR FROM sale.createdAt) = :hour', { hour: value })
       .leftJoinAndSelect('sale.employee', 'employee')
-      .leftJoinAndSelect('sale.product', 'product')
+      .addSelect(['employee.id', 'employee.email', 'employee.name'])
+      .leftJoinAndSelect('sale.saleItems', 'sale_items')
       .orderBy('sale.id', 'DESC')
       .take(limit)
       .skip(offset);

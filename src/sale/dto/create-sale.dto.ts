@@ -43,9 +43,6 @@ export class CreateSaleDTO {
   @IsString({
     message: 'campo "telefone" deve estar em formato de texto',
   })
-  @Length(15, 15, {
-    message: 'campo "telefone" deve ter estar no formato (00) 00000 0000',
-  })
   readonly phoneNumber?: string;
 
   @IsOptional()

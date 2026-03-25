@@ -345,6 +345,7 @@ export class ProductService {
     await queryRunner.startTransaction();
 
     const updatesPerformed = [];
+    const recipe: ProductIngredient[] = [];
 
     try {
       const findEmployee = await queryRunner.manager.findOne(Employee, {
@@ -368,27 +369,31 @@ export class ProductService {
         throw new NotFoundException('Produto não encontrado');
       }
 
-      const findProductIngredient = await queryRunner.manager.find(
-        ProductIngredient,
-        {
-          where: {
-            product: {
-              id: findProduct.id,
+      if (updateProductDTO.useStockSupplies === true) {
+        const findProductIngredient = await queryRunner.manager.find(
+          ProductIngredient,
+          {
+            where: {
+              product: {
+                id: findProduct.id,
+              },
+              isActive: true,
             },
-            isActive: true,
+            relations: {
+              supplyRealTime: true,
+            },
           },
-          relations: {
-            supplyRealTime: true,
-          },
-        },
-      );
+        );
 
-      if (findProductIngredient.length < 1) {
-        throw new NotFoundException('Receita não encontrada');
-      }
+        if (findProductIngredient.length < 1) {
+          throw new NotFoundException('Receita não encontrada');
+        }
 
-      if (!findProductIngredient) {
-        throw new InternalServerErrorException('Erro ao buscar receita');
+        if (!findProductIngredient) {
+          throw new InternalServerErrorException('Erro ao buscar receita');
+        }
+
+        recipe.push(...findProductIngredient);
       }
 
       if (updateProductDTO.productIngredient) {
@@ -410,7 +415,7 @@ export class ProductService {
         await this.UpdateUnities(
           updateProductUnitesData,
           findProduct,
-          findProductIngredient,
+          recipe,
           findEmployee,
           updateProductDTO.useStockSupplies,
           queryRunner,

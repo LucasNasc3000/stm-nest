@@ -25,7 +25,7 @@ export class Sale {
   @IsEmail()
   clientEmail: string;
 
-  @Column({ type: 'varchar', length: 14, name: 'phone_number', nullable: true })
+  @Column({ type: 'varchar', length: 18, name: 'phone_number', nullable: true })
   phoneNumber: string;
 
   @Column({ type: 'varchar', length: 125, nullable: true })
