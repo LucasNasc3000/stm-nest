@@ -55,9 +55,9 @@ export class UpdateSaleDTO {
   })
   readonly status?: SaleStatus;
 
-  @IsOptional()
+  @ValidateIf((o) => o.status === SaleStatus.CANCELED)
   @IsEnum(SaleReason, {
-    message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SaleReason).join(', ')}`,
+    message: `campo "motivo" deve ser uma das seguintes opções quando a venda foi cancelada: ${Object.values(SaleReason).join(', ')}`,
   })
   readonly reason?: SaleReason;
 

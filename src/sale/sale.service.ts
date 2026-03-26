@@ -161,6 +161,7 @@ export class SaleService {
       phoneNumber: updateSaleDTO.phoneNumber,
       address: updateSaleDTO.address,
       status: updateSaleDTO.status,
+      reason: updateSaleDTO.reason,
       notes: updateSaleDTO.notes || null,
     };
 
@@ -263,6 +264,7 @@ export class SaleService {
         },
         relations: {
           employee: true,
+          saleItems: true,
         },
         select: {
           employee: {
@@ -295,10 +297,11 @@ export class SaleService {
         id: 'desc',
       },
       where: {
-        clientName: Like(`${value}%`),
+        address: Like(`${value}%`),
       },
       relations: {
         employee: true,
+        saleItems: true,
       },
       select: {
         employee: {
@@ -338,6 +341,7 @@ export class SaleService {
         },
         relations: {
           employee: true,
+          saleItems: true,
         },
         select: {
           employee: {

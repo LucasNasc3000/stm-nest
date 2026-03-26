@@ -63,7 +63,7 @@ export class SaleController {
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('search/name/')
+  @Get('search/clientName/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByClientName(
     @Query() paginationByClientNameDto: PaginationByClientNameDTO,
