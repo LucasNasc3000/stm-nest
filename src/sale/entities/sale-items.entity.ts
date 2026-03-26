@@ -1,8 +1,10 @@
+import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -31,6 +33,9 @@ export class SaleItems {
     nullable: false,
   })
   sale: Sale;
+
+  @OneToOne(() => Outflow, (outflow) => outflow.saleItem, { nullable: true })
+  outflow: Outflow;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

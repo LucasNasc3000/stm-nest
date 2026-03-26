@@ -14,8 +14,7 @@ import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
-import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
-import { DataSource, Raw, Repository } from 'typeorm';
+import { Between, DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -115,12 +114,8 @@ export class OutflowService {
         throw new InternalServerErrorException('Erro ao atualizar produto');
       }
 
-      const dateAndHour = ReturnDateAndTimeForeignFormat();
-
       const data = {
         targetType: createOutflowDTO.targetType,
-        date: dateAndHour[0],
-        hour: dateAndHour[1],
         name: createOutflowDTO.name,
         category: createOutflowDTO.category,
         reason: createOutflowDTO.reason,
@@ -220,12 +215,8 @@ export class OutflowService {
         );
       }
 
-      const dateAndHour = ReturnDateAndTimeForeignFormat();
-
       const data = {
         targetType: createOutflowDTO.targetType,
-        date: dateAndHour[0],
-        hour: dateAndHour[1],
         name: createOutflowDTO.name,
         category: createOutflowDTO.category,
         reason: createOutflowDTO.reason,
@@ -362,7 +353,10 @@ export class OutflowService {
           id: 'desc',
         },
         where: {
-          date: value,
+          createdAt: Between(
+            new Date(`${value}T00:00:00`),
+            new Date(`${value}T23:59:59`),
+          ),
         },
         relations: {
           employee: true,
@@ -391,28 +385,16 @@ export class OutflowService {
   async FindByHour(paginationByHour: PaginationByHourDTO) {
     const { limit, offset, value } = paginationByHour;
 
-    const [outflowFindByHour, total] =
-      await this.outflowRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          hour: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
-            value: `${value}%`,
-          }),
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.outflowRepository
+      .createQueryBuilder('outflow')
+      .where('EXTRACT(HOUR FROM outflow.createdAt) = :hour', { hour: value })
+      .leftJoinAndSelect('outflow.employee', 'employee')
+      .addSelect(['employee.id', 'employee.email'])
+      .orderBy('outflow.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [outflowFindByHour, total] = await query.getManyAndCount();
 
     if (!outflowFindByHour) {
       throw new InternalServerErrorException(

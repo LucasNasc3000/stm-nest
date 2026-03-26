@@ -3,12 +3,15 @@ import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
 import { Product } from 'src/product/entities/product.entity';
+import { SaleItems } from 'src/sale/entities/sale-items.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,12 +23,6 @@ export class Outflow {
 
   @Column({ type: 'enum', enum: OutflowType })
   targetType: OutflowType;
-
-  @Column({ type: 'date' })
-  date: string;
-
-  @Column({ type: 'time', precision: 0 })
-  hour: string;
 
   @Column({ type: 'varchar', length: 50 })
   name: string;
@@ -70,9 +67,16 @@ export class Outflow {
   })
   product: Product;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @OneToOne(() => SaleItems, (saleItem) => saleItem.outflow, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn()
+  saleItem: SaleItems;
+
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 }

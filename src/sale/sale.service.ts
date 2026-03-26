@@ -10,9 +10,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
+import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
-import { Between, DataSource, Like, Repository } from 'typeorm';
+import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { Between, DataSource, In, Like, Repository } from 'typeorm';
 import { Product } from '../product/entities/product.entity';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
@@ -53,54 +56,29 @@ export class SaleService {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
 
+      const productsIds = createSaleDTO.saleItems.map((item) => item.product);
+      const findProducts = await queryRunner.manager.find(Product, {
+        where: {
+          id: In(productsIds),
+        },
+      });
+
+      if (findProducts.length !== productsIds.length) {
+        throw new NotFoundException('Um ou mais produtos não encontrados');
+      }
+
+      const productsMap = new Map(
+        findProducts.map((product) => [product.id, product]),
+      );
+
       let totalPrice = new Decimal(0);
-      const saleItemsData: Partial<SaleItems>[] = [];
 
       for (const item of createSaleDTO.saleItems) {
-        const itemExists = await queryRunner.manager.findOne(Product, {
-          where: {
-            id: item.product,
-          },
-        });
+        const product = productsMap.get(item.product);
 
-        if (!itemExists) {
-          throw new NotFoundException(`Produto ${item.product} não encontrado`);
-        }
+        const price = new Decimal(product.price);
 
-        const differenceBetween = itemExists.unities - item.quantity;
-
-        if (differenceBetween < 0) {
-          // Mandar email avisando da quantidade
-          throw new BadRequestException(
-            `Produto ${item.product} com estoque insuficiente de ${itemExists.unities} unidades`,
-          );
-        }
-
-        if (differenceBetween > 0 && differenceBetween <= itemExists.lowStock) {
-          // Enviar email avisando da quantidade
-        }
-
-        const productUpdate = await queryRunner.manager.update(
-          Product,
-          itemExists.id,
-          {
-            unities: differenceBetween,
-          },
-        );
-
-        if (!productUpdate || productUpdate.affected === 0) {
-          throw new InternalServerErrorException('Erro ao atualizar produto');
-        }
-
-        totalPrice = totalPrice.add(
-          new Decimal(itemExists.price).mul(item.quantity),
-        );
-
-        saleItemsData.push({
-          quantity: item.quantity,
-          priceAtSale: itemExists.price,
-          product: itemExists,
-        });
+        totalPrice = totalPrice.add(price.mul(item.quantity));
       }
 
       const dataSale = {
@@ -114,19 +92,97 @@ export class SaleService {
         employee: doesEmployeeReallyExists,
       };
 
-      const newSale = await queryRunner.manager.save(Sale, dataSale);
+      const saleCreate = queryRunner.manager.create(Sale, dataSale);
 
-      const createSaleItems = saleItemsData.map((itemData) =>
-        queryRunner.manager.create(SaleItems, { ...itemData, sale: newSale }),
-      );
+      const newSale = await queryRunner.manager.save(Sale, saleCreate);
 
-      await queryRunner.manager.save(SaleItems, createSaleItems);
+      const outflows: Outflow[] = [];
+
+      for (const item of createSaleDTO.saleItems) {
+        const product = productsMap.get(item.product);
+
+        const differenceBetween = product.unities - item.quantity;
+
+        if (differenceBetween < 0) {
+          // Mandar email avisando da quantidade
+          throw new BadRequestException(
+            `Produto ${product.name} com estoque insuficiente`,
+          );
+        }
+
+        if (differenceBetween > 0 && differenceBetween <= product.lowStock) {
+          // Enviar email avisando da quantidade
+        }
+
+        const productUpdate = await queryRunner.manager.update(
+          Product,
+          product.id,
+          {
+            unities: differenceBetween,
+          },
+        );
+
+        if (!productUpdate || productUpdate.affected === 0) {
+          throw new InternalServerErrorException(
+            `Erro ao atualizar unidades produto ${product.name}`,
+          );
+        }
+
+        const saleItemsData = {
+          quantity: item.quantity,
+          priceAtSale: product.price,
+          product,
+          sale: newSale,
+        };
+
+        const saleItemCreate = queryRunner.manager.create(
+          SaleItems,
+          saleItemsData,
+        );
+
+        const newSaleItem = await queryRunner.manager.save(
+          SaleItems,
+          saleItemCreate,
+        );
+
+        const outflowData = {
+          name: product.name,
+          category: product.category,
+          reason: OutflowReason.SALE,
+          unities: item.quantity,
+          employee: doesEmployeeReallyExists,
+          targetType: OutflowType.PRODUCT,
+          product,
+          saleItem: newSaleItem,
+        };
+
+        const outflowCreate = queryRunner.manager.create(Outflow, outflowData);
+
+        outflows.push(outflowCreate);
+      }
+
+      await queryRunner.manager.save(Outflow, outflows);
 
       await queryRunner.commitTransaction();
 
+      const recoverNewSaleDate = await this.salesRepository.findOne({
+        where: {
+          id: newSale.id,
+        },
+        relations: {
+          employee: true,
+          saleItems: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
       return {
-        sale: newSale,
-        items: createSaleItems,
+        ...recoverNewSaleDate,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -228,7 +284,7 @@ export class SaleService {
       .createQueryBuilder('sale')
       .where('EXTRACT(HOUR FROM sale.createdAt) = :hour', { hour: value })
       .leftJoinAndSelect('sale.employee', 'employee')
-      .addSelect(['employee.id', 'employee.email', 'employee.name'])
+      .addSelect(['employee.id', 'employee.email'])
       .leftJoinAndSelect('sale.saleItems', 'sale_items')
       .orderBy('sale.id', 'DESC')
       .take(limit)
