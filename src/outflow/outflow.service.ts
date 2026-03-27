@@ -8,13 +8,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { formatInTimeZone } from 'date-fns-tz';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
+import { Formatter } from 'src/utils/format-timezone';
 import { Between, DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -132,13 +132,11 @@ export class OutflowService {
 
       await queryRunner.commitTransaction();
 
+      const createdAt = Formatter(newOutflow.createdAt);
+
       return {
         ...newOutflow,
-        createdAt: formatInTimeZone(
-          newOutflow.createdAt,
-          'America/Sao_Paulo',
-          "yyyy-MM-dd'T'HH:mm:ss",
-        ),
+        createdAt,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -238,13 +236,11 @@ export class OutflowService {
 
       await queryRunner.commitTransaction();
 
+      const createdAt = Formatter(newOutflow.createdAt);
+
       return {
         ...newOutflow,
-        createdAt: formatInTimeZone(
-          newOutflow.createdAt,
-          'America/Sao_Paulo',
-          "yyyy-MM-dd'T'HH:mm:ss",
-        ),
+        createdAt,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -293,6 +289,14 @@ export class OutflowService {
     };
   }
 
+  FormatterForSearch(outflowsFound: Outflow[]) {
+    return outflowsFound.map((outflow) => ({
+      ...outflow,
+      createdAt: Formatter(outflow.createdAt),
+      updatedAt: Formatter(outflow.updatedAt),
+    }));
+  }
+
   async FindById(id: string) {
     const outflowFindById = await this.outflowRepository.findOne({
       where: {
@@ -313,7 +317,11 @@ export class OutflowService {
       throw new NotFoundException('Saída não encontrada');
     }
 
-    return outflowFindById;
+    return {
+      ...outflowFindById,
+      createdAt: Formatter(outflowFindById.createdAt),
+      updatedAt: Formatter(outflowFindById.updatedAt),
+    };
   }
 
   async FindByType(paginationByType: PaginationByTypeDTO) {
@@ -350,7 +358,10 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByType];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(outflowFindByType);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByDate(paginationByDate: PaginationByDateDTO) {
@@ -390,21 +401,10 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    const formattedCreatedAndUpdatedAt = outflowFindByDate.map((outflow) => ({
-      ...outflow,
-      createdAt: formatInTimeZone(
-        outflow.createdAt,
-        'America/Sao_Paulo',
-        "yyyy-MM-dd'T'HH:mm:ss",
-      ),
-      updatedAt: formatInTimeZone(
-        outflow.updatedAt,
-        'America/Sao_Paulo',
-        "yyyy-MM-dd'T'HH:mm:ss",
-      ),
-    }));
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(outflowFindByDate);
 
-    return [total, ...formattedCreatedAndUpdatedAt];
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByHour(paginationByHour: PaginationByHourDTO) {
@@ -431,19 +431,8 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    const formattedCreatedAndUpdatedAt = outflowFindByHour.map((outflow) => ({
-      ...outflow,
-      createdAt: formatInTimeZone(
-        outflow.createdAt,
-        'America/Sao_Paulo',
-        "yyyy-MM-dd'T'HH:mm:ss",
-      ),
-      updatedAt: formatInTimeZone(
-        outflow.updatedAt,
-        'America/Sao_Paulo',
-        "yyyy-MM-dd'T'HH:mm:ss",
-      ),
-    }));
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(outflowFindByHour);
 
     return [total, formattedCreatedAndUpdatedAt];
   }
@@ -482,7 +471,10 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByName];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(outflowFindByName);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByCategory(paginationByCategory: PaginationByCategoryDTO) {
@@ -519,7 +511,11 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByCategory];
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      outflowFindByCategory,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByReason(paginationByReason: PaginationByReasonDTO) {
@@ -556,7 +552,10 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByReason];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(outflowFindByReason);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
@@ -595,6 +594,10 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByEmployee];
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      outflowFindByEmployee,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 }
