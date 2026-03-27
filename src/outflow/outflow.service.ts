@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { formatInTimeZone } from 'date-fns-tz';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
@@ -133,6 +134,11 @@ export class OutflowService {
 
       return {
         ...newOutflow,
+        createdAt: formatInTimeZone(
+          newOutflow.createdAt,
+          'America/Sao_Paulo',
+          "yyyy-MM-dd'T'HH:mm:ss",
+        ),
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -234,6 +240,11 @@ export class OutflowService {
 
       return {
         ...newOutflow,
+        createdAt: formatInTimeZone(
+          newOutflow.createdAt,
+          'America/Sao_Paulo',
+          "yyyy-MM-dd'T'HH:mm:ss",
+        ),
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -379,7 +390,21 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByDate];
+    const formattedCreatedAndUpdatedAt = outflowFindByDate.map((outflow) => ({
+      ...outflow,
+      createdAt: formatInTimeZone(
+        outflow.createdAt,
+        'America/Sao_Paulo',
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+      updatedAt: formatInTimeZone(
+        outflow.updatedAt,
+        'America/Sao_Paulo',
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+    }));
+
+    return [total, ...formattedCreatedAndUpdatedAt];
   }
 
   async FindByHour(paginationByHour: PaginationByHourDTO) {
@@ -406,7 +431,21 @@ export class OutflowService {
       throw new NotFoundException('Saídas não encontradas');
     }
 
-    return [total, ...outflowFindByHour];
+    const formattedCreatedAndUpdatedAt = outflowFindByHour.map((outflow) => ({
+      ...outflow,
+      createdAt: formatInTimeZone(
+        outflow.createdAt,
+        'America/Sao_Paulo',
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+      updatedAt: formatInTimeZone(
+        outflow.updatedAt,
+        'America/Sao_Paulo',
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+    }));
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByName(paginationByName: PaginationByNameDTO) {
