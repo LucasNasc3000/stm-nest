@@ -5,7 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
-import { Like, Raw, Repository, SelectQueryBuilder } from 'typeorm';
+import { Formatter } from 'src/utils/format-timezone';
+import { Between, Like, Raw, Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -54,6 +55,14 @@ export class SupplyFindService {
     return query;
   }
 
+  FormatterForSearch(suppliesFound: (SupplyHistory | SupplyRealTime)[]) {
+    return suppliesFound.map((supply) => ({
+      ...supply,
+      createdAt: Formatter(supply.createdAt),
+      updatedAt: Formatter(supply.updatedAt),
+    }));
+  }
+
   async FindByIdSupplyRealTime(id: string) {
     const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
       where: {
@@ -75,7 +84,14 @@ export class SupplyFindService {
       throw new NotFoundException('Insumo não encontrado');
     }
 
-    return supplyRealTimeFindById;
+    const createdAt = Formatter(supplyRealTimeFindById.createdAt);
+    const updatedAt = Formatter(supplyRealTimeFindById.updatedAt);
+
+    return {
+      ...supplyRealTimeFindById,
+      createdAt,
+      updatedAt,
+    };
   }
 
   async FindByIdSupplyHistory(id: string) {
@@ -98,7 +114,14 @@ export class SupplyFindService {
       throw new NotFoundException('Insumo não encontrado');
     }
 
-    return supplyHistoryFindById;
+    const createdAt = Formatter(supplyHistoryFindById.createdAt);
+    const updatedAt = Formatter(supplyHistoryFindById.updatedAt);
+
+    return {
+      ...supplyHistoryFindById,
+      createdAt,
+      updatedAt,
+    };
   }
 
   async FindBySupplier(paginationBySupplierDTO: PaginationBySupplierDTO) {
@@ -125,7 +148,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindBySupplier];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindBySupplier);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByName(paginationByNameDTO: PaginationByNameDTO) {
@@ -152,7 +178,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByName];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByName);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByCategory(paginationByCategoryDTO: PaginationByCategoryDTO) {
@@ -179,7 +208,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByCategory];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByCategory);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
@@ -208,7 +240,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByPrice];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByPrice);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByTotalPrice(paginationByPriceDTO: PaginationByPriceDTO) {
@@ -237,7 +272,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByPrice];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByPrice);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByWeightPerUnit(
@@ -268,7 +306,11 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByWeightPerUnit];
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      supplyFindByWeightPerUnit,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
@@ -295,7 +337,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByEmployee];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByEmployee);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
@@ -324,7 +369,11 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByExpirationDate];
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      supplyFindByExpirationDate,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByReason(paginationByReasonDTO: PaginationByReasonDTO) {
@@ -352,21 +401,27 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyFindByReason];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByReason);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
     const { limit, offset, value } = paginatioByDateDTO;
 
-    const supplyFindByExpDate = await this.supplyHistoryRepository.findAndCount(
-      {
+    const [supplyFindByExpDate, total] =
+      await this.supplyHistoryRepository.findAndCount({
         take: limit,
         skip: offset,
         order: {
           id: 'desc',
         },
         where: {
-          date: value,
+          createdAt: Between(
+            new Date(`${value}T00:00:00`),
+            new Date(`${value}T23:59:59`),
+          ),
         },
         relations: {
           employee: true,
@@ -377,8 +432,7 @@ export class SupplyFindService {
             email: true,
           },
         },
-      },
-    );
+      });
 
     if (!supplyFindByExpDate) {
       throw new InternalServerErrorException(
@@ -390,7 +444,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return supplyFindByExpDate;
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByExpDate);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByTotalWeightPerRegister(
@@ -428,6 +485,10 @@ export class SupplyFindService {
       throw new NotFoundException('Insumos não encontrados');
     }
 
-    return [total, ...supplyHistoryFindByTotalWeightPerRegister];
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      supplyHistoryFindByTotalWeightPerRegister,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 }

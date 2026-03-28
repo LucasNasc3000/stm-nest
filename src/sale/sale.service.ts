@@ -15,6 +15,7 @@ import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { Formatter } from 'src/utils/format-timezone';
 import { Between, DataSource, In, Like, Repository } from 'typeorm';
 import { Product } from '../product/entities/product.entity';
 import { CreateSaleDTO } from './dto/create-sale.dto';
@@ -181,8 +182,11 @@ export class SaleService {
         },
       });
 
+      const createdAt = Formatter(recoverNewSaleDate.createdAt);
+
       return {
         ...recoverNewSaleDate,
+        createdAt,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -234,7 +238,22 @@ export class SaleService {
       );
     }
 
-    return saleUpdated;
+    const createdAt = Formatter(saleUpdated.createdAt);
+    const updatedAt = Formatter(saleUpdated.updatedAt);
+
+    return {
+      ...saleUpdated,
+      createdAt,
+      updatedAt,
+    };
+  }
+
+  FormatterForSearch(salesFound: Sale[]) {
+    return salesFound.map((sale) => ({
+      ...sale,
+      createdAt: Formatter(sale.createdAt),
+      updatedAt: Formatter(sale.updatedAt),
+    }));
   }
 
   async FindByDate(paginationByDate: PaginationByDateDTO) {
@@ -274,7 +293,10 @@ export class SaleService {
       throw new NotFoundException('Vendas não encontradas');
     }
 
-    return [total, ...salesFindByDate];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(salesFindByDate);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByHour(paginationByHour: PaginationByHourDTO) {
@@ -302,7 +324,10 @@ export class SaleService {
       throw new NotFoundException('Vendas não encontradas');
     }
 
-    return [total, ...salesFindByHour];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(salesFindByHour);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByClientName(paginationByClientNameDTO: PaginationByClientNameDTO) {
@@ -340,7 +365,10 @@ export class SaleService {
       throw new NotFoundException('Registros de vendas não encontrados');
     }
 
-    return [total, ...saleFindByClientName];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(saleFindByClientName);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByAddress(paginationByAddressDTO: PaginationByAddressDTO) {
@@ -377,7 +405,10 @@ export class SaleService {
       throw new NotFoundException('Registros de vendas não encontrados');
     }
 
-    return [total, ...saleFindByAddress];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(saleFindByAddress);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
@@ -417,6 +448,9 @@ export class SaleService {
       throw new NotFoundException('Registros de vendas não encontrados');
     }
 
-    return [total, ...salesFindByEmployee];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(salesFindByEmployee);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 }

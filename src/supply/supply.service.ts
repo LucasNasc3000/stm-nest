@@ -11,7 +11,7 @@ import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
-import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
+import { Formatter } from 'src/utils/format-timezone';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { CreateSupplyHistoryDTO } from './dto/create-supply-history.dto';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
@@ -59,8 +59,6 @@ export class SupplyService {
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
-
-      const getDate = ReturnDateAndTimeForeignFormat();
 
       const weightPerUnitSupplyRealTime = new Decimal(
         createSupplyDTO.weightPerUnit,
@@ -146,7 +144,6 @@ export class SupplyService {
 
         const supplyHistoryData = {
           ...withoutTotalWeight,
-          date: getDate[0],
           reason: createSupplyDTO.reason,
           totalWeightPerRegister: totalWeightValue,
           employee: doesEmployeeReallyExists,
@@ -157,9 +154,33 @@ export class SupplyService {
 
         await queryRunner.commitTransaction();
 
+        const recoverUpdatedSupplyData =
+          await this.supplyRealTimeRepository.findOne({
+            where: {
+              id: doesSupplyAlreadyExists.id,
+            },
+            relations: {
+              employee: true,
+              supplyHistory: true,
+            },
+            select: {
+              employee: {
+                id: true,
+                email: true,
+              },
+            },
+          });
+
+        const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
+        const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+
         return {
           message: 'Insumo já existente atualizado',
-          supplyRealTime: supplyUpdate,
+          supplyRealTime: {
+            ...recoverUpdatedSupplyData,
+            createdAt,
+            updatedAt,
+          },
         };
       }
 
@@ -178,7 +199,6 @@ export class SupplyService {
 
       const supplyHistoryData = {
         ...withoutTotalWeight,
-        date: getDate[0],
         reason: createSupplyDTO.reason,
         totalWeightPerRegister: totalWeightValue,
         employee: doesEmployeeReallyExists,
@@ -192,8 +212,13 @@ export class SupplyService {
 
       await queryRunner.commitTransaction();
 
+      const updatedAt = Formatter(newSupplyRealTime.updatedAt);
+
       return {
-        supplyRealTime: newSupplyRealTime,
+        supplyRealTime: {
+          ...newSupplyRealTime,
+          updatedAt,
+        },
         supplyHistory: newSupplyHistory,
       };
     } catch (error) {
@@ -225,13 +250,10 @@ export class SupplyService {
     await queryRunnerSub.manager.save(supplyHistoryCreate);
   }
 
-  async Update(
-    supplyId: string,
-    updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
-  ) {
+  async Update(id: string, updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
-        id: supplyId,
+        id,
         is_active: true,
       },
     });
@@ -241,7 +263,7 @@ export class SupplyService {
     }
 
     const supplyUpdate = await this.supplyRealTimeRepository.preload({
-      id: supplyId,
+      id,
       ...updateSupplyRealtimeDTO,
     });
 
@@ -254,16 +276,39 @@ export class SupplyService {
       );
     }
 
-    return supplyUpdated;
+    const recoverUpdatedSupplyData =
+      await this.supplyRealTimeRepository.findOne({
+        where: {
+          id,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
+    const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+
+    return {
+      ...recoverUpdatedSupplyData,
+      createdAt,
+      updatedAt,
+    };
   }
 
   async UpdatePrice(
-    supplyId: string,
+    id: string,
     updatePriceSupplyRealtimeDTO: UpdatePriceSupplyRealtimeDTO,
   ) {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
-        id: supplyId,
+        id,
         is_active: true,
       },
     });
@@ -273,7 +318,7 @@ export class SupplyService {
     }
 
     const supplyUpdate = await this.supplyRealTimeRepository.preload({
-      id: supplyId,
+      id,
       price: updatePriceSupplyRealtimeDTO.price,
     });
 
@@ -286,6 +331,29 @@ export class SupplyService {
       );
     }
 
-    return supplyUpdated;
+    const recoverUpdatedSupplyData =
+      await this.supplyRealTimeRepository.findOne({
+        where: {
+          id,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
+    const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+
+    return {
+      ...recoverUpdatedSupplyData,
+      createdAt,
+      updatedAt,
+    };
   }
 }
