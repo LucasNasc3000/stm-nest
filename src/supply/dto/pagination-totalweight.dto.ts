@@ -32,7 +32,7 @@ export class PaginationByTotalWeightDTO {
     return value;
   })
   @IsDecimalString({
-    message: 'O campo peso total deve ser um string decima ex: 59.99',
+    message: 'O campo "peso total" deve ser um string decimal ex: 59.99',
   })
   value: string;
 }

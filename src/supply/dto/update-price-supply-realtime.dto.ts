@@ -9,7 +9,7 @@ export class UpdatePriceSupplyRealtimeDTO {
     return value;
   })
   @IsDecimalString({
-    message: 'O campo preco deve ser um string decima ex: 59.99',
+    message: 'O campo "preço" deve ser um string decimal ex: 59.99',
   })
   readonly price: string;
 }

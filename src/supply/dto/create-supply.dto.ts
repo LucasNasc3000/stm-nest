@@ -54,7 +54,7 @@ export class CreateSupplyDTO {
     return value;
   })
   @IsDecimalString({
-    message: 'O campo peso unitário deve ser um string decima ex: 59.99',
+    message: 'O campo "peso unitário" deve ser um string decimal ex: 59.99',
   })
   readonly weightPerUnit: string;
 

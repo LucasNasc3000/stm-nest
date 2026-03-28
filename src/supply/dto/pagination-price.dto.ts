@@ -33,7 +33,8 @@ export class PaginationByPriceDTO {
     return value;
   })
   @IsDecimalString({
-    message: 'O campo preço por registro deve ser um string decima ex: 59.99',
+    message:
+      'O campo "preço por registro" deve ser um string decimal ex: 59.99',
   })
   value: string;
 

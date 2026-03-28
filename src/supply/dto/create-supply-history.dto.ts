@@ -27,7 +27,7 @@ export class CreateSupplyHistoryDTO extends PartialType(CreateSupplyDTO) {
   })
   @IsDecimalString({
     message:
-      'O campo peso total por registro deve ser um string decima ex: 59.99',
+      'O campo "peso total por registro" deve ser um string decimal ex: 59.99',
   })
   readonly totalWeightPerRegister: string;
 }

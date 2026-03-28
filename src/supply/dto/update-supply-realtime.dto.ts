@@ -7,6 +7,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 
 export class UpdateSupplyRealtimeDTO {
   @IsOptional()
@@ -49,4 +50,15 @@ export class UpdateSupplyRealtimeDTO {
     message: 'campo "Quantidade mínima" deve ser maior que zero',
   })
   readonly lowStock?: number;
+
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
+  })
+  @IsDecimalString({
+    message: 'O campo "peso unitário" deve ser um string decimal ex: 59.99',
+  })
+  readonly weightPerUnit?: string;
 }

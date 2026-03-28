@@ -251,55 +251,80 @@ export class SupplyService {
   }
 
   async Update(id: string, updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO) {
-    const findSupply = await this.supplyRealTimeRepository.findOne({
-      where: {
-        id,
-        is_active: true,
-      },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!findSupply) {
-      throw new NotFoundException('Insumo não encontrado');
-    }
-
-    const supplyUpdate = await this.supplyRealTimeRepository.preload({
-      id,
-      ...updateSupplyRealtimeDTO,
-    });
-
-    const supplyUpdated =
-      await this.supplyRealTimeRepository.save(supplyUpdate);
-
-    if (!supplyUpdate || !supplyUpdated) {
-      throw new InternalServerErrorException(
-        `Erro ao tentar atualizar insumo: ${findSupply.name}`,
-      );
-    }
-
-    const recoverUpdatedSupplyData =
-      await this.supplyRealTimeRepository.findOne({
-        where: {
-          id,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
+    try {
+      const doesSupplyReallyExists = await queryRunner.manager.findOne(
+        SupplyRealTime,
+        {
+          where: {
+            id,
+            is_active: true,
           },
         },
-      });
+      );
 
-    const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
-    const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+      if (!doesSupplyReallyExists) {
+        throw new NotFoundException('Insumo não encontrado');
+      }
 
-    return {
-      ...recoverUpdatedSupplyData,
-      createdAt,
-      updatedAt,
-    };
+      const supplyUpdate = await queryRunner.manager.update(
+        SupplyRealTime,
+        doesSupplyReallyExists.id,
+        {
+          ...updateSupplyRealtimeDTO,
+        },
+      );
+
+      const supplyUpdated = await queryRunner.manager.save(supplyUpdate);
+
+      if (!supplyUpdate || !supplyUpdated) {
+        throw new InternalServerErrorException(
+          `Erro ao tentar atualizar insumo: ${findSupply.name}`,
+        );
+      }
+
+      const recoverUpdatedSupplyData =
+        await this.supplyRealTimeRepository.findOne({
+          where: {
+            id,
+          },
+          relations: {
+            employee: true,
+          },
+          select: {
+            employee: {
+              id: true,
+              email: true,
+            },
+          },
+        });
+
+      const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
+      const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+
+      return {
+        ...recoverUpdatedSupplyData,
+        createdAt,
+        updatedAt,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      this.logger.error(`Erro ao atualizar insumo: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na criação de insumo',
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async UpdatePrice(
