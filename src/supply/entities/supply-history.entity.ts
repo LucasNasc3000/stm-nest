@@ -1,3 +1,4 @@
+import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
   Column,
@@ -47,8 +48,11 @@ export class SupplyHistory {
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
   totalPrice: string;
 
-  @Column({ type: 'varchar', length: 50 })
-  reason: string;
+  @Column({ type: 'enum', enum: SupplyReason })
+  reason: SupplyReason;
+
+  @Column({ type: 'varchar', length: 600 })
+  details: string;
 
   @Column({
     type: 'numeric',

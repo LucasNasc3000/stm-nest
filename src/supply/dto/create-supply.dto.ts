@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import {
   IsDateString,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsPositive,
@@ -8,6 +9,7 @@ import {
   Length,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
+import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 
 export class CreateSupplyDTO {
   @IsNotEmpty({
@@ -104,11 +106,17 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'campo "motivo" não preenchido',
   })
-  @IsString({
-    message: 'campo "motivo" deve estar em formato de texto',
+  @IsEnum(SupplyReason, {
+    message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReason).join(', ')}`,
   })
-  @Length(0, 50, {
-    message: 'campo "motivo" deve ter no máximo 50 caracteres',
+  readonly reason: SupplyReason;
+
+  @IsNotEmpty({
+    message: 'campo "detalhes" deve ser preenchido',
   })
-  readonly reason: string;
+  @IsString()
+  @Length(12, 600, {
+    message: 'campo "detalhes" deve ter no máximo 600 caracteres',
+  })
+  readonly details: string;
 }

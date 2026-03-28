@@ -91,7 +91,7 @@ export class SupplyService {
         {
           where: {
             name: createSupplyDTO.name,
-            is_active: true,
+            isActive: true,
           },
           lock: { mode: 'pessimistic_write' },
         },
@@ -145,6 +145,7 @@ export class SupplyService {
         const supplyHistoryData = {
           ...withoutTotalWeight,
           reason: createSupplyDTO.reason,
+          details: createSupplyDTO.details,
           totalWeightPerRegister: totalWeightValue,
           employee: doesEmployeeReallyExists,
           supplyRealTime: doesSupplyAlreadyExists,
@@ -200,6 +201,7 @@ export class SupplyService {
       const supplyHistoryData = {
         ...withoutTotalWeight,
         reason: createSupplyDTO.reason,
+        details: createSupplyDTO.details,
         totalWeightPerRegister: totalWeightValue,
         employee: doesEmployeeReallyExists,
         supplyRealTime: newSupplyRealTime,
@@ -255,13 +257,15 @@ export class SupplyService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    const updatesPerformed = [];
+
     try {
       const doesSupplyReallyExists = await queryRunner.manager.findOne(
         SupplyRealTime,
         {
           where: {
             id,
-            is_active: true,
+            isActive: true,
           },
         },
       );
@@ -278,13 +282,32 @@ export class SupplyService {
         },
       );
 
-      const supplyUpdated = await queryRunner.manager.save(supplyUpdate);
-
-      if (!supplyUpdate || !supplyUpdated) {
+      if (!supplyUpdate || supplyUpdate.affected === 0) {
         throw new InternalServerErrorException(
-          `Erro ao tentar atualizar insumo: ${findSupply.name}`,
+          `Erro ao atualizar insumo: ${doesSupplyReallyExists.name}`,
         );
       }
+
+      const recoverUpdatedSupplyDataTransaction =
+        await queryRunner.manager.findOne(SupplyRealTime, {
+          where: {
+            id: doesSupplyReallyExists.id,
+          },
+        });
+
+      const supplyHistoryData = {
+        ...recoverUpdatedSupplyDataTransaction,
+        reason: updateSupplyRealtimeDTO.reason,
+        details: updateSupplyRealtimeDTO.details,
+        totalWeightPerRegister: '00.00',
+      };
+
+      const supplyHistory = await this.SaveSupplyHistory(
+        supplyHistoryData,
+        queryRunner,
+      );
+
+      await queryRunner.commitTransaction();
 
       const recoverUpdatedSupplyData =
         await this.supplyRealTimeRepository.findOne({
@@ -305,10 +328,18 @@ export class SupplyService {
       const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
       const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
 
+      for (let i = 0; i < Object.keys(updateSupplyRealtimeDTO).length; i++) {
+        updatesPerformed.push(Object.keys(updateSupplyRealtimeDTO));
+      }
+
       return {
-        ...recoverUpdatedSupplyData,
-        createdAt,
-        updatedAt,
+        updatedSupplyRealTime: {
+          ...recoverUpdatedSupplyData,
+          createdAt,
+          updatedAt,
+        },
+        updatedFields: updatesPerformed,
+        supplyHistory,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -334,7 +365,7 @@ export class SupplyService {
     const findSupply = await this.supplyRealTimeRepository.findOne({
       where: {
         id,
-        is_active: true,
+        isActive: true,
       },
     });
 

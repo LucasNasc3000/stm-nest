@@ -17,7 +17,6 @@ import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
-import { ReturnDateAndTimeForeignFormat } from 'src/utils/get-date-and-time';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
@@ -120,7 +119,7 @@ export class ProductService {
           {
             where: {
               id: supply.supplyId,
-              is_active: true,
+              isActive: true,
             },
           },
         );
@@ -227,7 +226,7 @@ export class ProductService {
           {
             where: {
               id: supply.supplyId,
-              is_active: true,
+              isActive: true,
             },
             lock: { mode: 'pessimistic_write' },
           },
@@ -289,11 +288,7 @@ export class ProductService {
 
         newRecipe.push(newRecipeLoop);
 
-        const dateAndHour = ReturnDateAndTimeForeignFormat();
-
         const outflowData = {
-          date: dateAndHour[0],
-          hour: dateAndHour[1],
           name: doesSupplyReallyExists.name,
           category: doesSupplyReallyExists.category,
           reason: OutflowReason.PRODUCT_REGISTER,
@@ -531,7 +526,7 @@ export class ProductService {
           {
             where: {
               id: ingredient.supplyRealTime.id,
-              is_active: true,
+              isActive: true,
             },
             lock: { mode: 'pessimistic_write' },
           },
@@ -598,12 +593,8 @@ export class ProductService {
           );
         }
 
-        const dateAndHour = ReturnDateAndTimeForeignFormat();
-
         const data = {
           targetType: OutflowType.SUPPLY,
-          date: dateAndHour[0],
-          hour: dateAndHour[1],
           name: doesSupplyReallyExists.name,
           category: doesSupplyReallyExists.category,
           reason: OutflowReason.PRODUCT_REGISTER,
@@ -640,12 +631,8 @@ export class ProductService {
         // avisar e mandar quantidade que sobrou
       }
 
-      const dateAndHour = ReturnDateAndTimeForeignFormat();
-
       const data = {
         targetType: OutflowType.PRODUCT,
-        date: dateAndHour[0],
-        hour: dateAndHour[1],
         name: product.name,
         category: product.category,
         reason: updateProductUnitiesDTO.reason,
@@ -728,7 +715,7 @@ export class ProductService {
         const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
           where: {
             id: ingredient.supplyId,
-            is_active: true,
+            isActive: true,
           },
         });
 

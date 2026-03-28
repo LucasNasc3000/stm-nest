@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
-import { Between, Like, Raw, Repository, SelectQueryBuilder } from 'typeorm';
+import { Between, Raw, Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -67,7 +67,7 @@ export class SupplyFindService {
     const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
       where: {
         id,
-        is_active: true,
+        isActive: true,
       },
       relations: {
         employee: true,
@@ -387,7 +387,7 @@ export class SupplyFindService {
           id: 'desc',
         },
         where: {
-          reason: Like(`${value}%`),
+          reason: value,
         },
       });
 

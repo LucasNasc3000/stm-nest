@@ -1,13 +1,17 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
+  IsEnum,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
   Length,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
+import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 
 export class UpdateSupplyRealtimeDTO {
   @IsOptional()
@@ -61,4 +65,25 @@ export class UpdateSupplyRealtimeDTO {
     message: 'O campo "peso unitário" deve ser um string decimal ex: 59.99',
   })
   readonly weightPerUnit?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly isActive?: boolean;
+
+  @IsNotEmpty({
+    message: 'campo "motivo" não preenchido',
+  })
+  @IsEnum(SupplyReason, {
+    message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReason).join(', ')}`,
+  })
+  readonly reason: SupplyReason;
+
+  @IsNotEmpty({
+    message: 'campo "detalhes" deve ser preenchido',
+  })
+  @IsString()
+  @Length(12, 600, {
+    message: 'campo "detalhes" deve ter no máximo 600 caracteres',
+  })
+  readonly details: string;
 }

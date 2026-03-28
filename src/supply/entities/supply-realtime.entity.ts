@@ -52,8 +52,8 @@ export class SupplyRealTime {
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
   totalPrice: string;
 
-  @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
+  isActive: boolean;
 
   @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealTime)
   supplyHistory: SupplyHistory[];

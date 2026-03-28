@@ -58,7 +58,7 @@ export class CreateSaleDTO {
     message: 'campo "status" não preenchido',
   })
   @IsEnum(SaleStatus, {
-    message: `campo status deve ser uma das seguintes opções: ${Object.values(SaleStatus).join(', ')}`,
+    message: `campo "status" deve ser uma das seguintes opções: ${Object.values(SaleStatus).join(', ')}`,
   })
   readonly status: SaleStatus;
 

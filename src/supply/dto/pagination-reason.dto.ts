@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 
 export class PaginationByReasonDTO {
   @IsInt({
@@ -26,11 +27,8 @@ export class PaginationByReasonDTO {
   @IsNotEmpty({
     message: 'campo "motivo" não preenchido',
   })
-  @IsString({
-    message: 'campo "motivo" deve estar em formato de texto',
+  @IsEnum(SupplyReason, {
+    message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReason).join(', ')}`,
   })
-  @Length(0, 50, {
-    message: 'campo "motivo" deve ter no máximo 50 caracteres',
-  })
-  value: string;
+  value: SupplyReason;
 }
