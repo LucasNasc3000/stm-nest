@@ -21,6 +21,7 @@ import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
+import { SaleStatusUpdateDTO } from './dto/sale-status.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
 import { SaleService } from './sale.service';
 
@@ -46,6 +47,17 @@ export class SaleController {
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
   Update(@Param('id') id: string, @Body() updateSaleDTO: UpdateSaleDTO) {
     return this.salesService.Update(id, updateSaleDTO);
+  }
+
+  @SkipCsrf()
+  @SkipThrottle({ read: true, auth: true })
+  @Patch(':id')
+  @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
+  UpdateSaleStatus(
+    @Param('id') id: string,
+    @Body() updateSaleStatusDTO: SaleStatusUpdateDTO,
+  ) {
+    return this.salesService.Update(id, updateSaleStatusDTO);
   }
 
   @SkipThrottle({ write: true, auth: true })

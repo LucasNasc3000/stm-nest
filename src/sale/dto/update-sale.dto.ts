@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -54,6 +55,10 @@ export class UpdateSaleDTO {
     message: `campo "status" deve ser uma das seguintes opções: ${Object.values(SaleStatus).join(', ')}`,
   })
   readonly status?: SaleStatus;
+
+  @ValidateIf((o) => o.status === SaleStatus.CANCELED)
+  @IsBoolean()
+  readonly returnToStock?: boolean;
 
   @ValidateIf((o) => o.status === SaleStatus.CANCELED)
   @IsEnum(SaleReason, {

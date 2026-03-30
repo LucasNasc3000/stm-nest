@@ -12,11 +12,19 @@ import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
+import { SaleStatus } from 'src/common/enums/sale-status.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { Formatter } from 'src/utils/format-timezone';
-import { Between, DataSource, In, Like, Repository } from 'typeorm';
+import {
+  Between,
+  DataSource,
+  In,
+  Like,
+  QueryRunner,
+  Repository,
+} from 'typeorm';
 import { Product } from '../product/entities/product.entity';
 import { CreateSaleDTO } from './dto/create-sale.dto';
 import { PaginationByAddressDTO } from './dto/pagination-address.dto';
@@ -24,6 +32,7 @@ import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
+import { SaleStatusUpdateDTO } from './dto/sale-status.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
 import { SaleItems } from './entities/sale-items.entity';
 import { Sale } from './entities/sale.entity';
@@ -206,46 +215,137 @@ export class SaleService {
   }
 
   async Update(id: string, updateSaleDTO: UpdateSaleDTO) {
-    const findSale = await this.salesRepository.findOne({
-      where: {
-        id,
-      },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!findSale) {
-      throw new NotFoundException('Registro de venda não encontrado');
+    try {
+      const findSale = await queryRunner.manager.findOne(Sale, {
+        where: {
+          id,
+        },
+      });
+
+      if (!findSale) {
+        throw new NotFoundException('Registro de venda não encontrado');
+      }
+
+      if (updateSaleDTO.status) {
+        const saleUpdateData = {
+          status: updateSaleDTO.status,
+          reason: updateSaleDTO.reason,
+          notes: updateSaleDTO.notes,
+          returnToStock: updateSaleDTO.returnToStock,
+        };
+
+        await this.StatusUpdate(findSale, saleUpdateData, queryRunner);
+      }
+
+      const allowedData = {
+        clientName: updateSaleDTO.clientName,
+        phoneNumber: updateSaleDTO.phoneNumber,
+        address: updateSaleDTO.address,
+      };
+
+      await this.UpdateRegularData(findSale, allowedData, queryRunner);
+
+      await queryRunner.commitTransaction();
+
+      const recoverUpdatedSaleData = await this.salesRepository.findOne({
+        where: {
+          id,
+        },
+      });
+
+      const updatedAt = Formatter(recoverUpdatedSaleData.updatedAt);
+
+      return {
+        ...recoverUpdatedSaleData,
+        updatedAt,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      this.logger.error(`Erro ao criar registro de venda: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Falha ao processar transação na atualização de registro de venda',
+      );
+    } finally {
+      await queryRunner.release();
     }
+  }
 
-    const allowedData = {
-      clientName: updateSaleDTO.clientName,
-      phoneNumber: updateSaleDTO.phoneNumber,
-      address: updateSaleDTO.address,
-      status: updateSaleDTO.status,
-      reason: updateSaleDTO.reason,
-      notes: updateSaleDTO.notes || null,
-    };
-
-    const supplyUpdate = await this.salesRepository.preload({
-      id,
-      ...allowedData,
+  async UpdateRegularData(
+    sale: Sale,
+    updateSaleDTO: UpdateSaleDTO,
+    queryRunner: QueryRunner,
+  ) {
+    const saleUpdate = await queryRunner.manager.update(Sale, sale.id, {
+      ...updateSaleDTO,
     });
 
-    const saleUpdated = await this.salesRepository.save(supplyUpdate);
+    if (!saleUpdate || saleUpdate.affected === 0) {
+      throw new InternalServerErrorException(
+        'Erro ao tentar atualizar registro da venda',
+      );
+    }
+  }
 
-    if (!supplyUpdate || !saleUpdated) {
+  async StatusUpdate(
+    sale: Sale,
+    saleStatusUpdateDTO: SaleStatusUpdateDTO,
+    queryRunner: QueryRunner,
+  ) {
+    const saleUpdate = await queryRunner.manager.update(Sale, sale.id, {
+      status: saleStatusUpdateDTO.status,
+      reason: saleStatusUpdateDTO.reason || null,
+      notes: saleStatusUpdateDTO.notes || null,
+    });
+
+    if (!saleUpdate || saleUpdate.affected === 0) {
       throw new InternalServerErrorException(
         'Erro ao tentar atualizar registro da venda',
       );
     }
 
-    const createdAt = Formatter(saleUpdated.createdAt);
-    const updatedAt = Formatter(saleUpdated.updatedAt);
+    if (
+      saleStatusUpdateDTO.status === SaleStatus.CANCELED &&
+      saleStatusUpdateDTO.returnToStock === true
+    ) {
+      await this.StockReturn(sale, queryRunner);
+    }
+  }
 
-    return {
-      ...saleUpdated,
-      createdAt,
-      updatedAt,
-    };
+  async StockReturn(sale: Sale, queryRunner: QueryRunner) {
+    for (const product of sale.saleItems) {
+      const findProduct = await queryRunner.manager.findOne(Product, {
+        where: {
+          id: product.id,
+        },
+      });
+
+      if (!findProduct) {
+        throw new NotFoundException(`Produto ${product.id} não encontrado`);
+      }
+
+      const returnedUnities = await queryRunner.manager.increment(
+        Product,
+        { id: findProduct.id },
+        'unities',
+        product.quantity,
+      );
+
+      if (returnedUnities.affected === 0) {
+        throw new InternalServerErrorException(
+          `Erro ao devolver unidades do produto ${findProduct.name} ao estoque`,
+        );
+      }
+    }
   }
 
   FormatterForSearch(salesFound: Sale[]) {
