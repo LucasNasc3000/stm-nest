@@ -16,6 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
+import { AddProductIngredientDTO } from './add-product-ingredient.dto';
 import { UpdateProductIngredientDTO } from './update-product-ingredient.dto';
 
 export class UpdateProductDTO {
@@ -120,5 +121,14 @@ export class UpdateProductDTO {
   @ArrayMinSize(1, { message: 'A receita deve ter ao menos 1 produto' })
   @ValidateNested({ each: true })
   @Type(() => UpdateProductIngredientDTO)
-  readonly productIngredient?: UpdateProductIngredientDTO[];
+  readonly updateProductIngredient?: UpdateProductIngredientDTO[];
+
+  @IsOptional()
+  @IsArray({
+    message: 'Ingredientes devem estar em um array',
+  })
+  @ArrayMinSize(1, { message: 'A receita deve ter ao menos 1 produto' })
+  @ValidateNested({ each: true })
+  @Type(() => AddProductIngredientDTO)
+  readonly addproductIngredient?: AddProductIngredientDTO[];
 }

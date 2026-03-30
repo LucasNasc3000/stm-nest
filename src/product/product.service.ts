@@ -18,6 +18,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { AddProductIngredientDTO } from './dto/add-product-ingredient.dto';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { UpdateProductIngredientDTO } from './dto/update-product-ingredient.dto';
@@ -356,12 +357,13 @@ export class ProductService {
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
           id: productId,
+          is_active: true,
         },
         lock: { mode: 'pessimistic_write' },
       });
 
       if (!findProduct) {
-        throw new NotFoundException('Produto não encontrado');
+        throw new NotFoundException('Produto não encontrado ou excluído');
       }
 
       if (updateProductDTO.useStockSupplies === true) {
@@ -391,9 +393,18 @@ export class ProductService {
         recipe.push(...findProductIngredient);
       }
 
-      if (updateProductDTO.productIngredient) {
+      if (updateProductDTO.updateProductIngredient) {
         await this.UpdateProductIngredient(
-          updateProductDTO.productIngredient,
+          updateProductDTO.updateProductIngredient,
+          queryRunner,
+        );
+      }
+
+      if (updateProductDTO.addproductIngredient) {
+        await this.AddIngredients(
+          updateProductDTO.addproductIngredient,
+          findProduct,
+          findEmployee,
           queryRunner,
         );
       }
@@ -425,7 +436,8 @@ export class ProductService {
         useStockSupplies,
         addUnities,
         takeUnities,
-        productIngredient,
+        updateProductIngredient,
+        addproductIngredient,
         reason,
         notes,
         disableProduct,
@@ -662,6 +674,65 @@ export class ProductService {
     }
   }
 
+  private async AddIngredients(
+    productIngredient: AddProductIngredientDTO[],
+    product: Product,
+    employee: Employee,
+    queryRunner: QueryRunner,
+  ) {
+    for (const ingredient of productIngredient) {
+      const findIngredient = await queryRunner.manager.findOne(
+        ProductIngredient,
+        {
+          where: {
+            id: ingredient.id,
+            product: {
+              id: ingredient.supplyId,
+            },
+            isActive: true,
+          },
+          lock: { mode: 'pessimistic_write' },
+        },
+      );
+
+      if (!findIngredient) {
+        throw new NotFoundException(
+          `Ingrediente ${ingredient.id} não encontrado ou inativo`,
+        );
+      }
+
+      const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
+        where: {
+          id: ingredient.supplyId,
+          isActive: true,
+        },
+      });
+
+      if (!findSupply) {
+        throw new NotFoundException(
+          `Insumo ${ingredient.supplyId} do ingrediente ${ingredient.id} não encontrado ou inativo`,
+        );
+      }
+
+      const productIngredientData = {
+        quantity: ingredient.quantity,
+        supplyRealTime: findSupply,
+        product,
+        employee,
+      };
+
+      const createProductIngredient = queryRunner.manager.create(
+        ProductIngredient,
+        productIngredientData,
+      );
+
+      await queryRunner.manager.save(
+        ProductIngredient,
+        createProductIngredient,
+      );
+    }
+  }
+
   private async UpdateProductIngredient(
     productIngredient: UpdateProductIngredientDTO[],
     queryRunner: QueryRunner,
@@ -683,11 +754,11 @@ export class ProductService {
 
       if (!findIngredient) {
         throw new NotFoundException(
-          `Ingrediente ${ingredient.id} não encontrado`,
+          `Ingrediente ${ingredient.id} não encontrado ou inativo`,
         );
       }
 
-      if (ingredient.disableProduct === true) {
+      if (ingredient.disableIngredient === true) {
         const disableIngredient = await queryRunner.manager.update(
           ProductIngredient,
           findIngredient.id,
@@ -721,7 +792,7 @@ export class ProductService {
 
         if (!findSupply) {
           throw new NotFoundException(
-            `Insumo ${ingredient.supplyId} do ingrediente ${ingredient.id} não encontrado`,
+            `Insumo ${ingredient.supplyId} do ingrediente ${ingredient.id} não encontrado ou inativo`,
           );
         }
 
