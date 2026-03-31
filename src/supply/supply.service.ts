@@ -123,6 +123,11 @@ export class SupplyService {
 
         const updatedTotalPrice = currentTotalPrice.add(totalPrice).toString();
 
+        const weightedAveragePrice = new Decimal(updatedTotalPrice)
+          .div(updatedQuantity)
+          .toDecimalPlaces(2)
+          .toString();
+
         const supplyUpdate = await queryRunner.manager.update(
           SupplyRealTime,
           doesSupplyAlreadyExists.id,
@@ -130,6 +135,7 @@ export class SupplyService {
             totalWeight: newTotalWeight,
             quantity: updatedQuantity,
             totalPrice: updatedTotalPrice,
+            price: weightedAveragePrice,
           },
         );
 
@@ -249,7 +255,10 @@ export class SupplyService {
       createSupplyHistoryDTO,
     );
 
-    await queryRunnerSub.manager.save(supplyHistoryCreate);
+    const newSupplyHistory =
+      await queryRunnerSub.manager.save(supplyHistoryCreate);
+
+    return newSupplyHistory;
   }
 
   async Update(id: string, updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO) {
