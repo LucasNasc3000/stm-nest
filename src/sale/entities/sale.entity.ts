@@ -52,6 +52,9 @@ export class Sale {
   @Column({ type: 'varchar', length: 500, nullable: true })
   notes: string;
 
+  @Column({ type: 'boolean', nullable: true, name: 'stock_fully_returned' })
+  stockFullyReturned: boolean;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

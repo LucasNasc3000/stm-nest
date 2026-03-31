@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -12,6 +13,7 @@ import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { SaleStatus } from 'src/common/enums/sale-status.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
@@ -214,20 +216,56 @@ export class SaleService {
     }
   }
 
-  async Update(id: string, updateSaleDTO: UpdateSaleDTO) {
+  async Update(
+    id: string,
+    updateSaleDTO: UpdateSaleDTO,
+    tokenPayloadDTO: TokenPayloadDTO,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      const findEmployee = await queryRunner.manager.findOne(Employee, {
+        where: {
+          id: tokenPayloadDTO.sub,
+        },
+      });
+
+      if (!findEmployee) {
+        throw new NotFoundException('Funcionário não encontrado');
+      }
+
       const findSale = await queryRunner.manager.findOne(Sale, {
         where: {
           id,
+        },
+        relations: {
+          saleItems: true,
         },
       });
 
       if (!findSale) {
         throw new NotFoundException('Registro de venda não encontrado');
+      }
+
+      if (findSale.status === SaleStatus.CANCELED) {
+        const hasAdminPermission = findEmployee.role.permissions.some(
+          (p: { resource: Resource; action: Action }) =>
+            p.resource === Resource.EMPLOYEES && p.action === Action.UPDATE,
+        );
+
+        if (!hasAdminPermission) {
+          throw new ForbiddenException(
+            'Permissão de admin necessária para atualizar vendas canceladas',
+          );
+        }
+
+        if (findSale.stockFullyReturned) {
+          throw new BadRequestException(
+            'A venda já foi cancelada, não é possível atualizar seus dados',
+          );
+        }
       }
 
       if (updateSaleDTO.status) {
@@ -266,7 +304,9 @@ export class SaleService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar registro de venda: ${error.message}`);
+      this.logger.error(
+        `Erro ao atualizar registro de venda: ${error.message}`,
+      );
 
       if (error instanceof HttpException) {
         throw error;
@@ -325,7 +365,7 @@ export class SaleService {
     for (const product of sale.saleItems) {
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
-          id: product.id,
+          id: product.product.id,
         },
       });
 
@@ -343,6 +383,16 @@ export class SaleService {
       if (returnedUnities.affected === 0) {
         throw new InternalServerErrorException(
           `Erro ao devolver unidades do produto ${findProduct.name} ao estoque`,
+        );
+      }
+
+      const saleUpdate = await queryRunner.manager.update(Sale, sale.id, {
+        stockFullyReturned: true,
+      });
+
+      if (!saleUpdate || saleUpdate.affected === 0) {
+        throw new InternalServerErrorException(
+          'Erro ao atualizar dados de retorno de estoque',
         );
       }
     }
