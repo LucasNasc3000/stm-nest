@@ -409,15 +409,51 @@ export class OutflowService {
 
   async FindByHour(paginationByHour: PaginationByHourDTO) {
     const { limit, offset, value } = paginationByHour;
+    const [hour, minute, second] = value.split(':').map(Number);
+
+    const tz = `AT TIME ZONE 'America/Sao_Paulo'`;
 
     const query = this.outflowRepository
       .createQueryBuilder('outflow')
-      .where('EXTRACT(HOUR FROM outflow.createdAt) = :hour', { hour: value })
       .leftJoinAndSelect('outflow.employee', 'employee')
       .addSelect(['employee.id', 'employee.email'])
       .orderBy('outflow.id', 'DESC')
       .take(limit)
       .skip(offset);
+
+    switch (true) {
+      case minute === undefined || isNaN(minute):
+        query.where(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
+          hour,
+        });
+        break;
+
+      case !isNaN(minute) && (isNaN(second) || second === undefined):
+        query.where(`EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`, {
+          minute,
+        });
+        break;
+
+      case !isNaN(minute) && (isNaN(second) || second === undefined):
+        query
+          .where(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
+            hour,
+          })
+          .andWhere(`EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`, {
+            minute,
+          });
+        break;
+
+      case !isNaN(minute) && !isNaN(second):
+        query
+          .where(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, { hour })
+          .andWhere(`EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`, {
+            minute,
+          })
+          .andWhere(`EXTRACT(SECOND FROM outflow.createdAt ${tz}) = :second`, {
+            second,
+          });
+    }
 
     const [outflowFindByHour, total] = await query.getManyAndCount();
 

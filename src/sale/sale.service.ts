@@ -464,9 +464,12 @@ export class SaleService {
   async FindByHour(paginationByHour: PaginationByHourDTO) {
     const { limit, offset, value } = paginationByHour;
 
+    const [hour, minute, second] = value.split(':').map(Number);
+
+    const tz = `AT TIME ZONE 'America/Sao_Paulo'`;
+
     const query = this.salesRepository
       .createQueryBuilder('sale')
-      .where('EXTRACT(HOUR FROM sale.createdAt) = :hour', { hour: value })
       .leftJoinAndSelect('sale.employee', 'employee')
       .addSelect(['employee.id', 'employee.email'])
       .leftJoinAndSelect('sale.saleItems', 'sale_items')
@@ -478,6 +481,41 @@ export class SaleService {
       .orderBy('sale.id', 'DESC')
       .take(limit)
       .skip(offset);
+
+    switch (true) {
+      // Se não houverem minutos não haverão segundos
+      case minute === undefined || isNaN(minute):
+        query.where(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, {
+          hour,
+        });
+        break;
+
+      case !isNaN(minute) && (isNaN(second) || second === undefined):
+        query.where(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
+          minute,
+        });
+        break;
+
+      case !isNaN(minute) && (isNaN(second) || second === undefined):
+        query
+          .where(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, {
+            hour,
+          })
+          .andWhere(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
+            minute,
+          });
+        break;
+
+      case !isNaN(minute) && !isNaN(second):
+        query
+          .where(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, { hour })
+          .andWhere(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
+            minute,
+          })
+          .andWhere(`EXTRACT(SECOND FROM sale.createdAt ${tz}) = :second`, {
+            second,
+          });
+    }
 
     const [salesFindByHour, total] = await query.getManyAndCount();
 
