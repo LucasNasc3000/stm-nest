@@ -230,6 +230,11 @@ export class SaleService {
         where: {
           id: tokenPayloadDTO.sub,
         },
+        relations: {
+          role: {
+            permissions: true,
+          },
+        },
       });
 
       if (!findEmployee) {
@@ -241,7 +246,9 @@ export class SaleService {
           id,
         },
         relations: {
-          saleItems: true,
+          saleItems: {
+            product: true,
+          },
         },
       });
 
@@ -430,6 +437,11 @@ export class SaleService {
           id: true,
           email: true,
         },
+        saleItems: {
+          id: true,
+          quantity: true,
+          priceAtSale: true,
+        },
       },
     });
 
@@ -458,6 +470,11 @@ export class SaleService {
       .leftJoinAndSelect('sale.employee', 'employee')
       .addSelect(['employee.id', 'employee.email'])
       .leftJoinAndSelect('sale.saleItems', 'sale_items')
+      .addSelect([
+        'sale_items.id',
+        'sale_items.quantity',
+        'sale_items.price_at_sale',
+      ])
       .orderBy('sale.id', 'DESC')
       .take(limit)
       .skip(offset);
@@ -502,6 +519,11 @@ export class SaleService {
             id: true,
             email: true,
           },
+          saleItems: {
+            id: true,
+            quantity: true,
+            priceAtSale: true,
+          },
         },
       });
 
@@ -541,6 +563,11 @@ export class SaleService {
         employee: {
           id: true,
           email: true,
+        },
+        saleItems: {
+          id: true,
+          quantity: true,
+          priceAtSale: true,
         },
       },
     });
@@ -584,6 +611,11 @@ export class SaleService {
           employee: {
             id: true,
             email: true,
+          },
+          saleItems: {
+            id: true,
+            quantity: true,
+            priceAtSale: true,
           },
         },
       });

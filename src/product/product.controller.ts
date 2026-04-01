@@ -46,6 +46,7 @@ export class ProductController {
     return this.productService.CreateWithoutRecipe(tokenPayloadDTO, body);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/withRecipe')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.CREATE })
