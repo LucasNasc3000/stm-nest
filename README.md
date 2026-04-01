@@ -243,7 +243,7 @@ npm run format            # Prettier
 - LogEmployee: Logs de acesso
 
 ### Relacionamentos
-<img src="https://github.com/LucasNasc3000/stm-nest/blob/master/images/stm-nest-db%20-%20public.png" width=820 heigth=820/>
+<img src="https://github.com/LucasNasc3000/stm-nest/blob/master/images/stm-nest-db%20-%20publicUpdated.png" width=820 heigth=820/>
 
 
 ### 🔄 Migrações
@@ -585,7 +585,7 @@ npm run format            # Prettier
 - LogEmployee: Access logs
 
 ### Relationships
-<img src="https://github.com/LucasNasc3000/stm-nest/blob/master/images/stm-nest-db%20-%20public.png" width=820 heigth=820/>
+<img src="https://github.com/LucasNasc3000/stm-nest/blob/master/images/stm-nest-db%20-%20publicUpdated.png" width=820 heigth=820/>
 
 ### 🔄 Migrations
 All migrations are already in repository. To create a new one:<br>
