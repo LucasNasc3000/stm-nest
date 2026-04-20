@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ForbiddenException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -12,9 +11,11 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { Resource } from 'src/common/enums/permissions.enum';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
+import { ErrorManagement } from 'src/utils/error.util';
 import { DataSource, Like, QueryRunner, Repository } from 'typeorm';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
@@ -280,15 +281,13 @@ export class EmployeeService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao atualizar administrador: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na atualização de chefe',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao atualizar administrador:',
+        queryFailedError: 'Erro ao atualizar dados de funcionários',
+        internalServerError: 'Erro interno ao atualizar administrador',
+        generalError:
+          'Falha ao processar transação na atualização de administrador',
+      });
     } finally {
       await queryRunner.release();
     }

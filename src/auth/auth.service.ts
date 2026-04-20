@@ -1,5 +1,4 @@
 import {
-  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -10,6 +9,7 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import {
   JwtPayload,
   RefreshTokenPayload,
@@ -18,6 +18,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { JWTBlacklist } from 'src/jwt-blacklist/entities/jwt_blacklist.entity';
 import { LogsService } from 'src/logs-register/log.service';
 import { RefreshTokensService } from 'src/refresh-tokens/refresh-token.service';
+import { ErrorManagement } from 'src/utils/error.util';
 import { DataSource, Repository } from 'typeorm';
 import jwtConfig from './config/jwt.config';
 import { LoginDTO } from './dto/login.dto';
@@ -118,24 +119,21 @@ export class AuthService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar novo par de tokens: ${error.stack}`);
-
       // try {
       //   await this.emailsService.LogIssue('funcionário');
       // } catch (emailErr) {
-      //   console.error(
+      //   this.logger.error(
       //     'Falha ao enviar e-mail de alerta de erro de autenticação',
-      //     emailErr.message,
+      //     emailErr,
       //   );
       // }
 
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação da autenticação',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar novo par de tokens',
+        queryFailedError: 'Erro nos registros de autenticação',
+        internalServerError: 'Erro interno ao criar novo par de tokens',
+        generalError: 'Falha ao processar transação da autenticação',
+      });
     } finally {
       await queryRunner.release();
     }

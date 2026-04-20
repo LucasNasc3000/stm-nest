@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -11,12 +10,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
+import { ErrorManagement } from 'src/utils/error.util';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { AddProductIngredientDTO } from './dto/add-product-ingredient.dto';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
@@ -160,15 +161,13 @@ export class ProductService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao cadastrar produto: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de produto com receita',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar produto com receita:',
+        queryFailedError: 'Erro ao registrar produto com receita',
+        internalServerError: 'Erro interno ao criar produto com receita',
+        generalError:
+          'Falha ao processar transação na criação de produto com receita',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -317,15 +316,14 @@ export class ProductService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao cadastrar produto: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de produto com receita',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar produto com receita cadastrada:',
+        queryFailedError: 'Erro ao cadastrar produto com receita cadastrada',
+        internalServerError:
+          'Erro interno ao criar produto com receita cadastrada',
+        generalError:
+          'Falha ao processar transação na criação de produto com receita cadastrada',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -465,17 +463,12 @@ export class ProductService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(
-        `Erro ao atualizar ingredientes do produto: ${error.message}`,
-      );
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na atualização dos ingredientes do produto',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao atualizar ingredientes do produto:',
+        queryFailedError: 'Erro ao atualizar registro de produto',
+        internalServerError: 'Erro interno ao atualizar produto',
+        generalError: 'Falha ao processar transação na atualização do produto',
+      });
     } finally {
       await queryRunner.release();
     }

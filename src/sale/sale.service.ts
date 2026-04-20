@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ForbiddenException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -11,6 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
@@ -18,6 +18,7 @@ import { SaleStatus } from 'src/common/enums/sale-status.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
 import {
   Between,
@@ -202,15 +203,13 @@ export class SaleService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar registro de venda: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de registro de venda',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar venda',
+        queryFailedError: 'Erro ao criar registro de venda',
+        internalServerError: 'Erro interno ao criar venda',
+        generalError:
+          'Falha ao processar transação na criação de registro de venda',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -311,17 +310,13 @@ export class SaleService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(
-        `Erro ao atualizar registro de venda: ${error.message}`,
-      );
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na atualização de registro de venda',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao atualizar venda',
+        queryFailedError: 'Erro ao atualizar registro de venda',
+        internalServerError: 'Erro interno ao atualizar venda',
+        generalError:
+          'Falha ao processar transação na atualização de registro de venda',
+      });
     } finally {
       await queryRunner.release();
     }

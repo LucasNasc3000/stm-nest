@@ -1,8 +1,6 @@
 import {
-  HttpException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,12 +9,14 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import jwtConfig from 'src/auth/config/jwt.config';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import {
   JwtPayload,
   RefreshTokenPayload,
 } from 'src/common/interfaces/jwt-payload.interface';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { LogsService } from 'src/logs-register/log.service';
+import { ErrorManagement } from 'src/utils/error.util';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { RefreshTokenEmployee } from './entities/refresh-token-employee.entity';
 
@@ -113,9 +113,11 @@ export class RefreshTokensService {
 
       throw new Error('Acessos revogados, contate o suporte');
     } catch (error) {
-      throw new UnauthorizedException({
-        message: error.message,
-        where: 'RevokeAll',
+      ErrorManagement(error, GeneralErrorType.UNAUTHORIZED, {
+        logger: 'Erro no revokeAllEmployee',
+        queryFailedError: 'Erro nos registros durante revogação',
+        internalServerError: 'Erro interno ao revogar tokens de funcionário',
+        generalError: 'Erro ao revogar tokens de funcionário',
       });
     }
   }
@@ -229,15 +231,12 @@ export class RefreshTokensService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar novo par de tokens: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação da autenticação',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar novo par de tokens',
+        queryFailedError: 'Erro nos registros de re-autenticação',
+        internalServerError: 'Erro interno ao criar novo par de tokens',
+        generalError: 'Falha ao processar transação da re-autenticação',
+      });
     } finally {
       await queryRunner.release();
     }

@@ -1,5 +1,4 @@
 import {
-  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -9,8 +8,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
+import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { CreateSupplyHistoryDTO } from './dto/create-supply-history.dto';
@@ -232,15 +233,12 @@ export class SupplyService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar insumo: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de insumo',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar insumo:',
+        queryFailedError: 'Erro ao cadastrar insumo',
+        internalServerError: 'Erro interno ao criar insumo',
+        generalError: 'Falha ao processar transação na criação de insumo',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -353,15 +351,12 @@ export class SupplyService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao atualizar insumo: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de insumo',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao atualizar insumo:',
+        queryFailedError: 'Erro ao atualizar registro de insumo',
+        internalServerError: 'Erro interno ao atualizar insumo',
+        generalError: 'Falha ao processar transação na criação de insumo',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -455,15 +450,13 @@ export class SupplyService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar insumo: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de insumo',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao atualizar preço de insumo:',
+        queryFailedError: 'Erro ao atualizar preço de registro de insumo',
+        internalServerError: 'Erro interno ao atualizar preço de insumo',
+        generalError:
+          'Falha ao processar transação na atualização de preço de insumo',
+      });
     } finally {
       await queryRunner.release();
     }

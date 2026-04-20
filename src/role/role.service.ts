@@ -10,8 +10,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { Permission } from 'src/role/entities/permission.entity';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { GetErrorMessage } from 'src/utils/error-message.util';
+import { ErrorManagement } from 'src/utils/error.util';
+import { DataSource, QueryFailedError, QueryRunner, Repository } from 'typeorm';
 import { CreateRoleDTO } from './dto/create-role.dto';
 import { UpdateRoleDTO } from './dto/update-role.dto';
 import { Role } from './entities/role.entity';
@@ -62,15 +65,12 @@ export class RoleService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      this.logger.error(`Erro ao criar cargo: ${error.message}`);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de cargo',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar cargo:',
+        queryFailedError: 'Erro cadastrar cargo',
+        internalServerError: 'Erro interno ao criar cargo',
+        generalError: 'Falha ao processar transação na criação de cargo',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -184,9 +184,18 @@ export class RoleService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
+      const errorMessage = GetErrorMessage(error);
+
       this.logger.error(
-        `Erro ao atualizar ${!updateRoleDTO.name ? 'permissao' : 'cargo'}: ${error.message}`,
+        `Erro ao atualizar ${!updateRoleDTO.name ? 'permissao' : 'cargo'}: ${errorMessage}`,
+        error instanceof Error ? error.stack : null,
       );
+
+      if (error instanceof QueryFailedError) {
+        throw new InternalServerErrorException(
+          `Erro ao atualizar registro de ${!updateRoleDTO.name ? 'permissao' : 'cargo'}`,
+        );
+      }
 
       if (error instanceof HttpException) {
         throw error;

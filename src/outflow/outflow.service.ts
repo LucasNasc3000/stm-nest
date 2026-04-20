@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -10,10 +9,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
+import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
 import { Between, DataSource, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
@@ -140,17 +141,13 @@ export class OutflowService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(
-        `Erro ao criar saída do produto ${createOutflowDTO.name}: ${error.message}`,
-      );
 
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de saída',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: `Erro ao criar saída do produto ${createOutflowDTO.name}`,
+        queryFailedError: 'Erro ao cadastrar saída do produto',
+        internalServerError: 'Erro interno ao criar saída de produto',
+        generalError: 'Falha ao processar transação na criação de saída',
+      });
     } finally {
       await queryRunner.release();
     }
@@ -244,17 +241,13 @@ export class OutflowService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(
-        `Erro ao criar saída do insumo ${createOutflowDTO.name}: ${error.message}`,
-      );
 
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(
-        'Falha ao processar transação na criação de saída',
-      );
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: `Erro ao criar saída do insumo ${createOutflowDTO.name}`,
+        queryFailedError: 'Erro ao cadastrar saída do insumo',
+        internalServerError: 'Erro interno ao criar saída de insumo',
+        generalError: 'Falha ao processar transação na criação de saída',
+      });
     } finally {
       await queryRunner.release();
     }
