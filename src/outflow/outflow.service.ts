@@ -16,7 +16,7 @@ import { Product } from 'src/product/entities/product.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
-import { Between, DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Like, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
@@ -477,7 +477,7 @@ export class OutflowService {
           id: 'desc',
         },
         where: {
-          name: value,
+          name: Like(`${value}%`),
         },
         relations: {
           employee: true,
@@ -517,7 +517,7 @@ export class OutflowService {
           id: 'desc',
         },
         where: {
-          category: value,
+          category: Like(`${value}%`),
         },
         relations: {
           employee: true,

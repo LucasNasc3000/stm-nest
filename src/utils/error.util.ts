@@ -4,6 +4,7 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { TokenExpiredError } from '@nestjs/jwt';
 import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { ErrorMessages } from 'src/common/interfaces/error-messages';
 import { QueryFailedError } from 'typeorm';
@@ -24,6 +25,10 @@ export function ErrorManagement(
 
   if (error instanceof QueryFailedError) {
     throw new InternalServerErrorException(messages.queryFailedError);
+  }
+
+  if (error instanceof TokenExpiredError) {
+    throw new UnauthorizedException('Token expirado');
   }
 
   if (error instanceof HttpException) {
