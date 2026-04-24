@@ -22,7 +22,7 @@ export class AuthController {
   ) {
     const createTokens = await this.authService.LoginEmployee(loginDto);
 
-    res.cookie('accessToken', createTokens.accessToken, {
+    res.cookie('accessToken', createTokens.loginData.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
@@ -30,7 +30,7 @@ export class AuthController {
       path: '/',
     });
 
-    res.cookie('refreshToken', createTokens.refreshToken, {
+    res.cookie('refreshToken', createTokens.loginData.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
@@ -41,9 +41,8 @@ export class AuthController {
     return {
       success: true,
       message: 'Autenticação concluída',
-      email: createTokens.email,
-      name: createTokens.name,
-      id: createTokens.id,
+      email: createTokens.loginData.email,
+      permissions: createTokens.permissions,
     };
   }
 

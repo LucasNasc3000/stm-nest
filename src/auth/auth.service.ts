@@ -51,7 +51,9 @@ export class AuthService {
         situation: EmployeeSituation.EMPLOYED,
       },
       relations: {
-        role: true,
+        role: {
+          permissions: true,
+        },
       },
     });
 
@@ -70,7 +72,10 @@ export class AuthService {
 
     const create = await this.CreateTokensEmployee(findEmployee);
 
-    return create;
+    return {
+      loginData: create,
+      permissions: findEmployee.role.permissions,
+    };
   }
 
   async CreateTokensEmployee(employeeData: Employee) {
