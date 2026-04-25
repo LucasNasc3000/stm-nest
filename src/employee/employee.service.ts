@@ -18,6 +18,7 @@ import { RoleService } from 'src/role/role.service';
 import { ErrorManagement } from 'src/utils/error.util';
 import { DataSource, Like, QueryRunner, Repository } from 'typeorm';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
+import { PaginationByBossDTO } from './dto/pagination-employee-boss.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
 import { PaginationExEmployeesDTO } from './dto/pagination-exemployees.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -469,6 +470,37 @@ export class EmployeeService {
     }
 
     return [total, ...employeeFindByRole];
+  }
+
+  async FindByBoss(paginationByBossDTO: PaginationByBossDTO) {
+    const { limit, offset, value } = paginationByBossDTO;
+
+    const [employeeFindByBoss, total] =
+      await this.employeeRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          boss: {
+            id: value,
+          },
+          situation: EmployeeSituation.EMPLOYED,
+        },
+      });
+
+    if (!employeeFindByBoss) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por funcionários',
+      );
+    }
+
+    if (employeeFindByBoss.length < 1) {
+      throw new NotFoundException('Funcionários não encontrados');
+    }
+
+    return [total, ...employeeFindByBoss];
   }
 
   async FindExEmployees(paginationExEmployeesDTO?: PaginationExEmployeesDTO) {

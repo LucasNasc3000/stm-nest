@@ -18,6 +18,7 @@ import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
+import { PaginationByBossDTO } from './dto/pagination-employee-boss.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
 import { PaginationExEmployeesDTO } from './dto/pagination-exemployees.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -87,6 +88,13 @@ export class EmployeeController {
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByRole(@Query() paginationByRoleDto: PaginationByRoleDTO) {
     return this.employeesService.FindByRole(paginationByRoleDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/boss/')
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
+  FindByBoss(@Query() paginationByBossDto: PaginationByBossDTO) {
+    return this.employeesService.FindByBoss(paginationByBossDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
