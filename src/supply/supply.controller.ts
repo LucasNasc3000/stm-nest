@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -134,8 +135,21 @@ export class SupplyController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
-    return this.supplyFindService.FindByEmployee(paginationByEmployeeDto);
+  async FindByEmployee(
+    @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+  ) {
+    const findSupplies = await this.supplyFindService.FindByEmployee(
+      paginationByEmployeeDto,
+    );
+
+    if (paginationByEmployeeDto.forDisplay && findSupplies.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhum insumo cadastrado ainda',
+      };
+    }
+
+    return findSupplies;
   }
 
   @SkipThrottle({ write: true, auth: true })

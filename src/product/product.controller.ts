@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -117,8 +118,21 @@ export class ProductController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
-    return this.productFindService.FindByEmployee(paginationByEmployeeDto);
+  async FindByEmployee(
+    @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+  ) {
+    const findProducts = await this.productFindService.FindByEmployee(
+      paginationByEmployeeDto,
+    );
+
+    if (paginationByEmployeeDto.forDisplay && findProducts.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhum produto cadastrado ainda',
+      };
+    }
+
+    return findProducts;
   }
 
   @SkipThrottle({ write: true, auth: true })

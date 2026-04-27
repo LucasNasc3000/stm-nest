@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class PaginationByEmployeeDTO {
   @IsInt({
@@ -30,4 +37,10 @@ export class PaginationByEmployeeDTO {
     message: 'Id do funcionário deve ser um uuid',
   })
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "para exibição" não preenchido',
+  })
+  @IsBoolean()
+  forDisplay: boolean;
 }

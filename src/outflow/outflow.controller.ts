@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -103,7 +104,20 @@ export class OutflowController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
-    return this.outflowsService.FindByEmployee(paginationByEmployeeDto);
+  async FindByEmployee(
+    @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+  ) {
+    const findOutflows = await this.outflowsService.FindByEmployee(
+      paginationByEmployeeDto,
+    );
+
+    if (paginationByEmployeeDto.forDisplay && findOutflows.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhuma saída cadastrada ainda',
+      };
+    }
+
+    return findOutflows;
   }
 }

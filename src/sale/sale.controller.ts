@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -85,7 +86,20 @@ export class SaleController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
-  FindByEmployee(@Query() paginationByEmployeeDto: PaginationByEmployeeDTO) {
-    return this.salesService.FindByEmployee(paginationByEmployeeDto);
+  async FindByEmployee(
+    @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+  ) {
+    const findSales = await this.salesService.FindByEmployee(
+      paginationByEmployeeDto,
+    );
+
+    if (paginationByEmployeeDto.forDisplay && findSales.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhuma venda cadastrada ainda',
+      };
+    }
+
+    return findSales;
   }
 }
