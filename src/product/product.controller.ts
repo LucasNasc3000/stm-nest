@@ -77,7 +77,7 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
-    @Param('id') id: string,
+    @Param() id: string,
     @Body() updateProductDTO: UpdateProductDTO,
   ) {
     return this.productService.Update(tokenPayloadDTO, id, updateProductDTO);
@@ -87,7 +87,7 @@ export class ProductController {
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })
   UpdateProductPrice(
-    @Param('id') id: string,
+    @Param() id: string,
     @Body() updatePriceProductDTO: UpdatePriceProductDTO,
   ) {
     return this.productService.UpdatePrice(id, updatePriceProductDTO);

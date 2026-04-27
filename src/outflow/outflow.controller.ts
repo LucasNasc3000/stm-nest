@@ -54,7 +54,7 @@ export class OutflowController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/:id')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindById(@Param('id') id: string) {
+  FindById(@Param() id: string) {
     return this.outflowsService.FindById(id);
   }
 

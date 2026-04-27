@@ -385,7 +385,7 @@ export class EmployeeService {
   }
 
   async FindByEmail(emailDTO: SearchByEmailDTO) {
-    const email = emailDTO.email;
+    const email = emailDTO.value;
 
     const employeeFindByEmail = await this.employeeRepository.findOneBy({
       email,

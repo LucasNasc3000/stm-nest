@@ -43,7 +43,7 @@ export class EmployeeController {
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/self/:id')
   UpdateSelf(
-    @Param('id') id: UrlUuidDTO,
+    @Param() id: UrlUuidDTO,
     @Body() updateEmployeeDTO: UpdateEmployeeDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
@@ -58,7 +58,7 @@ export class EmployeeController {
   @Patch('update/admin/:id')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.UPDATE })
   UpdateAdmin(
-    @Param('id') id: UrlUuidDTO,
+    @Param() id: UrlUuidDTO,
     @Body() updateEmployeeAdminDTO: UpdateEmployeeAdminDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
@@ -70,9 +70,9 @@ export class EmployeeController {
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('search/email/:email')
+  @Get('search/email/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
-  FindByEmail(@Param('email') email: SearchByEmailDTO) {
+  FindByEmail(@Query() email: SearchByEmailDTO) {
     return this.employeesService.FindByEmail(email);
   }
 

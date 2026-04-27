@@ -8,5 +8,5 @@ export class SearchByEmailDTO {
     message: 'campo "email" deve estar em formato de texto',
   })
   @IsEmail()
-  readonly email: string;
+  readonly value: string;
 }

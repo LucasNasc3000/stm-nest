@@ -28,7 +28,7 @@ export class RoleController {
 
   @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
-  UpdateRole(@Param('id') id: string, @Body() body: UpdateRoleDTO) {
+  UpdateRole(@Param() id: string, @Body() body: UpdateRoleDTO) {
     return this.roleService.UpdateRole(id, body);
   }
 }

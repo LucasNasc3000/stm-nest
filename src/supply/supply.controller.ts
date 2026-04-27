@@ -55,7 +55,7 @@ export class SupplyController {
   @Patch('update/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.UPDATE })
   Update(
-    @Param('id') id: string,
+    @Param() id: string,
     @Body() updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
   ) {
     return this.supplyService.Update(id, updateSupplyRealtimeDTO);
@@ -65,7 +65,7 @@ export class SupplyController {
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.EDIT_PRICES })
   UpdatePrice(
-    @Param('id') id: string,
+    @Param() id: string,
     @Body() updateSupplyRealtimePriceDTO: UpdatePriceSupplyRealtimeDTO,
   ) {
     return this.supplyService.UpdatePrice(id, updateSupplyRealtimePriceDTO);
@@ -74,14 +74,14 @@ export class SupplyController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/supplyRealTime/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByIdSupplyRealTime(@Param('id') id: string) {
+  FindByIdSupplyRealTime(@Param() id: string) {
     return this.supplyFindService.FindByIdSupplyRealTime(id);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/supplyHistory/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByIdSupplyHistory(@Param('id') id: string) {
+  FindByIdSupplyHistory(@Param() id: string) {
     return this.supplyFindService.FindByIdSupplyHistory(id);
   }
 

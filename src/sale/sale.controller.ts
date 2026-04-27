@@ -45,7 +45,7 @@ export class SaleController {
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.UPDATE })
   Update(
-    @Param('id') id: string,
+    @Param() id: string,
     @Body() updateSaleDTO: UpdateSaleDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
