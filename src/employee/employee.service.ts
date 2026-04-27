@@ -183,6 +183,11 @@ export class EmployeeService {
       }
     }
 
+    // Não deixa atualizar funcionários de outros admins
+    if (findEmployeeById.boss.id !== tokenPayloadDTO.sub) {
+      throw new ForbiddenException('Ação não permitida');
+    }
+
     const employeeUpdate = await this.employeeRepository.preload({
       id,
       ...allowedData,
@@ -494,10 +499,6 @@ export class EmployeeService {
       throw new InternalServerErrorException(
         'Erro desconhecido ao tentar pesquisar por funcionários',
       );
-    }
-
-    if (employeeFindByBoss.length < 1) {
-      throw new NotFoundException('Funcionários não encontrados');
     }
 
     return [total, ...employeeFindByBoss];

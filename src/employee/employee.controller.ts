@@ -93,8 +93,18 @@ export class EmployeeController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/boss/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
-  FindByBoss(@Query() paginationByBossDto: PaginationByBossDTO) {
-    return this.employeesService.FindByBoss(paginationByBossDto);
+  async FindByBoss(@Query() paginationByBossDto: PaginationByBossDTO) {
+    const findByBoss =
+      await this.employeesService.FindByBoss(paginationByBossDto);
+
+    if (findByBoss.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhum funcionário cadastrado ainda',
+      };
+    }
+
+    return findByBoss;
   }
 
   @SkipThrottle({ write: true, auth: true })
