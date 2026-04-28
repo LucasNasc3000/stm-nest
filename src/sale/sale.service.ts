@@ -649,6 +649,9 @@ export class SaleService {
             id: true,
             quantity: true,
             priceAtSale: true,
+            product: {
+              name: true,
+            },
           },
         },
       });
