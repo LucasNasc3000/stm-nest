@@ -638,7 +638,10 @@ export class SaleService {
         },
         relations: {
           employee: true,
-          saleItems: true,
+          saleItems: {
+            product: true,
+            sale: false,
+          },
         },
         select: {
           employee: {
