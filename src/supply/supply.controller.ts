@@ -15,6 +15,7 @@ import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
+import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateSupplyDTO } from './dto/create-supply.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
@@ -75,15 +76,15 @@ export class SupplyController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/supplyRealTime/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByIdSupplyRealTime(@Param() id: string) {
-    return this.supplyFindService.FindByIdSupplyRealTime(id);
+  FindByIdSupplyRealTime(@Param() id: UrlUuidDTO) {
+    return this.supplyFindService.FindByIdSupplyRealTime(id.id);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/id/supplyHistory/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByIdSupplyHistory(@Param() id: string) {
-    return this.supplyFindService.FindByIdSupplyHistory(id);
+  FindByIdSupplyHistory(@Param() id: UrlUuidDTO) {
+    return this.supplyFindService.FindByIdSupplyHistory(id.id);
   }
 
   @SkipThrottle({ write: true, auth: true })
