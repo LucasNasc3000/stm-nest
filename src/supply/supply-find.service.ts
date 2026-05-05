@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
-import { Between, Raw, Repository, SelectQueryBuilder } from 'typeorm';
+import { Raw, Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -376,6 +376,39 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
+  async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
+    const { limit, offset, value, supplyType } = paginatioByDateDTO;
+
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .leftJoinAndSelect('supply.employee', 'employee')
+      .andWhere('supply.created_at BETWEEN :startDate AND :endDate', {
+        startDate: new Date(`${value}T00:00:00`),
+        endDate: new Date(`${value}T23:59:59`),
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyFindByDate, total] = await query.getManyAndCount();
+
+    if (!supplyFindByDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por insumos',
+      );
+    }
+
+    if (supplyFindByDate.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(supplyFindByDate);
+
+    return [total, formattedCreatedAndUpdatedAt];
+  }
+
   async FindByReason(paginationByReasonDTO: PaginationByReasonDTO) {
     const { limit, offset, value } = paginationByReasonDTO;
 
@@ -403,49 +436,6 @@ export class SupplyFindService {
 
     const formattedCreatedAndUpdatedAt =
       this.FormatterForSearch(supplyFindByReason);
-
-    return [total, formattedCreatedAndUpdatedAt];
-  }
-
-  async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
-    const { limit, offset, value } = paginatioByDateDTO;
-
-    const [supplyFindByExpDate, total] =
-      await this.supplyHistoryRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          createdAt: Between(
-            new Date(`${value}T00:00:00`),
-            new Date(`${value}T23:59:59`),
-          ),
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
-
-    if (!supplyFindByExpDate) {
-      throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por insumos',
-      );
-    }
-
-    if (supplyFindByExpDate.length < 1) {
-      throw new NotFoundException('Insumos não encontrados');
-    }
-
-    const formattedCreatedAndUpdatedAt =
-      this.FormatterForSearch(supplyFindByExpDate);
 
     return [total, formattedCreatedAndUpdatedAt];
   }

@@ -7,6 +7,7 @@ import {
   IsPositive,
   IsString,
   Length,
+  ValidateIf,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
@@ -111,9 +112,7 @@ export class CreateSupplyDTO {
   })
   readonly reason: SupplyReason;
 
-  @IsNotEmpty({
-    message: 'campo "detalhes" deve ser preenchido',
-  })
+  @ValidateIf((o) => o.reason !== SupplyReason.ENTRY)
   @IsString()
   @Length(12, 600, {
     message: 'campo "detalhes" deve ter no máximo 600 caracteres',
