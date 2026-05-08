@@ -21,6 +21,7 @@ import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-reci
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
+import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto copy';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { UpdatePriceProductDTO } from './dto/update-product-price.dto';
@@ -133,6 +134,27 @@ export class ProductController {
     }
 
     return findProducts;
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/recipe/')
+  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  async FindByProductIngredient(
+    @Query() paginationByIngredientDto: PaginationByIngredientDTO,
+  ) {
+    const findIngredients =
+      await this.productFindService.FindIngredientByProduct(
+        paginationByIngredientDto,
+      );
+
+    if (paginationByIngredientDto.forDisplay && findIngredients.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Este produto não possui receita cadastrada',
+      };
+    }
+
+    return findIngredients;
   }
 
   @SkipThrottle({ write: true, auth: true })

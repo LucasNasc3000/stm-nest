@@ -4,13 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EmployeeService } from 'src/employee/employee.service';
 import { Like, Raw, Repository } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
+import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto copy';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
+import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -18,7 +19,8 @@ export class ProductFindService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-    private readonly employeesService: EmployeeService,
+    @InjectRepository(ProductIngredient)
+    private readonly productIngreIngredientRepository: Repository<ProductIngredient>,
   ) {}
 
   async FindByName(paginationByNameDTO: PaginationByNameDTO) {
@@ -209,6 +211,53 @@ export class ProductFindService {
 
     if (productFindByEmployee.length < 1) {
       throw new NotFoundException('Produtos não encontrados');
+    }
+
+    return [total, productFindByEmployee];
+  }
+
+  async FindIngredientByProduct(
+    paginationByIngredientDTO: PaginationByIngredientDTO,
+  ) {
+    const { limit, offset, value } = paginationByIngredientDTO;
+
+    const [productFindByEmployee, total] =
+      await this.productIngreIngredientRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          product: {
+            id: value,
+          },
+          isActive: true,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+          product: {
+            id: true,
+            name: true,
+            category: true,
+          },
+        },
+      });
+
+    if (!productFindByEmployee) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por ingredientes',
+      );
+    }
+
+    if (productFindByEmployee.length < 1) {
+      throw new NotFoundException('Ingredientes não encontrados');
     }
 
     return [total, productFindByEmployee];
