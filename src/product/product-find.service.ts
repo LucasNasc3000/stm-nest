@@ -194,6 +194,7 @@ export class ProductFindService {
         },
         relations: {
           employee: true,
+          recipe: true,
         },
         select: {
           employee: {
