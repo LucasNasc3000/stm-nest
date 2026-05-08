@@ -56,7 +56,7 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, ...productFindByName];
+    return [total, productFindByName];
   }
 
   async FindByCategory(paginationByCategoryDTO: PaginationByCategoryDTO) {
@@ -94,7 +94,7 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, ...productFindByCategory];
+    return [total, productFindByCategory];
   }
 
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
@@ -171,7 +171,7 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, ...productFindByPrice];
+    return [total, productFindByPrice];
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
@@ -211,6 +211,6 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, ...productFindByEmployee];
+    return [total, productFindByEmployee];
   }
 }
