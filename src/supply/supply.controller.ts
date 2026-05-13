@@ -97,8 +97,18 @@ export class SupplyController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
-    return this.supplyFindService.FindByName(paginationByNameDto);
+  async FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
+    const findSupplies =
+      await this.supplyFindService.FindByName(paginationByNameDto);
+
+    if (paginationByNameDto.forDisplay && findSupplies.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhum insumo cadastrado com este nome',
+      };
+    }
+
+    return findSupplies;
   }
 
   @SkipThrottle({ write: true, auth: true })
