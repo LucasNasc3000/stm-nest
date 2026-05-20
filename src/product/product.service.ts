@@ -679,26 +679,6 @@ export class ProductService {
     queryRunner: QueryRunner,
   ) {
     for (const ingredient of productIngredient) {
-      const findIngredient = await queryRunner.manager.findOne(
-        ProductIngredient,
-        {
-          where: {
-            id: ingredient.id,
-            product: {
-              id: ingredient.supplyId,
-            },
-            isActive: true,
-          },
-          lock: { mode: 'pessimistic_write' },
-        },
-      );
-
-      if (!findIngredient) {
-        throw new NotFoundException(
-          `Ingrediente ${ingredient.id} não encontrado ou inativo`,
-        );
-      }
-
       const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
         where: {
           id: ingredient.supplyId,
