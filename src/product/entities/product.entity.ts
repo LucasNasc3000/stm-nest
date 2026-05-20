@@ -1,3 +1,4 @@
+import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
@@ -25,6 +26,14 @@ export class Product {
 
   @Column({ type: 'integer', default: 0 })
   unities: number;
+
+  @Column({
+    type: 'enum',
+    enum: ProductInflowReason,
+    nullable: true,
+    name: 'inflow_reason',
+  })
+  inflowReason: ProductInflowReason;
 
   @Column({ type: 'date', name: 'expiration_date' })
   expirationDate: string;

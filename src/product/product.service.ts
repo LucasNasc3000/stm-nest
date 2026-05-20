@@ -18,7 +18,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ErrorManagement } from 'src/utils/error.util';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import { AddProductIngredientDTO } from './dto/add-product-ingredient.dto';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
@@ -412,7 +412,8 @@ export class ProductService {
           id: findProduct.id,
           addUnities: updateProductDTO.addUnities,
           takeUnities: updateProductDTO.takeUnities,
-          reason: updateProductDTO.reason,
+          addUnitiesReason: updateProductDTO.addUnitiesReason,
+          takeUnitiesReason: updateProductDTO.takeUnitiesReason,
           notes: updateProductDTO.notes,
         };
 
@@ -430,19 +431,14 @@ export class ProductService {
         await this.DisableProduct(findProduct, queryRunner);
       }
 
-      const {
-        useStockSupplies,
-        addUnities,
-        takeUnities,
-        updateProductIngredient,
-        addproductIngredient,
-        reason,
-        notes,
-        disableProduct,
-        ...productData
-      } = updateProductDTO;
+      const regularData: UpdateProductRegularDataDTO = {
+        name: updateProductDTO.name,
+        category: updateProductDTO.category,
+        expirationDate: updateProductDTO.expirationDate,
+        lowStock: updateProductDTO.lowStock,
+      };
 
-      await this.UpdateRegularData(findProduct, productData, queryRunner);
+      await this.UpdateRegularData(findProduct, regularData, queryRunner);
 
       for (let i = 0; i < Object.keys(updateProductDTO).length; i++) {
         updatesPerformed.push(Object.keys(updateProductDTO));
@@ -640,7 +636,7 @@ export class ProductService {
         targetType: OutflowType.PRODUCT,
         name: product.name,
         category: product.category,
-        reason: updateProductUnitiesDTO.reason,
+        reason: updateProductUnitiesDTO.takeUnitiesReason,
         notes: updateProductUnitiesDTO.notes || null,
         unities: takeUnities,
         employee,
@@ -654,16 +650,25 @@ export class ProductService {
 
     await queryRunner.manager.save(Outflow, outflows);
 
-    if (addUnities || takeUnities) {
-      const updateProduct = await queryRunner.manager.update(Product, id, {
+    let updateProduct: UpdateResult;
+
+    if (addUnities) {
+      updateProduct = await queryRunner.manager.update(Product, id, {
+        unities: productUnities,
+        inflowReason: updateProductUnitiesDTO.addUnitiesReason,
+      });
+    }
+
+    if (takeUnities) {
+      updateProduct = await queryRunner.manager.update(Product, id, {
         unities: productUnities,
       });
+    }
 
-      if (!updateProduct || updateProduct.affected < 1) {
-        throw new InternalServerErrorException(
-          'Erro ao atualizar quantidade do produto',
-        );
-      }
+    if (!updateProduct || updateProduct.affected < 1) {
+      throw new InternalServerErrorException(
+        'Erro ao atualizar quantidade do produto',
+      );
     }
   }
 

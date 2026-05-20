@@ -11,6 +11,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
+import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 
 export class UpdateProductUnitiesDTO {
   @IsUUID(4, {
@@ -36,14 +37,30 @@ export class UpdateProductUnitiesDTO {
   })
   readonly takeUnities?: number;
 
-  @IsOptional()
+  @ValidateIf((o) => o.addUnities > 0)
+  @IsNotEmpty({
+    message: 'campo "motivo" não preenchido',
+  })
+  @IsEnum(OutflowReason, {
+    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(ProductInflowReason).join(', ')}`,
+  })
+  readonly addUnitiesReason?: ProductInflowReason;
+
+  @ValidateIf((o) => o.takeUnities > 0)
+  @IsNotEmpty({
+    message: 'campo "motivo" não preenchido',
+  })
   @IsEnum(OutflowReason, {
     message: `campo motivo deve ser uma das seguintes opções: ${Object.values(OutflowReason).join(', ')}`,
   })
-  readonly reason?: OutflowReason;
+  readonly takeUnitiesReason?: OutflowReason;
 
   @IsOptional()
-  @ValidateIf((o) => o.reason === OutflowReason.OTHER)
+  @ValidateIf(
+    (o) =>
+      o.takeUnitiesReason === OutflowReason.OTHER ||
+      o.addUnitiesReason === ProductInflowReason.OTHER,
+  )
   @IsNotEmpty({
     message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
   })
