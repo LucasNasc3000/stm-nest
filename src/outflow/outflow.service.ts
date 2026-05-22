@@ -18,6 +18,7 @@ import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
 import { Between, DataSource, Like, Repository } from 'typeorm';
 import { CreateOutflowDTO } from './dto/create-outflow.dto';
+import { OutflowResponse } from './dto/outflow-response.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -587,7 +588,9 @@ export class OutflowService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+  async FindByEmployee(
+    paginationByEmployeeDTO: PaginationByEmployeeDTO,
+  ): Promise<[number, OutflowResponse[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
 
     const [outflowFindByEmployee, total] =

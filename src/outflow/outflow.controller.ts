@@ -116,7 +116,7 @@ export class OutflowController {
 
     if (
       paginationByEmployeeDto.forDisplay === true &&
-      findOutflows.length === 0
+      findOutflows[1].length === 0
     ) {
       return res.status(HttpStatus.NO_CONTENT);
     }

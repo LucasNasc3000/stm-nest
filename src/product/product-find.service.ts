@@ -176,7 +176,9 @@ export class ProductFindService {
     return [total, productFindByPrice];
   }
 
-  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+  async FindByEmployee(
+    paginationByEmployeeDTO: PaginationByEmployeeDTO,
+  ): Promise<[number, Product[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
 
     const [productFindByEmployee, total] =
@@ -219,8 +221,8 @@ export class ProductFindService {
 
   async FindIngredientByProduct(
     paginationByIngredientDTO: PaginationByIngredientDTO,
-  ) {
-    const { limit, offset, value } = paginationByIngredientDTO;
+  ): Promise<[number, ProductIngredient[]]> {
+    const { limit, offset, value, forDisplay } = paginationByIngredientDTO;
 
     const [productFindByEmployee, total] =
       await this.productIngreIngredientRepository.findAndCount({
@@ -257,7 +259,7 @@ export class ProductFindService {
       );
     }
 
-    if (productFindByEmployee.length < 1) {
+    if (productFindByEmployee.length < 1 && !forDisplay) {
       throw new NotFoundException('Ingredientes não encontrados');
     }
 

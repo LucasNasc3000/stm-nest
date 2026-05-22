@@ -35,6 +35,7 @@ import { PaginationByClientNameDTO } from './dto/pagination-client-name.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByHourDTO } from './dto/pagination-hour.dto';
+import { SaleResponse } from './dto/sale-response.dto';
 import { SaleStatusUpdateDTO } from './dto/sale-status.dto';
 import { UpdateSaleDTO } from './dto/update-sale.dto';
 import { SaleItems } from './entities/sale-items.entity';
@@ -621,7 +622,9 @@ export class SaleService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+  async FindByEmployee(
+    paginationByEmployeeDTO: PaginationByEmployeeDTO,
+  ): Promise<[number, SaleResponse[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
 
     const [salesFindByEmployee, total] =

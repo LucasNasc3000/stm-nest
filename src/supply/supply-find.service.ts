@@ -17,6 +17,8 @@ import { PaginationByReasonDTO } from './dto/pagination-reason.dto';
 import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { PaginationByTotalWeightDTO } from './dto/pagination-totalweight.dto';
 import { PaginationByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
+import { SupplyHistoryResponse } from './dto/supply-history-response.dto';
+import { SupplyRealTimeResponse } from './dto/supply-realtime-response.dto copy';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
 
@@ -313,7 +315,9 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+  async FindByEmployee(
+    paginationByEmployeeDTO: PaginationByEmployeeDTO,
+  ): Promise<[number, (SupplyHistoryResponse | SupplyRealTimeResponse)[]]> {
     const { limit, offset, value, supplyType, forDisplay } =
       paginationByEmployeeDTO;
 

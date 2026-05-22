@@ -96,7 +96,10 @@ export class SaleController {
       paginationByEmployeeDto,
     );
 
-    if (paginationByEmployeeDto.forDisplay === true && findSales.length === 0) {
+    if (
+      paginationByEmployeeDto.forDisplay === true &&
+      findSales[1].length === 0
+    ) {
       return res.status(HttpStatus.NO_CONTENT);
     }
 

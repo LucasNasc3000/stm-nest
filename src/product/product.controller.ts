@@ -131,11 +131,9 @@ export class ProductController {
       paginationByEmployeeDto,
     );
 
-    this.logger.log(paginationByEmployeeDto);
-
     if (
       paginationByEmployeeDto.forDisplay === true &&
-      findProducts.length === 0
+      findProducts[1].length === 0
     ) {
       return res.status(HttpStatus.NO_CONTENT);
     }
@@ -148,20 +146,21 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByProductIngredient(
     @Query() paginationByIngredientDto: PaginationByIngredientDTO,
+    @Res() res: Response,
   ) {
     const findIngredients =
       await this.productFindService.FindIngredientByProduct(
         paginationByIngredientDto,
       );
 
-    if (paginationByIngredientDto.forDisplay && findIngredients.length === 0) {
-      return {
-        status: HttpStatus.NO_CONTENT,
-        message: 'Este produto não possui receita cadastrada',
-      };
+    if (
+      paginationByIngredientDto.forDisplay === true &&
+      findIngredients[1].length === 0
+    ) {
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return findIngredients;
+    return res.status(HttpStatus.OK).json(findIngredients);
   }
 
   @SkipThrottle({ write: true, auth: true })
