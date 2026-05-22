@@ -7,9 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
@@ -148,19 +150,20 @@ export class SupplyController {
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+    @Res() res: Response,
   ) {
     const findSupplies = await this.supplyFindService.FindByEmployee(
       paginationByEmployeeDto,
     );
 
-    if (paginationByEmployeeDto.forDisplay && findSupplies.length === 0) {
-      return {
-        status: HttpStatus.NO_CONTENT,
-        message: 'Nenhum insumo cadastrado ainda',
-      };
+    if (
+      paginationByEmployeeDto.forDisplay === true &&
+      findSupplies.length === 0
+    ) {
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return findSupplies;
+    return res.status(HttpStatus.OK).json(findSupplies);
   }
 
   @SkipThrottle({ write: true, auth: true })

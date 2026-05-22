@@ -314,7 +314,8 @@ export class SupplyFindService {
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
-    const { limit, offset, value, supplyType } = paginationByEmployeeDTO;
+    const { limit, offset, value, supplyType, forDisplay } =
+      paginationByEmployeeDTO;
 
     const query = this.QueryBuilderGenerator(supplyType);
 
@@ -333,7 +334,7 @@ export class SupplyFindService {
       );
     }
 
-    if (supplyFindByEmployee.length < 1) {
+    if (supplyFindByEmployee.length < 1 && !forDisplay) {
       throw new NotFoundException('Insumos não encontrados');
     }
 

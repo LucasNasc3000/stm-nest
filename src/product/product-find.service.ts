@@ -177,7 +177,7 @@ export class ProductFindService {
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
-    const { limit, offset, value } = paginationByEmployeeDTO;
+    const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
 
     const [productFindByEmployee, total] =
       await this.productRepository.findAndCount({
@@ -210,7 +210,7 @@ export class ProductFindService {
       );
     }
 
-    if (productFindByEmployee.length < 1) {
+    if (productFindByEmployee.length < 1 && !forDisplay) {
       throw new NotFoundException('Produtos não encontrados');
     }
 

@@ -7,9 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
@@ -88,18 +90,16 @@ export class SaleController {
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+    @Res() res: Response,
   ) {
     const findSales = await this.salesService.FindByEmployee(
       paginationByEmployeeDto,
     );
 
-    if (paginationByEmployeeDto.forDisplay && findSales.length === 0) {
-      return {
-        status: HttpStatus.NO_CONTENT,
-        message: 'Nenhuma venda cadastrada ainda',
-      };
+    if (paginationByEmployeeDto.forDisplay === true && findSales.length === 0) {
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return findSales;
+    return res.status(HttpStatus.OK).json(findSales);
   }
 }

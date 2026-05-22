@@ -3,13 +3,16 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Logger,
   Param,
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
@@ -35,6 +38,7 @@ export class ProductController {
   constructor(
     private readonly productService: ProductService,
     private readonly productFindService: ProductFindService,
+    private readonly logger: Logger,
   ) {}
 
   @SkipCsrf()
@@ -118,27 +122,30 @@ export class ProductController {
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee/')
-  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+    @Res() res: Response,
   ) {
     const findProducts = await this.productFindService.FindByEmployee(
       paginationByEmployeeDto,
     );
 
-    if (paginationByEmployeeDto.forDisplay && findProducts.length === 0) {
-      return {
-        status: HttpStatus.NO_CONTENT,
-        message: 'Nenhum produto cadastrado ainda',
-      };
+    this.logger.log(paginationByEmployeeDto);
+
+    if (
+      paginationByEmployeeDto.forDisplay === true &&
+      findProducts.length === 0
+    ) {
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return findProducts;
+    return res.status(HttpStatus.OK).json(findProducts);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/recipe/')
-  @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByProductIngredient(
     @Query() paginationByIngredientDto: PaginationByIngredientDTO,
   ) {

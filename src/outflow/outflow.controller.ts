@@ -6,9 +6,11 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
@@ -106,18 +108,19 @@ export class OutflowController {
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
+    @Res() res: Response,
   ) {
     const findOutflows = await this.outflowsService.FindByEmployee(
       paginationByEmployeeDto,
     );
 
-    if (paginationByEmployeeDto.forDisplay && findOutflows.length === 0) {
-      return {
-        status: HttpStatus.NO_CONTENT,
-        message: 'Nenhuma saída cadastrada ainda',
-      };
+    if (
+      paginationByEmployeeDto.forDisplay === true &&
+      findOutflows.length === 0
+    ) {
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return findOutflows;
+    return res.status(HttpStatus.OK).json(findOutflows);
   }
 }
