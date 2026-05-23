@@ -160,7 +160,7 @@ export class SupplyController {
       paginationByEmployeeDto.forDisplay === true &&
       findSupplies[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT);
+      return res.status(HttpStatus.NO_CONTENT).send();
     }
 
     return res.status(HttpStatus.OK).json(findSupplies);

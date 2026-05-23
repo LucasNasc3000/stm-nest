@@ -100,7 +100,7 @@ export class SaleController {
       paginationByEmployeeDto.forDisplay === true &&
       findSales[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT);
+      return res.status(HttpStatus.NO_CONTENT).send();
     }
 
     return res.status(HttpStatus.OK).json(findSales);
