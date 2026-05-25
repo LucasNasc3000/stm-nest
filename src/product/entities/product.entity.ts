@@ -1,4 +1,3 @@
-import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
@@ -11,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SaleItems } from '../../sale/entities/sale-items.entity';
+import { ProductInflow } from './product-inflow.entity';
 import { ProductIngredient } from './product-ingredient.entity';
 
 @Entity()
@@ -26,17 +26,6 @@ export class Product {
 
   @Column({ type: 'integer', default: 0 })
   unities: number;
-
-  @Column({
-    type: 'enum',
-    enum: ProductInflowReason,
-    nullable: true,
-    name: 'inflow_reason',
-  })
-  inflowReason: ProductInflowReason;
-
-  @Column({ type: 'date', name: 'expiration_date' })
-  expirationDate: string;
 
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
   lowStock: number;
@@ -61,6 +50,9 @@ export class Product {
 
   @OneToMany(() => Outflow, (outflow) => outflow.product)
   outflows: Outflow[];
+
+  @OneToMany(() => ProductInflow, (inflow) => inflow.product)
+  inflows: ProductInflow[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
