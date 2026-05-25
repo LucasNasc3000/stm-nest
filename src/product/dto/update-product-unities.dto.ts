@@ -3,7 +3,6 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsPositive,
   IsString,
   IsUUID,
@@ -55,7 +54,6 @@ export class UpdateProductUnitiesDTO {
   })
   readonly takeUnitiesReason?: OutflowReason;
 
-  @IsOptional()
   @ValidateIf(
     (o) =>
       o.takeUnitiesReason === OutflowReason.OTHER ||
