@@ -20,9 +20,6 @@ export class ProductInflow {
   @Column({ type: 'enum', enum: ProductInflowReason, name: 'inflow_reason' })
   inflowReason: ProductInflowReason;
 
-  @Column({ type: 'date', name: 'expiration_date' })
-  expirationDate: string;
-
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 

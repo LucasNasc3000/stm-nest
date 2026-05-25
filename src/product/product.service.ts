@@ -27,6 +27,7 @@ import { UpdatePriceProductDTO } from './dto/update-product-price.dto';
 import { UpdateProductRegularDataDTO } from './dto/update-product-regular-data.dto';
 import { UpdateProductUnitiesDTO } from './dto/update-product-unities.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
+import { ProductInflow } from './entities/product-inflow.entity';
 import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
 
@@ -655,8 +656,18 @@ export class ProductService {
     if (addUnities) {
       updateProduct = await queryRunner.manager.update(Product, id, {
         unities: productUnities,
-        inflowReason: updateProductUnitiesDTO.addUnitiesReason,
       });
+
+      const createInflow = queryRunner.manager.create(ProductInflow, {
+        unities: addUnities,
+        inflowReason: updateProductUnitiesDTO.addUnitiesReason,
+        expirationDate: product.expirationDate,
+        price: product.price,
+        product: product,
+        employee: employee,
+      });
+
+      await queryRunner.manager.save(ProductInflow, createInflow);
     }
 
     if (takeUnities) {
