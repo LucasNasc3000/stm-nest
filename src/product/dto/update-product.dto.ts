@@ -69,7 +69,8 @@ export class UpdateProductDTO {
 
   @ValidateIf((o) => o.addUnities > 0)
   @IsNotEmpty({
-    message: 'O campo "usar insumos em estoque é obrigatório"',
+    message:
+      'O campo "usar insumos em estoque é obrigatório ao adicionar unidades"',
   })
   @IsBoolean()
   readonly useStockSupplies?: boolean;
@@ -107,7 +108,7 @@ export class UpdateProductDTO {
   @IsNotEmpty({
     message: 'campo "motivo" não preenchido',
   })
-  @IsEnum(OutflowReason, {
+  @IsEnum(ProductInflowReason, {
     message: `campo motivo deve ser uma das seguintes opções: ${Object.values(ProductInflowReason).join(', ')}`,
   })
   readonly addUnitiesReason?: ProductInflowReason;

@@ -461,7 +461,7 @@ export class ProductService {
       await queryRunner.rollbackTransaction();
 
       ErrorManagement(error, GeneralErrorType.INTERNAL, {
-        logger: 'Erro ao atualizar ingredientes do produto:',
+        logger: 'Erro ao atualizar dados do produto:',
         queryFailedError: 'Erro ao atualizar registro de produto',
         internalServerError: 'Erro interno ao atualizar produto',
         generalError: 'Falha ao processar transação na atualização do produto',

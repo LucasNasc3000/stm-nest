@@ -18,6 +18,7 @@ import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
+import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
@@ -83,12 +84,13 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.UPDATE })
   UpdateProduct(
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
-    @Param() id: string,
+    @Param() id: UrlUuidDTO,
     @Body() updateProductDTO: UpdateProductDTO,
   ) {
-    return this.productService.Update(tokenPayloadDTO, id, updateProductDTO);
+    return this.productService.Update(tokenPayloadDTO, id.id, updateProductDTO);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })
