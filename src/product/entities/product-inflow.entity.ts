@@ -20,6 +20,9 @@ export class ProductInflow {
   @Column({ type: 'enum', enum: ProductInflowReason, name: 'inflow_reason' })
   inflowReason: ProductInflowReason;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  notes: string;
+
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 

@@ -661,6 +661,7 @@ export class ProductService {
       const createInflow = queryRunner.manager.create(ProductInflow, {
         unities: addUnities,
         inflowReason: updateProductUnitiesDTO.addUnitiesReason,
+        notes: updateProductUnitiesDTO.notes || null,
         expirationDate: product.expirationDate,
         price: product.price,
         product: product,
