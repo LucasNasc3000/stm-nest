@@ -8,9 +8,11 @@ import { Like, Raw, Repository } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto copy';
+import { PaginationByInflowDTO } from './dto/pagination-inflow.dto';
+import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
+import { ProductInflow } from './entities/product-inflow.entity';
 import { ProductIngredient } from './entities/product-ingredient.entity';
 import { Product } from './entities/product.entity';
 
@@ -20,7 +22,9 @@ export class ProductFindService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductIngredient)
-    private readonly productIngreIngredientRepository: Repository<ProductIngredient>,
+    private readonly productIngredientRepository: Repository<ProductIngredient>,
+    @InjectRepository(ProductInflow)
+    private readonly productInflowRepository: Repository<ProductInflow>,
   ) {}
 
   async FindByName(paginationByNameDTO: PaginationByNameDTO) {
@@ -225,7 +229,7 @@ export class ProductFindService {
     const { limit, offset, value, forDisplay } = paginationByIngredientDTO;
 
     const [productFindByEmployee, total] =
-      await this.productIngreIngredientRepository.findAndCount({
+      await this.productIngredientRepository.findAndCount({
         take: limit,
         skip: offset,
         order: {
@@ -264,5 +268,46 @@ export class ProductFindService {
     }
 
     return [total, productFindByEmployee];
+  }
+
+  async FindInflowByProduct(
+    paginationByInflowDto: PaginationByInflowDTO,
+  ): Promise<[number, ProductInflow[]]> {
+    const { limit, offset, value, forDisplay } = paginationByInflowDto;
+
+    const [inflowFindByProduct, total] =
+      await this.productInflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          product: {
+            id: value,
+          },
+        },
+        relations: {
+          product: true,
+        },
+        select: {
+          product: {
+            id: true,
+            name: true,
+          },
+        },
+      });
+
+    if (!inflowFindByProduct) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por ingredientes',
+      );
+    }
+
+    if (inflowFindByProduct.length < 1 && !forDisplay) {
+      throw new NotFoundException('Ingredientes não encontrados');
+    }
+
+    return [total, inflowFindByProduct];
   }
 }

@@ -25,7 +25,8 @@ import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-reci
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto copy';
+import { PaginationByInflowDTO } from './dto/pagination-inflow.dto';
+import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
 import { UpdatePriceProductDTO } from './dto/update-product-price.dto';
@@ -172,5 +173,26 @@ export class ProductController {
     @Query() paginationByExpDateDto: PaginationByExpDateDTO,
   ) {
     return this.productFindService.FindByExpirationDate(paginationByExpDateDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/inflows/')
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
+  async FindInflowsByProduct(
+    @Query() paginationByInflowDto: PaginationByInflowDTO,
+    @Res() res: Response,
+  ) {
+    const findInflows = await this.productFindService.FindInflowByProduct(
+      paginationByInflowDto,
+    );
+
+    if (
+      paginationByInflowDto.forDisplay === true &&
+      findInflows[1].length === 0
+    ) {
+      return res.status(HttpStatus.NO_CONTENT).send();
+    }
+
+    return res.status(HttpStatus.OK).json(findInflows);
   }
 }
