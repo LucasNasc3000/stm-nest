@@ -208,9 +208,6 @@ export class ProductFindService {
             id: true,
             email: true,
           },
-          inflows: {
-            product: false,
-          },
         },
       });
 
