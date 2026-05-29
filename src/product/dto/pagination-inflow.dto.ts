@@ -24,10 +24,10 @@ export class PaginationByInflowDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'Id do produto não fornecido',
+    message: 'Id do funcionário não fornecido',
   })
   @IsUUID(4, {
-    message: 'Id do produto deve ser um uuid',
+    message: 'Id do funcionário deve ser um uuid',
   })
   value: string;
 

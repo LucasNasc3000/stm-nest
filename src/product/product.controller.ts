@@ -182,7 +182,7 @@ export class ProductController {
     @Query() paginationByInflowDto: PaginationByInflowDTO,
     @Res() res: Response,
   ) {
-    const findInflows = await this.productFindService.FindInflowByProduct(
+    const findInflows = await this.productFindService.FindInflowByEmployee(
       paginationByInflowDto,
     );
 

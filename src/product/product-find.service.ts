@@ -201,7 +201,6 @@ export class ProductFindService {
         relations: {
           employee: true,
           recipe: true,
-          inflows: true,
         },
         select: {
           employee: {
@@ -271,7 +270,7 @@ export class ProductFindService {
     return [total, productFindByEmployee];
   }
 
-  async FindInflowByProduct(
+  async FindInflowByEmployee(
     paginationByInflowDto: PaginationByInflowDTO,
   ): Promise<[number, ProductInflow[]]> {
     const { limit, offset, value, forDisplay } = paginationByInflowDto;
@@ -284,14 +283,19 @@ export class ProductFindService {
           id: 'desc',
         },
         where: {
-          product: {
+          employee: {
             id: value,
           },
         },
         relations: {
           product: true,
+          employee: true,
         },
         select: {
+          employee: {
+            id: true,
+            email: true,
+          },
           product: {
             id: true,
             name: true,
@@ -301,12 +305,12 @@ export class ProductFindService {
 
     if (!inflowFindByProduct) {
       throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por ingredientes',
+        'Erro desconhecido ao tentar pesquisar por atualizações',
       );
     }
 
     if (inflowFindByProduct.length < 1 && !forDisplay) {
-      throw new NotFoundException('Ingredientes não encontrados');
+      throw new NotFoundException('Atualizações não encontrados');
     }
 
     return [total, inflowFindByProduct];
