@@ -201,11 +201,15 @@ export class ProductFindService {
         relations: {
           employee: true,
           recipe: true,
+          inflows: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          inflows: {
+            product: false,
           },
         },
       });
