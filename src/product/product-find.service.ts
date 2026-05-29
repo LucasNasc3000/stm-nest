@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Raw, Repository } from 'typeorm';
+import { Between, Like, Raw, Repository } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByInflowDTO } from './dto/pagination-inflow.dto';
+import { PaginationByInflowDateDTO } from './dto/pagination-inflow-date.dto';
+import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
+import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
 import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
@@ -271,11 +273,11 @@ export class ProductFindService {
   }
 
   async FindInflowByEmployee(
-    paginationByInflowDto: PaginationByInflowDTO,
+    paginationByInflowDto: PaginationByInflowEmployeeDTO,
   ): Promise<[number, ProductInflow[]]> {
     const { limit, offset, value, forDisplay } = paginationByInflowDto;
 
-    const [inflowFindByProduct, total] =
+    const [inflowFindByEmployee, total] =
       await this.productInflowRepository.findAndCount({
         take: limit,
         skip: offset,
@@ -303,16 +305,109 @@ export class ProductFindService {
         },
       });
 
+    if (!inflowFindByEmployee) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por atualizações',
+      );
+    }
+
+    if (inflowFindByEmployee.length < 1 && !forDisplay) {
+      throw new NotFoundException('Atualizações não encontrados');
+    }
+
+    return [total, inflowFindByEmployee];
+  }
+
+  async FindInflowByProduct(
+    paginationByInflowDto: PaginationByInflowProductDTO,
+  ) {
+    const { limit, offset, value } = paginationByInflowDto;
+
+    const [inflowFindByProduct, total] =
+      await this.productInflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          product: {
+            id: value,
+          },
+        },
+        relations: {
+          product: true,
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+          product: {
+            id: true,
+            name: true,
+            category: true,
+          },
+        },
+      });
+
     if (!inflowFindByProduct) {
       throw new InternalServerErrorException(
         'Erro desconhecido ao tentar pesquisar por atualizações',
       );
     }
 
-    if (inflowFindByProduct.length < 1 && !forDisplay) {
+    if (inflowFindByProduct.length < 1) {
       throw new NotFoundException('Atualizações não encontrados');
     }
 
     return [total, inflowFindByProduct];
+  }
+
+  async FindInflowByDate(paginationByInflowDto: PaginationByInflowDateDTO) {
+    const { limit, offset, value } = paginationByInflowDto;
+
+    const [inflowFindByDate, total] =
+      await this.productInflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          createdAt: Between(
+            new Date(`${value}T00:00:00`),
+            new Date(`${value}T23:59:59`),
+          ),
+        },
+        relations: {
+          product: true,
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+          product: {
+            id: true,
+            name: true,
+            category: true,
+          },
+        },
+      });
+
+    if (!inflowFindByDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por atualizações',
+      );
+    }
+
+    if (inflowFindByDate.length < 1) {
+      throw new NotFoundException('Atualizações não encontrados');
+    }
+
+    return [total, inflowFindByDate];
   }
 }

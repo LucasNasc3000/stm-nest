@@ -25,7 +25,9 @@ import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-reci
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByInflowDTO } from './dto/pagination-inflow.dto';
+import { PaginationByInflowDateDTO } from './dto/pagination-inflow-date.dto';
+import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
+import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
 import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
@@ -176,23 +178,45 @@ export class ProductController {
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('search/inflows/')
+  @Get('search/employee/inflows')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  async FindInflowsByProduct(
-    @Query() paginationByInflowDto: PaginationByInflowDTO,
+  async FindByInflowsEmployee(
+    @Query() paginationByInflowEmployeeDto: PaginationByInflowEmployeeDTO,
     @Res() res: Response,
   ) {
     const findInflows = await this.productFindService.FindInflowByEmployee(
-      paginationByInflowDto,
+      paginationByInflowEmployeeDto,
     );
 
     if (
-      paginationByInflowDto.forDisplay === true &&
+      paginationByInflowEmployeeDto.forDisplay === true &&
       findInflows[1].length === 0
     ) {
       return res.status(HttpStatus.NO_CONTENT).send();
     }
 
     return res.status(HttpStatus.OK).json(findInflows);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/inflows/product')
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
+  FindByInflowsProduct(
+    @Query() paginationByInflowProductDto: PaginationByInflowProductDTO,
+  ) {
+    return this.productFindService.FindInflowByProduct(
+      paginationByInflowProductDto,
+    );
+  }
+
+  @SkipThrottle({ write: true, auth: true })
+  @Get('search/inflows/date')
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
+  FindByInflowsDate(
+    @Query() paginationByInflowDateDto: PaginationByInflowDateDTO,
+  ) {
+    return this.productFindService.FindInflowByProduct(
+      paginationByInflowDateDto,
+    );
   }
 }

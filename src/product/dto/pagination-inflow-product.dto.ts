@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
 
-export class PaginationByInflowDTO {
+export class PaginationByInflowProductDTO {
   @IsInt({
     message: 'Limite precisa ser um numero inteiro',
   })
@@ -24,16 +24,10 @@ export class PaginationByInflowDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'Id do funcionário não fornecido',
+    message: 'Id do produto não fornecido',
   })
   @IsUUID(4, {
-    message: 'Id do funcionário deve ser um uuid',
+    message: 'Id do produto deve ser um uuid',
   })
   value: string;
-
-  @IsNotEmpty({
-    message: 'campo "para exibição" não preenchido',
-  })
-  @Type(() => Boolean)
-  forDisplay: boolean;
 }
