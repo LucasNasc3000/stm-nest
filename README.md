@@ -6,7 +6,7 @@
 Sistema de controle de estoque e vendas desenvolvido para gerenciamento de micro e pequenas empresas do setor alimentício. Esta é uma API REST moderna construída com NestJS, TypeORM e PostgreSQL, oferecendo controle granular de acesso baseado em funções (RBAC - Role-Based Access Control).
 
 ## 📌 Status
-✔️ Versão 1.0 Finalizada / Aguardando Integração
+🟢 Estável & Mantido ativamente
 
 ## 🚀 Stack Tecnológica
 - Runtime: Node.js
@@ -348,7 +348,7 @@ Este projeto está licenciado sob a **AGPL-3.0-only**.
 Inventory and sales control system developed for managing micro and small businesses in the food sector. This is a modern REST API built with NestJS, TypeORM, and PostgreSQL, offering granular role-based access control (RBAC).
 
 ## 📌 Status
-✔️ Version 1.0 Finalized / Awaiting Integration
+🟢 Stable & Active maintened
 
 ## 🚀 Stack
 - Runtime: Node.js
