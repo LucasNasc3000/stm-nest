@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class PaginationByInflowEmployeeDTO {
   @IsInt({
@@ -24,11 +31,12 @@ export class PaginationByInflowEmployeeDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'Id do funcionário não fornecido',
+    message: 'Email do funcionário não fornecido',
   })
-  @IsUUID(4, {
-    message: 'Id do funcionário deve ser um uuid',
+  @IsString({
+    message: 'O email do funcionário deve estar em formato de texto',
   })
+  @IsEmail()
   value: string;
 
   @IsNotEmpty({

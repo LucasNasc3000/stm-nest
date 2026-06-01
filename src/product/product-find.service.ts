@@ -286,7 +286,7 @@ export class ProductFindService {
         },
         where: {
           employee: {
-            id: value,
+            email: value,
           },
         },
         relations: {
