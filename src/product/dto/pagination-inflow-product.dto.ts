@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
 
 export class PaginationByInflowProductDTO {
   @IsInt({
@@ -24,10 +24,11 @@ export class PaginationByInflowProductDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'Id do produto não fornecido',
+    message: 'Nome do produto não fornecido',
   })
-  @IsUUID(4, {
-    message: 'Id do produto deve ser um uuid',
+  @IsString()
+  @Length(0, 50, {
+    message: 'O nome do produto deve ter no máximo 50 caracteres',
   })
   value: string;
 }

@@ -332,7 +332,7 @@ export class ProductFindService {
         },
         where: {
           product: {
-            id: value,
+            name: value,
           },
         },
         relations: {
