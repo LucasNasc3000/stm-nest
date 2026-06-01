@@ -275,7 +275,9 @@ export class ProductFindService {
   async FindInflowByEmployee(
     paginationByInflowDto: PaginationByInflowEmployeeDTO,
   ): Promise<[number, ProductInflow[]]> {
-    const { limit, offset, value, forDisplay } = paginationByInflowDto;
+    const { limit, offset, email, id, forDisplay } = paginationByInflowDto;
+
+    const conditionalWhere = email ? { email: email } : { id: id };
 
     const [inflowFindByEmployee, total] =
       await this.productInflowRepository.findAndCount({
@@ -285,9 +287,7 @@ export class ProductFindService {
           id: 'desc',
         },
         where: {
-          employee: {
-            email: value,
-          },
+          employee: conditionalWhere,
         },
         relations: {
           product: true,

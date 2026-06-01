@@ -3,9 +3,10 @@ import {
   IsEmail,
   IsInt,
   IsNotEmpty,
-  IsString,
+  IsUUID,
   Max,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class PaginationByInflowEmployeeDTO {
@@ -30,14 +31,26 @@ export class PaginationByInflowEmployeeDTO {
   @Type(() => Number)
   offset: number;
 
+  @ValidateIf((o) => !o.id)
   @IsNotEmpty({
-    message: 'Email do funcionário não fornecido',
+    message: 'Email ou id são necessários para buscar os dados',
   })
-  @IsString({
-    message: 'O email do funcionário deve estar em formato de texto',
+  @IsEmail(
+    {},
+    {
+      message: 'Email inválido',
+    },
+  )
+  email?: string;
+
+  @ValidateIf((o) => !o.email)
+  @IsNotEmpty({
+    message: 'Email ou id são necessários para buscar os dados',
   })
-  @IsEmail()
-  value: string;
+  @IsUUID(4, {
+    message: 'O id inválido',
+  })
+  id?: string;
 
   @IsNotEmpty({
     message: 'campo "para exibição" não preenchido',
