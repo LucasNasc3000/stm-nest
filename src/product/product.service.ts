@@ -435,7 +435,6 @@ export class ProductService {
       const regularData: UpdateProductRegularDataDTO = {
         name: updateProductDTO.name,
         category: updateProductDTO.category,
-        expirationDate: updateProductDTO.expirationDate,
         lowStock: updateProductDTO.lowStock,
       };
 
@@ -662,7 +661,6 @@ export class ProductService {
         unities: addUnities,
         inflowReason: updateProductUnitiesDTO.addUnitiesReason,
         notes: updateProductUnitiesDTO.notes || null,
-        expirationDate: product.expirationDate,
         price: product.price,
         product: product,
         employee: employee,

@@ -3,7 +3,6 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
-  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -38,20 +37,6 @@ export class UpdateProductDTO {
     message: 'campo "categoria" deve ter no máximo 50 caracteres',
   })
   readonly category?: string;
-
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
-  @IsInt({
-    message: 'campo "unidades" deve ser um número inteiro',
-  })
-  @IsPositive({
-    message: 'campo "unidades" deve ser maior que zero',
-  })
-  readonly unities?: number;
-
-  @IsOptional()
-  @IsDateString()
-  readonly expirationDate?: string;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))

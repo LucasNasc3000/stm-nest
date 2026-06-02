@@ -33,9 +33,6 @@ export class Product {
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 
-  @Column({ type: 'date', name: 'expiration_date' })
-  expirationDate: string;
-
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 

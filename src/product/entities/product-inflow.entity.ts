@@ -26,6 +26,9 @@ export class ProductInflow {
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 
+  @Column({ type: 'date', name: 'expiration_date' })
+  expirationDate: string;
+
   @ManyToOne(() => Product, (product) => product.inflows, {
     onDelete: 'RESTRICT',
   })

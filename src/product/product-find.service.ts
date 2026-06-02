@@ -23,8 +23,10 @@ export class ProductFindService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+
     @InjectRepository(ProductIngredient)
     private readonly productIngredientRepository: Repository<ProductIngredient>,
+
     @InjectRepository(ProductInflow)
     private readonly productInflowRepository: Repository<ProductInflow>,
   ) {}
@@ -108,26 +110,26 @@ export class ProductFindService {
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
     const { limit, offset, value } = paginatioByExpDateDTO;
 
-    const productFindByExpDate = await this.productRepository.findAndCount({
-      take: limit,
-      skip: offset,
-      order: {
-        id: 'desc',
-      },
-      where: {
-        expirationDate: value,
-        is_active: true,
-      },
-      relations: {
-        employee: true,
-      },
-      select: {
-        employee: {
-          id: true,
-          email: true,
+    const productFindByExpDate =
+      await this.productInflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
         },
-      },
-    });
+        where: {
+          expirationDate: value,
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
 
     if (!productFindByExpDate) {
       throw new InternalServerErrorException(
