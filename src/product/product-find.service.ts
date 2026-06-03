@@ -47,6 +47,7 @@ export class ProductFindService {
         },
         relations: {
           employee: true,
+          recipe: true,
         },
         select: {
           employee: {
@@ -85,6 +86,7 @@ export class ProductFindService {
         },
         relations: {
           employee: true,
+          recipe: true,
         },
         select: {
           employee: {
@@ -162,6 +164,7 @@ export class ProductFindService {
         },
         relations: {
           employee: true,
+          recipe: true,
         },
         select: {
           employee: {
@@ -247,6 +250,7 @@ export class ProductFindService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
