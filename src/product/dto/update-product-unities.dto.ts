@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -17,6 +18,12 @@ export class UpdateProductUnitiesDTO {
     message: 'O id do produto deve ser um uuid',
   })
   id: string;
+
+  @IsNotEmpty({
+    message: 'campo "validade" não preenchido',
+  })
+  @IsDateString()
+  readonly expirationDate: string;
 
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({

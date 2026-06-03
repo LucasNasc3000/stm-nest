@@ -73,7 +73,7 @@ export class CreateSupplyDTO {
   readonly supplier: string;
 
   @IsNotEmpty({
-    message: 'campo "fornecedor" não preenchido',
+    message: 'campo "validade" não preenchido',
   })
   @IsDateString()
   readonly expirationDate: string;

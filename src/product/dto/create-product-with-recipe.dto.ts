@@ -2,7 +2,6 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
-  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -48,12 +47,6 @@ export class CreateProductWithRecipeDTO {
     message: 'campo "unidades" deve ser maior que zero',
   })
   readonly unities: number;
-
-  @IsNotEmpty({
-    message: 'campo "fornecedor" não preenchido',
-  })
-  @IsDateString()
-  readonly expirationDate: string;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))

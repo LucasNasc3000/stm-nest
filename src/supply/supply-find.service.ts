@@ -86,6 +86,7 @@ export class SupplyFindService {
       throw new NotFoundException('Insumo não encontrado');
     }
 
+    // FormatterForSearch() não foi usado aqui por que o valor retornado não é um array de objetos mas sim um objeto único
     const createdAt = Formatter(supplyRealTimeFindById.createdAt);
     const updatedAt = Formatter(supplyRealTimeFindById.updatedAt);
 

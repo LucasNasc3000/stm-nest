@@ -103,16 +103,14 @@ export class ProductService {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
 
-      const data = {
+      const createProduct = queryRunner.manager.create(Product, {
         name: createProductWithRecipe.name,
         category: createProductWithRecipe.category,
-        expirationDate: createProductWithRecipe.expirationDate,
         lowStock: createProductWithRecipe.lowStock || null,
         price: createProductWithRecipe.price,
         unities: 0,
-      };
-
-      const createProduct = queryRunner.manager.create(Product, data);
+        employee: doesEmployeeReallyExists,
+      });
 
       const newProduct = await queryRunner.manager.save(Product, createProduct);
 
@@ -211,7 +209,6 @@ export class ProductService {
         name: createProductWithRecipeDTO.name,
         category: createProductWithRecipeDTO.category,
         unities: createProductWithRecipeDTO.unities,
-        expirationDate: createProductWithRecipeDTO.expirationDate,
         lowStock: createProductWithRecipeDTO.lowStock || null,
         price: createProductWithRecipeDTO.price,
         employee: doesEmployeeReallyExists,
@@ -415,6 +412,7 @@ export class ProductService {
           takeUnities: updateProductDTO.takeUnities,
           addUnitiesReason: updateProductDTO.addUnitiesReason,
           takeUnitiesReason: updateProductDTO.takeUnitiesReason,
+          expirationDate: updateProductDTO.expirationDate,
           notes: updateProductDTO.notes,
         };
 
@@ -664,6 +662,7 @@ export class ProductService {
         price: product.price,
         product: product,
         employee: employee,
+        expirationDate: updateProductUnitiesDTO.expirationDate,
       });
 
       await queryRunner.manager.save(ProductInflow, createInflow);

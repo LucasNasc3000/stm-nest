@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -51,6 +52,12 @@ export class UpdateProductDTO {
   @IsOptional()
   @IsBoolean()
   readonly disableProduct?: boolean;
+
+  @IsNotEmpty({
+    message: 'campo "validade" não preenchido',
+  })
+  @IsDateString()
+  readonly expirationDate: string;
 
   @ValidateIf((o) => o.addUnities > 0)
   @IsNotEmpty({
