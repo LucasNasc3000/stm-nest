@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Like, Raw, Repository } from 'typeorm';
+import { ProductSearch } from 'src/common/enums/product-search.enum';
+import { Formatter } from 'src/utils/format-timezone';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByInflowDateDTO } from './dto/pagination-inflow-date.dto';
+import { PaginationByDateDTO } from './dto/pagination-inflow-date.dto';
 import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
 import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
 import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
@@ -31,31 +33,57 @@ export class ProductFindService {
     private readonly productInflowRepository: Repository<ProductInflow>,
   ) {}
 
-  async FindByName(paginationByNameDTO: PaginationByNameDTO) {
-    const { limit, offset, value } = paginationByNameDTO;
+  QueryBuilderGenerator(
+    product: ProductSearch,
+  ): SelectQueryBuilder<Product | ProductInflow> {
+    let query: SelectQueryBuilder<ProductInflow | Product>;
 
-    const [productFindByName, total] =
-      await this.productRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          name: Like(`${value}%`),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-          recipe: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    switch (product) {
+      case ProductSearch.PRODUCT_INFLOW:
+        query = this.productInflowRepository
+          .createQueryBuilder('product')
+          .leftJoin('product.employee', 'employee')
+          .select(['employee.id', 'employee.email', 'product']);
+        break;
+
+      case ProductSearch.PRODUCT:
+        query = this.productRepository
+          .createQueryBuilder('product')
+          .where('product.is_active = true')
+          .leftJoin('product.employee', 'employee')
+          .leftJoin('product.recipe', 'recipe')
+          .select(['employee.id', 'employee.email', 'recipe', 'product']);
+        break;
+
+      default:
+        throw new InternalServerErrorException(
+          'Tipo não definido para query builder',
+        );
+    }
+
+    return query;
+  }
+
+  FormatterForSearch(productsFound: (ProductInflow | Product)[]) {
+    return productsFound.map((product) => ({
+      ...product,
+      createdAt: Formatter(product.createdAt),
+      updatedAt: Formatter(product.updatedAt),
+    }));
+  }
+
+  async FindByName(paginationByNameDTO: PaginationByNameDTO) {
+    const { limit, offset, value, productType } = paginationByNameDTO;
+
+    const query = this.QueryBuilderGenerator(productType);
+
+    query
+      .andWhere('product.name ILIKE :name', { name: `${value}%` })
+      .orderBy('product.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [productFindByName, total] = await query.getManyAndCount();
 
     if (!productFindByName) {
       throw new InternalServerErrorException(
@@ -67,34 +95,24 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, productFindByName];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(productFindByName);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByCategory(paginationByCategoryDTO: PaginationByCategoryDTO) {
-    const { limit, offset, value } = paginationByCategoryDTO;
+    const { limit, offset, value, productType } = paginationByCategoryDTO;
 
-    const [productFindByCategory, total] =
-      await this.productRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          category: Like(`${value}%`),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-          recipe: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(productType);
+
+    query
+      .andWhere('product.category ILIKE :category', { category: `${value}%` })
+      .orderBy('product.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [productFindByCategory, total] = await query.getManyAndCount();
 
     if (!productFindByCategory) {
       throw new InternalServerErrorException(
@@ -106,73 +124,59 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, productFindByCategory];
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      productFindByCategory,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
-    const { limit, offset, value } = paginatioByExpDateDTO;
+    const { limit, offset, value, productType } = paginatioByExpDateDTO;
 
-    const productFindByExpDate =
-      await this.productInflowRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          expirationDate: value,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(productType);
 
-    if (!productFindByExpDate) {
+    query
+      .andWhere('product.expiration_date ILIKE :expiration_date', {
+        expirationDate: `${value}%`,
+      })
+      .orderBy('product.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [productFindByExpirationDate, total] = await query.getManyAndCount();
+
+    if (!productFindByExpirationDate) {
       throw new InternalServerErrorException(
         'Erro desconhecido ao tentar pesquisar por produtos',
       );
     }
 
-    if (productFindByExpDate.length < 1) {
+    if (productFindByExpirationDate.length < 1) {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return productFindByExpDate;
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      productFindByExpirationDate,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
-    const { limit, offset, value } = paginationByPriceDTO;
+    const { limit, offset, value, productType } = paginationByPriceDTO;
 
-    const [productFindByPrice, total] =
-      await this.productRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          price: Raw((alias) => `CAST(${alias} AS TEXT) LIKE :value`, {
-            value: `${value}%`,
-          }),
-          is_active: true,
-        },
-        relations: {
-          employee: true,
-          recipe: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(productType);
+
+    query
+      .andWhere('CAST(product.price AS TEXT) LIKE :price', {
+        price: `${value}%`,
+      })
+      .orderBy('product.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [productFindByPrice, total] = await query.getManyAndCount();
 
     if (!productFindByPrice) {
       throw new InternalServerErrorException(
@@ -184,7 +188,10 @@ export class ProductFindService {
       throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, productFindByPrice];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(productFindByPrice);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindByEmployee(
@@ -371,49 +378,35 @@ export class ProductFindService {
     return [total, inflowFindByProduct];
   }
 
-  async FindInflowByDate(paginationByInflowDto: PaginationByInflowDateDTO) {
-    const { limit, offset, value } = paginationByInflowDto;
+  async FindByDate(paginationByDto: PaginationByDateDTO) {
+    const { limit, offset, value, productType } = paginationByDto;
 
-    const [inflowFindByDate, total] =
-      await this.productInflowRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          createdAt: Between(
-            new Date(`${value}T00:00:00`),
-            new Date(`${value}T23:59:59`),
-          ),
-        },
-        relations: {
-          product: true,
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-          product: {
-            id: true,
-            name: true,
-            category: true,
-          },
-        },
-      });
+    const query = this.QueryBuilderGenerator(productType);
 
-    if (!inflowFindByDate) {
+    query
+      .andWhere('product.created_at BETWEEN :startDate AND :endDate', {
+        startDate: new Date(`${value}T00:00:00`),
+        endDate: new Date(`${value}T23:59:59`),
+      })
+      .orderBy('product.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [productFindByDate, total] = await query.getManyAndCount();
+
+    if (!productFindByDate) {
       throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por atualizações',
+        'Erro desconhecido ao tentar pesquisar por produtos',
       );
     }
 
-    if (inflowFindByDate.length < 1) {
-      throw new NotFoundException('Atualizações não encontrados');
+    if (productFindByDate.length < 1) {
+      throw new NotFoundException('Produtos não encontrados');
     }
 
-    return [total, inflowFindByDate];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(productFindByDate);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 }

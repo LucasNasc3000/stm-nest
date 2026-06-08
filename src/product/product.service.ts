@@ -45,35 +45,63 @@ export class ProductService {
     tokenPayloadDTO: TokenPayloadDTO,
     createProductWithoutRecipeDTO: CreateProductWithoutRecipeDTO,
   ) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
+    let newProduct: Product;
 
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
+    try {
+      await this.dataSource.transaction(async (manager) => {
+        const findEmployee = await manager.findOne(Employee, {
+          where: {
+            id: tokenPayloadDTO.sub,
+          },
+        });
+
+        if (!findEmployee) {
+          throw new UnauthorizedException('Funcionário não encontrado');
+        }
+
+        const { expirationDate, reason, ...rest } =
+          createProductWithoutRecipeDTO;
+
+        const createProduct = manager.create(Product, {
+          ...rest,
+          employee: findEmployee,
+        });
+
+        newProduct = await manager.save(Product, createProduct);
+
+        const createProductInflow = manager.create(ProductInflow, {
+          name: newProduct.name,
+          category: newProduct.category,
+          unities: createProductWithoutRecipeDTO.unities ?? 0,
+          inflowReason: createProductWithoutRecipeDTO.reason,
+          price: createProductWithoutRecipeDTO.price,
+          useStockSupplies: false,
+          expirationDate: createProductWithoutRecipeDTO.expirationDate,
+          notes: null,
+          product: newProduct,
+          employee: findEmployee,
+        });
+
+        await manager.save(ProductInflow, createProductInflow);
+      });
+
+      return {
+        newProduct,
+      };
+    } catch (error) {
+      ErrorManagement(error, GeneralErrorType.INTERNAL, {
+        logger: 'Erro ao criar produto sem receita:',
+        queryFailedError: 'Erro ao registrar produto sem receita',
+        internalServerError: 'Erro interno ao criar produto sem receita',
+        generalError:
+          'Falha ao processar transação na criação de produto sem receita',
+      });
     }
-
-    const productData = {
-      ...createProductWithoutRecipeDTO,
-      employee: findEmployee,
-    };
-
-    const createProduct = this.productRepository.create(productData);
-
-    const newProduct = await this.productRepository.save(createProduct);
-
-    if (!createProduct || !newProduct) {
-      throw new InternalServerErrorException('Erro ao cadastrar produto');
-    }
-
-    return {
-      ...newProduct,
-    };
   }
 
   async CreateWithRecipe(
     tokenPayloadDTO: TokenPayloadDTO,
-    createProductWithRecipe: CreateProductWithRecipeDTO,
+    createProductWithRecipeDTO: CreateProductWithRecipeDTO,
   ) {
     const findEmployee = await this.employeesService.FindById(
       tokenPayloadDTO.sub,
@@ -104,17 +132,32 @@ export class ProductService {
       }
 
       const createProduct = queryRunner.manager.create(Product, {
-        name: createProductWithRecipe.name,
-        category: createProductWithRecipe.category,
-        lowStock: createProductWithRecipe.lowStock || null,
-        price: createProductWithRecipe.price,
+        name: createProductWithRecipeDTO.name,
+        category: createProductWithRecipeDTO.category,
+        lowStock: createProductWithRecipeDTO.lowStock || null,
+        price: createProductWithRecipeDTO.price,
         unities: 0,
         employee: doesEmployeeReallyExists,
       });
 
       const newProduct = await queryRunner.manager.save(Product, createProduct);
 
-      for (const supply of createProductWithRecipe.productIngredient) {
+      const createProductInflow = queryRunner.manager.create(ProductInflow, {
+        name: newProduct.name,
+        category: newProduct.category,
+        unities: 0,
+        inflowReason: createProductWithRecipeDTO.reason,
+        price: createProductWithRecipeDTO.price,
+        useStockSupplies: false,
+        expirationDate: createProductWithRecipeDTO.expirationDate,
+        notes: null,
+        product: newProduct,
+        employee: findEmployee,
+      });
+
+      await queryRunner.manager.save(ProductInflow, createProductInflow);
+
+      for (const supply of createProductWithRecipeDTO.productIngredient) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
           SupplyRealTime,
           {
@@ -127,7 +170,7 @@ export class ProductService {
 
         if (!doesSupplyReallyExists) {
           throw new UnauthorizedException(
-            `Insumo ${supply.supplyId} da receita do produto ${createProductWithRecipe.name} não encontrado`,
+            `Insumo ${supply.supplyId} da receita do produto ${createProductWithRecipeDTO.name} não encontrado`,
           );
         }
 
@@ -217,6 +260,21 @@ export class ProductService {
       const createProduct = queryRunner.manager.create(Product, data);
 
       const newProduct = await queryRunner.manager.save(Product, createProduct);
+
+      const createProductInflow = queryRunner.manager.create(ProductInflow, {
+        name: newProduct.name,
+        category: newProduct.category,
+        unities: createProductWithRecipeDTO.unities,
+        inflowReason: createProductWithRecipeDTO.reason,
+        price: createProductWithRecipeDTO.price,
+        useStockSupplies: false,
+        expirationDate: createProductWithRecipeDTO.expirationDate,
+        notes: null,
+        product: newProduct,
+        employee: findEmployee,
+      });
+
+      await queryRunner.manager.save(ProductInflow, createProductInflow);
 
       for (const supply of createProductWithRecipeDTO.productIngredient) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
@@ -767,19 +825,6 @@ export class ProductService {
         if (findIngredient.isActive !== true) {
           throw new BadRequestException(
             `Não é possível atualizar o ingrediente ${ingredient.id}, está inativo`,
-          );
-        }
-
-        const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
-          where: {
-            id: ingredient.supplyId,
-            isActive: true,
-          },
-        });
-
-        if (!findSupply) {
-          throw new NotFoundException(
-            `Insumo ${ingredient.supplyId} do ingrediente ${ingredient.id} não encontrado ou inativo`,
           );
         }
 

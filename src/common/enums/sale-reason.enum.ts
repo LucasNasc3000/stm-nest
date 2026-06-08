@@ -5,7 +5,7 @@ export enum SaleReason {
   NOT_PAID = 'cliente nao pagou',
   LATE_DELIVERY = 'atraso na entrega',
   PRODUCT_SWITCHED = 'cliente trocou de produto',
-  NOT_DELIVERED = 'pedido não chegou ao cliente',
+  NOT_DELIVERED = 'pedido nao chegou ao cliente',
   STOCK_OUT = 'produto com estoque insuficiente',
   OTHER = 'outro',
 }

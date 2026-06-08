@@ -2,6 +2,8 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsDateString,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,6 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
+import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { CreateProductIngredientDTO } from './create-product-ingredient.dto';
 
 export class CreateProductWithRecipeDTO {
@@ -71,6 +74,20 @@ export class CreateProductWithRecipeDTO {
     message: 'O campo "preco" deve ser um string decimal ex: 59.99',
   })
   readonly price: string;
+
+  @IsNotEmpty({
+    message: 'campo "validade" não preenchido',
+  })
+  @IsDateString()
+  readonly expirationDate: string;
+
+  @IsNotEmpty({
+    message: 'campo "motivo" não preenchido',
+  })
+  @IsEnum(ProductInflowReason, {
+    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(ProductInflowReason).join(', ')}`,
+  })
+  readonly reason: ProductInflowReason;
 
   @IsNotEmpty({
     message: 'Campo "ingredientes" não preenchido',

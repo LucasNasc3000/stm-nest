@@ -6,28 +6,38 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Product } from './product.entity';
 
-@Entity()
+@Entity({ name: 'product_inflow' })
 export class ProductInflow {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'varchar', length: 50, unique: false })
+  name: string;
+
+  @Column({ type: 'varchar', length: 100 })
+  category: string;
+
   @Column({ type: 'integer' })
   unities: number;
-
-  @Column({ type: 'enum', enum: ProductInflowReason, name: 'inflow_reason' })
-  inflowReason: ProductInflowReason;
-
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  notes: string;
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: string;
 
-  @Column({ type: 'date', name: 'expiration_date' })
+  @Column({ type: 'date', name: 'expiration_date', nullable: false })
   expirationDate: string;
+
+  @Column({ type: 'enum', enum: ProductInflowReason, name: 'inflow_reason' })
+  inflowReason: ProductInflowReason;
+
+  @Column({ type: 'boolean', name: 'use_stock_supplies' })
+  useStockSupplies: boolean;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  notes: string;
 
   @ManyToOne(() => Product, (product) => product.inflows, {
     onDelete: 'RESTRICT',
@@ -37,6 +47,9 @@ export class ProductInflow {
   @ManyToOne(() => Employee, { onDelete: 'RESTRICT', nullable: true })
   employee: Employee;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  updatedAt: Date;
 }

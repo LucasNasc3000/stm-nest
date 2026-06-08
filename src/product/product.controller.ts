@@ -25,7 +25,7 @@ import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-reci
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByInflowDateDTO } from './dto/pagination-inflow-date.dto';
+import { PaginationByDateDTO } from './dto/pagination-inflow-date.dto';
 import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
 import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
 import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
@@ -147,6 +147,13 @@ export class ProductController {
   }
 
   @SkipThrottle({ write: true, auth: true })
+  @Get('search/date')
+  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
+  FindByInflowsDate(@Query() paginationByDateDto: PaginationByDateDTO) {
+    return this.productFindService.FindByDate(paginationByDateDto);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/recipe/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByProductIngredient(
@@ -206,17 +213,6 @@ export class ProductController {
   ) {
     return this.productFindService.FindInflowByProduct(
       paginationByInflowProductDto,
-    );
-  }
-
-  @SkipThrottle({ write: true, auth: true })
-  @Get('search/inflows/date')
-  @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByInflowsDate(
-    @Query() paginationByInflowDateDto: PaginationByInflowDateDTO,
-  ) {
-    return this.productFindService.FindInflowByProduct(
-      paginationByInflowDateDto,
     );
   }
 }

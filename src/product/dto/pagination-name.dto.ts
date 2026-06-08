@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Max,
+  Min,
+} from 'class-validator';
+import { ProductSearch } from 'src/common/enums/product-search.enum';
 
 export class PaginationByNameDTO {
   @IsInt({
@@ -33,4 +42,12 @@ export class PaginationByNameDTO {
     message: 'campo "nome" deve ter no máximo 50 caracteres',
   })
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "productSearch" não preenchido',
+  })
+  @IsEnum(ProductSearch, {
+    message: 'Tipo de registro inválido',
+  })
+  productType: ProductSearch;
 }

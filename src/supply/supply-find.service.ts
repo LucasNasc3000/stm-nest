@@ -39,13 +39,16 @@ export class SupplyFindService {
 
     switch (supply) {
       case SupplySearch.SUPPLY_HISTORY:
-        query = this.supplyHistoryRepository.createQueryBuilder('supply');
+        query = this.supplyHistoryRepository
+          .createQueryBuilder('supply')
+          .leftJoinAndSelect('supply.employee', 'employee');
         break;
 
       case SupplySearch.SUPPLY_REAL_TIME:
         query = this.supplyRealTimeRepository
           .createQueryBuilder('supply')
-          .where('supply.is_active = true');
+          .where('supply.is_active = true')
+          .leftJoinAndSelect('supply.employee', 'employee');
         break;
 
       default:
@@ -133,7 +136,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('supply.supplier ILIKE :supplier', { supplier: `${value}%` })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -163,7 +165,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('supply.name ILIKE :name', { name: `${value}%` })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -193,7 +194,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('supply.category ILIKE :category', { category: `${value}%` })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -223,7 +223,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('CAST(supply.price AS TEXT) LIKE :price', {
         price: `${value}%`,
       })
@@ -255,7 +254,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('CAST(supply.total_price AS TEXT) LIKE :totalPrice', {
         totalPrice: `${value}%`,
       })
@@ -289,7 +287,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('CAST(supply.weight_per_unit AS TEXT) LIKE :weightPerUnit', {
         weightPerUnit: `${value}%`,
       })
@@ -325,7 +322,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('supply.employee = :employee', { employee: value })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -355,9 +351,8 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
-      .andWhere('supply.expiration_date = :expirationDate', {
-        expirationDate: value,
+      .andWhere('supply.expiration_date ILIKE :expirationDate', {
+        expirationDate: `${value}%`,
       })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -388,7 +383,6 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .leftJoinAndSelect('supply.employee', 'employee')
       .andWhere('supply.created_at BETWEEN :startDate AND :endDate', {
         startDate: new Date(`${value}T00:00:00`),
         endDate: new Date(`${value}T23:59:59`),

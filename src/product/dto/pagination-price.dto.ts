@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
+import { ProductSearch } from 'src/common/enums/product-search.enum';
 
 export class PaginationByPriceDTO {
   @IsInt({
@@ -37,4 +38,12 @@ export class PaginationByPriceDTO {
     message: 'O campo "preco" deve ser um string decimal ex: 59.99',
   })
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "productSearch" não preenchido',
+  })
+  @IsEnum(ProductSearch, {
+    message: 'Tipo de registro inválido',
+  })
+  productType: ProductSearch;
 }

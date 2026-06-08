@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  Max,
+  Min,
+} from 'class-validator';
+import { ProductSearch } from 'src/common/enums/product-search.enum';
 
 export class PaginationByExpDateDTO {
   @IsInt({
@@ -28,4 +36,12 @@ export class PaginationByExpDateDTO {
   })
   @IsDateString()
   value: string;
+
+  @IsNotEmpty({
+    message: 'campo "productSearch" não preenchido',
+  })
+  @IsEnum(ProductSearch, {
+    message: 'Tipo de registro inválido',
+  })
+  productType: ProductSearch;
 }
