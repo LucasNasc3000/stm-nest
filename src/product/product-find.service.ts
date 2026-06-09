@@ -41,18 +41,29 @@ export class ProductFindService {
     switch (product) {
       case ProductSearch.PRODUCT_INFLOW:
         query = this.productInflowRepository
-          .createQueryBuilder('product')
-          .leftJoin('product.employee', 'employee')
-          .select(['employee.id', 'employee.email', 'product']);
+          .createQueryBuilder('product_general')
+          .leftJoin('product_general.employee', 'employee')
+          .leftJoin('product_general.product', 'product')
+          .select([
+            'employee.id',
+            'employee.email',
+            'product',
+            'product_general',
+          ]);
         break;
 
       case ProductSearch.PRODUCT:
         query = this.productRepository
-          .createQueryBuilder('product')
-          .where('product.is_active = true')
-          .leftJoin('product.employee', 'employee')
-          .leftJoin('product.recipe', 'recipe')
-          .select(['employee.id', 'employee.email', 'recipe', 'product']);
+          .createQueryBuilder('product_general')
+          .where('product_general.is_active = true')
+          .leftJoin('product_general.employee', 'employee')
+          .leftJoin('product_general.recipe', 'recipe')
+          .select([
+            'employee.id',
+            'employee.email',
+            'recipe',
+            'product_general',
+          ]);
         break;
 
       default:
@@ -78,8 +89,8 @@ export class ProductFindService {
     const query = this.QueryBuilderGenerator(productType);
 
     query
-      .andWhere('product.name ILIKE :name', { name: `${value}%` })
-      .orderBy('product.id', 'DESC')
+      .andWhere('product_general.name ILIKE :name', { name: `${value}%` })
+      .orderBy('product_general.id', 'DESC')
       .take(limit)
       .skip(offset);
 
@@ -107,8 +118,10 @@ export class ProductFindService {
     const query = this.QueryBuilderGenerator(productType);
 
     query
-      .andWhere('product.category ILIKE :category', { category: `${value}%` })
-      .orderBy('product.id', 'DESC')
+      .andWhere('product_general.category ILIKE :category', {
+        category: `${value}%`,
+      })
+      .orderBy('product_general.id', 'DESC')
       .take(limit)
       .skip(offset);
 
@@ -137,10 +150,10 @@ export class ProductFindService {
     const query = this.QueryBuilderGenerator(productType);
 
     query
-      .andWhere('product.expiration_date ILIKE :expiration_date', {
+      .andWhere('product_general.expiration_date ILIKE :expiration_date', {
         expirationDate: `${value}%`,
       })
-      .orderBy('product.id', 'DESC')
+      .orderBy('product_general.id', 'DESC')
       .take(limit)
       .skip(offset);
 
@@ -172,7 +185,7 @@ export class ProductFindService {
       .andWhere('CAST(product.price AS TEXT) LIKE :price', {
         price: `${value}%`,
       })
-      .orderBy('product.id', 'DESC')
+      .orderBy('product_general.id', 'DESC')
       .take(limit)
       .skip(offset);
 
@@ -384,11 +397,11 @@ export class ProductFindService {
     const query = this.QueryBuilderGenerator(productType);
 
     query
-      .andWhere('product.created_at BETWEEN :startDate AND :endDate', {
+      .andWhere('product_general.created_at BETWEEN :startDate AND :endDate', {
         startDate: new Date(`${value}T00:00:00`),
         endDate: new Date(`${value}T23:59:59`),
       })
-      .orderBy('product.id', 'DESC')
+      .orderBy('product_general.id', 'DESC')
       .take(limit)
       .skip(offset);
 
