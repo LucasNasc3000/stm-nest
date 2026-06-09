@@ -23,8 +23,8 @@ import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
 import { CreateProductWithoutRecipeDTO } from './dto/create-product-without-recipe.dto';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
-import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
 import { PaginationByInflowExpDateDTO } from './dto/pagination-inflow-exp-date.dto';
 import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
@@ -169,12 +169,10 @@ export class ProductController {
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('search/expirationDate/')
+  @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByExpirationDate(
-    @Query() paginationByExpDateDto: PaginationByExpDateDTO,
-  ) {
-    return this.productFindService.FindByExpirationDate(paginationByExpDateDto);
+  FindByExpirationDate(@Query() paginationByDateDto: PaginationByDateDTO) {
+    return this.productFindService.FindByDate(paginationByDateDto);
   }
 
   @SkipThrottle({ write: true, auth: true })

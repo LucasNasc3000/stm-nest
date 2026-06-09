@@ -8,8 +8,8 @@ import { ProductSearch } from 'src/common/enums/product-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
+import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
-import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
 import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
 import { PaginationByInflowExpDateDTO } from './dto/pagination-inflow-exp-date.dto';
 import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
@@ -144,38 +144,6 @@ export class ProductFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
-    const { limit, offset, value, productType } = paginatioByExpDateDTO;
-
-    const query = this.QueryBuilderGenerator(productType);
-
-    query
-      .andWhere('product_general.expiration_date ILIKE :expirationDate', {
-        expirationDate: `${value}%`,
-      })
-      .orderBy('product_general.id', 'DESC')
-      .take(limit)
-      .skip(offset);
-
-    const [productFindByExpirationDate, total] = await query.getManyAndCount();
-
-    if (!productFindByExpirationDate) {
-      throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por produtos',
-      );
-    }
-
-    if (productFindByExpirationDate.length < 1) {
-      throw new NotFoundException('Produtos não encontrados');
-    }
-
-    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
-      productFindByExpirationDate,
-    );
-
-    return [total, formattedCreatedAndUpdatedAt];
-  }
-
   async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
     const { limit, offset, value, productType } = paginationByPriceDTO;
 
@@ -203,6 +171,38 @@ export class ProductFindService {
 
     const formattedCreatedAndUpdatedAt =
       this.FormatterForSearch(productFindByPrice);
+
+    return [total, formattedCreatedAndUpdatedAt];
+  }
+
+  async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
+    const { limit, offset, value, productType } = paginatioByDateDTO;
+
+    const query = this.QueryBuilderGenerator(productType);
+
+    query
+      .andWhere('product_general.created_at BETWEEN :startDate AND :endDate', {
+        startDate: new Date(`${value}T00:00:00`),
+        endDate: new Date(`${value}T23:59:59`),
+      })
+      .orderBy('product_general.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [productFindByDate, total] = await query.getManyAndCount();
+
+    if (!productFindByDate) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por registros de produtos',
+      );
+    }
+
+    if (productFindByDate.length < 1) {
+      throw new NotFoundException('Registros de produtos não encontrados');
+    }
+
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearch(productFindByDate);
 
     return [total, formattedCreatedAndUpdatedAt];
   }
