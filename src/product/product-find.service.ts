@@ -10,8 +10,8 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { PaginationByExpDateDTO } from './dto/pagination-exp-date.dto';
-import { PaginationByDateDTO } from './dto/pagination-inflow-date.dto';
 import { PaginationByInflowEmployeeDTO } from './dto/pagination-inflow-employee.dto';
+import { PaginationByInflowExpDateDTO } from './dto/pagination-inflow-exp-date.dto';
 import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dto';
 import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
@@ -150,7 +150,7 @@ export class ProductFindService {
     const query = this.QueryBuilderGenerator(productType);
 
     query
-      .andWhere('product_general.expiration_date ILIKE :expiration_date', {
+      .andWhere('product_general.expiration_date ILIKE :expirationDate', {
         expirationDate: `${value}%`,
       })
       .orderBy('product_general.id', 'DESC')
@@ -333,12 +333,12 @@ export class ProductFindService {
 
     if (!inflowFindByEmployee) {
       throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por atualizações',
+        'Erro desconhecido ao tentar pesquisar por registros de produtos',
       );
     }
 
     if (inflowFindByEmployee.length < 1 && !forDisplay) {
-      throw new NotFoundException('Atualizações não encontrados');
+      throw new NotFoundException('Registros de produtos não encontrados');
     }
 
     return [total, inflowFindByEmployee];
@@ -380,46 +380,59 @@ export class ProductFindService {
 
     if (!inflowFindByProduct) {
       throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por atualizações',
+        'Erro desconhecido ao tentar pesquisar por registros de produtos',
       );
     }
 
     if (inflowFindByProduct.length < 1) {
-      throw new NotFoundException('Atualizações não encontrados');
+      throw new NotFoundException('Registros de produtos não encontrados');
     }
 
     return [total, inflowFindByProduct];
   }
 
-  async FindByDate(paginationByDto: PaginationByDateDTO) {
-    const { limit, offset, value, productType } = paginationByDto;
+  async FindInflowByExpirationDate(
+    paginationByExpDto: PaginationByInflowExpDateDTO,
+  ) {
+    const { limit, offset, value } = paginationByExpDto;
 
-    const query = this.QueryBuilderGenerator(productType);
+    const [inflowFindByProduct, total] =
+      await this.productInflowRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          expirationDate: value,
+        },
+        relations: {
+          product: true,
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+          product: {
+            id: true,
+            name: true,
+            category: true,
+          },
+        },
+      });
 
-    query
-      .andWhere('product_general.created_at BETWEEN :startDate AND :endDate', {
-        startDate: new Date(`${value}T00:00:00`),
-        endDate: new Date(`${value}T23:59:59`),
-      })
-      .orderBy('product_general.id', 'DESC')
-      .take(limit)
-      .skip(offset);
-
-    const [productFindByDate, total] = await query.getManyAndCount();
-
-    if (!productFindByDate) {
+    if (!inflowFindByProduct) {
       throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por produtos',
+        'Erro desconhecido ao tentar pesquisar por registros de produtos',
       );
     }
 
-    if (productFindByDate.length < 1) {
-      throw new NotFoundException('Produtos não encontrados');
+    if (inflowFindByProduct.length < 1) {
+      throw new NotFoundException('Registros de produtos não encontrados');
     }
 
-    const formattedCreatedAndUpdatedAt =
-      this.FormatterForSearch(productFindByDate);
-
-    return [total, formattedCreatedAndUpdatedAt];
+    return [total, inflowFindByProduct];
   }
 }
