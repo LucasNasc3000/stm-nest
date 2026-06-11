@@ -13,6 +13,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
+import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
@@ -59,8 +60,7 @@ export class ProductService {
           throw new UnauthorizedException('Funcionário não encontrado');
         }
 
-        const { expirationDate, reason, ...rest } =
-          createProductWithoutRecipeDTO;
+        const { expirationDate, ...rest } = createProductWithoutRecipeDTO;
 
         const createProduct = manager.create(Product, {
           ...rest,
@@ -73,7 +73,7 @@ export class ProductService {
           name: newProduct.name,
           category: newProduct.category,
           unities: createProductWithoutRecipeDTO.unities ?? 0,
-          inflowReason: createProductWithoutRecipeDTO.reason,
+          inflowReason: ProductInflowReason.ENTRY,
           price: createProductWithoutRecipeDTO.price,
           useStockSupplies: false,
           expirationDate: createProductWithoutRecipeDTO.expirationDate,
@@ -146,7 +146,7 @@ export class ProductService {
         name: newProduct.name,
         category: newProduct.category,
         unities: 0,
-        inflowReason: createProductWithRecipeDTO.reason,
+        inflowReason: ProductInflowReason.ENTRY,
         price: createProductWithRecipeDTO.price,
         useStockSupplies: false,
         expirationDate: createProductWithRecipeDTO.expirationDate,
@@ -265,7 +265,7 @@ export class ProductService {
         name: newProduct.name,
         category: newProduct.category,
         unities: createProductWithRecipeDTO.unities,
-        inflowReason: createProductWithRecipeDTO.reason,
+        inflowReason: ProductInflowReason.ENTRY,
         price: createProductWithRecipeDTO.price,
         useStockSupplies: false,
         expirationDate: createProductWithRecipeDTO.expirationDate,

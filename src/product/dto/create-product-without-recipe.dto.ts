@@ -1,7 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
   IsDateString,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -10,7 +9,6 @@ import {
   Length,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
-import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 
 export class CreateProductWithoutRecipeDTO {
   @IsNotEmpty({
@@ -76,12 +74,4 @@ export class CreateProductWithoutRecipeDTO {
   })
   @IsDateString()
   readonly expirationDate: string;
-
-  @IsNotEmpty({
-    message: 'campo "motivo" não preenchido',
-  })
-  @IsEnum(ProductInflowReason, {
-    message: `campo motivo deve ser uma das seguintes opções: ${Object.values(ProductInflowReason).join(', ')}`,
-  })
-  readonly reason: ProductInflowReason;
 }
