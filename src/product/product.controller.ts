@@ -107,8 +107,18 @@ export class ProductController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
-    return this.productFindService.FindByName(paginationByNameDto);
+  async FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
+    const findProducts =
+      await this.productFindService.FindByName(paginationByNameDto);
+
+    if (paginationByNameDto.forDisplay && findProducts.length === 0) {
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'Nenhum produto cadastrado com este nome',
+      };
+    }
+
+    return findProducts;
   }
 
   @SkipThrottle({ write: true, auth: true })

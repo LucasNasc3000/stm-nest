@@ -160,7 +160,8 @@ export class SupplyFindService {
   }
 
   async FindByName(paginationByNameDTO: PaginationByNameDTO) {
-    const { limit, offset, value, supplyType } = paginationByNameDTO;
+    const { limit, offset, value, supplyType, forDisplay } =
+      paginationByNameDTO;
 
     const query = this.QueryBuilderGenerator(supplyType);
 
@@ -178,7 +179,7 @@ export class SupplyFindService {
       );
     }
 
-    if (supplyFindByName.length < 1) {
+    if (supplyFindByName.length < 1 && !forDisplay) {
       throw new NotFoundException('Insumos não encontrados');
     }
 

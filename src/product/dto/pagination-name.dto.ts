@@ -50,4 +50,10 @@ export class PaginationByNameDTO {
     message: 'Tipo de registro inválido',
   })
   productType: ProductSearch;
+
+  @IsNotEmpty({
+    message: 'campo "para exibição" não preenchido',
+  })
+  @Type(() => Boolean)
+  forDisplay: boolean;
 }
