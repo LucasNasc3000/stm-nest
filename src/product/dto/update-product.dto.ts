@@ -53,11 +53,9 @@ export class UpdateProductDTO {
   @IsBoolean()
   readonly disableProduct?: boolean;
 
-  @IsNotEmpty({
-    message: 'campo "validade" não preenchido',
-  })
+  @IsOptional()
   @IsDateString()
-  readonly expirationDate: string;
+  readonly expirationDate?: string;
 
   @ValidateIf((o) => o.addUnities > 0)
   @IsNotEmpty({

@@ -14,10 +14,12 @@ import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
+import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { SaleStatus } from 'src/common/enums/sale-status.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { ProductInflow } from 'src/product/entities/product-inflow.entity';
 import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
 import {
@@ -249,6 +251,7 @@ export class SaleService {
           saleItems: {
             product: true,
           },
+          employee: true,
         },
       });
 
@@ -283,7 +286,12 @@ export class SaleService {
           returnToStock: updateSaleDTO.returnToStock,
         };
 
-        await this.StatusUpdate(findSale, saleUpdateData, queryRunner);
+        await this.StatusUpdate(
+          findSale,
+          findEmployee,
+          saleUpdateData,
+          queryRunner,
+        );
       }
 
       const allowedData = {
@@ -341,6 +349,7 @@ export class SaleService {
 
   async StatusUpdate(
     sale: Sale,
+    employee: Employee,
     saleStatusUpdateDTO: SaleStatusUpdateDTO,
     queryRunner: QueryRunner,
   ) {
@@ -360,21 +369,32 @@ export class SaleService {
       saleStatusUpdateDTO.status === SaleStatus.CANCELED &&
       saleStatusUpdateDTO.returnToStock === true
     ) {
-      await this.StockReturn(sale, queryRunner);
+      await this.StockReturn(sale, employee, saleStatusUpdateDTO, queryRunner);
     }
   }
 
-  async StockReturn(sale: Sale, queryRunner: QueryRunner) {
+  async StockReturn(
+    sale: Sale,
+    employee: Employee,
+    saleStatusUpdateDTO: SaleStatusUpdateDTO,
+    queryRunner: QueryRunner,
+  ) {
+    const inflows: ProductInflow[] = [];
+
     for (const product of sale.saleItems) {
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
           id: product.product.id,
+        },
+        relations: {
+          inflows: true,
         },
       });
 
       if (!findProduct) {
         throw new NotFoundException(`Produto ${product.id} não encontrado`);
       }
+      // Criar inflow
 
       const returnedUnities = await queryRunner.manager.increment(
         Product,
@@ -389,16 +409,42 @@ export class SaleService {
         );
       }
 
-      const saleUpdate = await queryRunner.manager.update(Sale, sale.id, {
-        stockFullyReturned: true,
+      const [lastInflow] = findProduct.inflows.map((i) => {
+        const allSeq = [i.seq];
+        return Math.max(...allSeq);
       });
 
-      if (!saleUpdate || saleUpdate.affected === 0) {
-        throw new InternalServerErrorException(
-          'Erro ao atualizar dados de retorno de estoque',
-        );
-      }
+      const [lastInflowData] = findProduct.inflows.map((i) => {
+        if (Number(i.seq) === lastInflow) return i;
+      });
+
+      const inflowCreate = queryRunner.manager.create(ProductInflow, {
+        name: product.product.name,
+        category: product.product.category,
+        unities: product.quantity,
+        inflowReason: ProductInflowReason.RETURN,
+        notes: saleStatusUpdateDTO.notes || null,
+        price: product.priceAtSale,
+        useStockSupplies: false,
+        product: product,
+        employee: employee,
+        expirationDate: lastInflowData.expirationDate,
+      });
+
+      inflows.push(inflowCreate);
     }
+
+    const saleUpdate = await queryRunner.manager.update(Sale, sale.id, {
+      stockFullyReturned: true,
+    });
+
+    if (!saleUpdate || saleUpdate.affected === 0) {
+      throw new InternalServerErrorException(
+        'Erro ao atualizar dados de retorno de estoque',
+      );
+    }
+
+    await queryRunner.manager.save(ProductInflow, inflows);
   }
 
   FormatterForSearch(salesFound: Sale[]) {

@@ -420,6 +420,14 @@ export class ProductService {
         throw new NotFoundException('Produto não encontrado ou excluído');
       }
 
+      const findInflows = await queryRunner.manager.find(ProductInflow, {
+        where: {
+          product: {
+            id: findProduct.id,
+          },
+        },
+      });
+
       if (updateProductDTO.useStockSupplies === true) {
         const findProductIngredient = await queryRunner.manager.find(
           ProductIngredient,
@@ -470,6 +478,7 @@ export class ProductService {
           takeUnities: updateProductDTO.takeUnities,
           addUnitiesReason: updateProductDTO.addUnitiesReason,
           takeUnitiesReason: updateProductDTO.takeUnitiesReason,
+          useStockSupplies: updateProductDTO.useStockSupplies,
           expirationDate: updateProductDTO.expirationDate,
           notes: updateProductDTO.notes,
         };
@@ -477,6 +486,7 @@ export class ProductService {
         await this.UpdateUnities(
           updateProductUnitesData,
           findProduct,
+          findInflows,
           recipe,
           findEmployee,
           updateProductDTO.useStockSupplies,
@@ -559,6 +569,7 @@ export class ProductService {
   private async UpdateUnities(
     updateProductUnitiesDTO: UpdateProductUnitiesDTO,
     product: Product,
+    inflows: ProductInflow[],
     recipe: ProductIngredient[],
     employee: Employee,
     useStockSupplies: boolean,
@@ -713,14 +724,28 @@ export class ProductService {
         unities: productUnities,
       });
 
+      const [lastInflow] = inflows.map((i) => {
+        const allSeq = [i.seq];
+        return Math.max(...allSeq);
+      });
+
+      const [lastInflowData] = inflows.map((i) => {
+        if (Number(i.seq) === lastInflow) return i;
+      });
+
       const createInflow = queryRunner.manager.create(ProductInflow, {
+        name: product.name,
+        category: product.category,
         unities: addUnities,
         inflowReason: updateProductUnitiesDTO.addUnitiesReason,
         notes: updateProductUnitiesDTO.notes || null,
         price: product.price,
+        useStockSupplies: updateProductUnitiesDTO.useStockSupplies,
         product: product,
         employee: employee,
-        expirationDate: updateProductUnitiesDTO.expirationDate,
+        expirationDate:
+          updateProductUnitiesDTO.expirationDate ||
+          lastInflowData.expirationDate,
       });
 
       await queryRunner.manager.save(ProductInflow, createInflow);

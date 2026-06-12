@@ -36,6 +36,14 @@ export class ProductInflow {
   @Column({ type: 'boolean', name: 'use_stock_supplies' })
   useStockSupplies: boolean;
 
+  @Column({
+    type: 'bigint',
+    generated: 'increment',
+    insert: false,
+    update: false,
+  })
+  seq: number;
+
   @Column({ type: 'varchar', length: 500, nullable: true })
   notes: string;
 

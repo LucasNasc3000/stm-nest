@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -60,6 +61,14 @@ export class UpdateProductUnitiesDTO {
     message: `campo motivo deve ser uma das seguintes opções: ${Object.values(OutflowReason).join(', ')}`,
   })
   readonly takeUnitiesReason?: OutflowReason;
+
+  @ValidateIf((o) => o.addUnities > 0)
+  @IsNotEmpty({
+    message:
+      'O campo "usar insumos em estoque é obrigatório ao adicionar unidades"',
+  })
+  @IsBoolean()
+  readonly useStockSupplies?: boolean;
 
   @ValidateIf(
     (o) =>
