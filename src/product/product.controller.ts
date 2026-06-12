@@ -98,10 +98,10 @@ export class ProductController {
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })
   UpdateProductPrice(
-    @Param() id: string,
+    @Param() id: UrlUuidDTO,
     @Body() updatePriceProductDTO: UpdatePriceProductDTO,
   ) {
-    return this.productService.UpdatePrice(id, updatePriceProductDTO);
+    return this.productService.UpdatePrice(id.id, updatePriceProductDTO);
   }
 
   @SkipThrottle({ write: true, auth: true })

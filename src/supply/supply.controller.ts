@@ -59,20 +59,20 @@ export class SupplyController {
   @Patch('update/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.UPDATE })
   Update(
-    @Param() id: string,
+    @Param() id: UrlUuidDTO,
     @Body() updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
   ) {
-    return this.supplyService.Update(id, updateSupplyRealtimeDTO);
+    return this.supplyService.Update(id.id, updateSupplyRealtimeDTO);
   }
 
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.EDIT_PRICES })
   UpdatePrice(
-    @Param() id: string,
+    @Param() id: UrlUuidDTO,
     @Body() updateSupplyRealtimePriceDTO: UpdatePriceSupplyRealtimeDTO,
   ) {
-    return this.supplyService.UpdatePrice(id, updateSupplyRealtimePriceDTO);
+    return this.supplyService.UpdatePrice(id.id, updateSupplyRealtimePriceDTO);
   }
 
   @SkipThrottle({ write: true, auth: true })
