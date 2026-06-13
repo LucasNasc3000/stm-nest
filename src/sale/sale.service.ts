@@ -296,6 +296,7 @@ export class SaleService {
 
       const allowedData = {
         clientName: updateSaleDTO.clientName,
+        clientEmail: updateSaleDTO.clientEmail,
         phoneNumber: updateSaleDTO.phoneNumber,
         address: updateSaleDTO.address,
       };
@@ -394,7 +395,6 @@ export class SaleService {
       if (!findProduct) {
         throw new NotFoundException(`Produto ${product.id} não encontrado`);
       }
-      // Criar inflow
 
       const returnedUnities = await queryRunner.manager.increment(
         Product,
@@ -426,7 +426,7 @@ export class SaleService {
         notes: saleStatusUpdateDTO.notes || null,
         price: product.priceAtSale,
         useStockSupplies: false,
-        product: product,
+        product: findProduct,
         employee: employee,
         expirationDate: lastInflowData.expirationDate,
       });

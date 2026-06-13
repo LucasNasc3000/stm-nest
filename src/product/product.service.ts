@@ -267,7 +267,7 @@ export class ProductService {
         unities: createProductWithRecipeDTO.unities,
         inflowReason: ProductInflowReason.ENTRY,
         price: createProductWithRecipeDTO.price,
-        useStockSupplies: false,
+        useStockSupplies: true,
         expirationDate: createProductWithRecipeDTO.expirationDate,
         notes: null,
         product: newProduct,
