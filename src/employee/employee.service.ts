@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
@@ -56,7 +57,7 @@ export class EmployeeService {
     }
 
     const password_hash = await this.hashingService.Hash(
-      createEmployeeDTO.password,
+      createEmployeeDTO.currentPassword,
     );
 
     const findRole = await this.roleService.FindById(
@@ -110,19 +111,11 @@ export class EmployeeService {
     const allowedData = {
       email: updateEmployeeDTO.email,
       name: updateEmployeeDTO.name,
-      password_hash: updateEmployeeDTO.password,
+      password_hash: updateEmployeeDTO?.newPassword,
     };
 
     if (id !== tokenPayloadDTO.sub) {
       throw new ForbiddenException('Ação não permitida');
-    }
-
-    if (updateEmployeeDTO?.password) {
-      const passwordHash = await this.hashingService.Hash(
-        updateEmployeeDTO.password,
-      );
-
-      allowedData.password_hash = passwordHash;
     }
 
     const findEmployeeById = await this.employeeRepository.findOne({
@@ -133,6 +126,23 @@ export class EmployeeService {
 
     if (!findEmployeeById) {
       throw new NotFoundException('Funcionário não encontrado');
+    }
+
+    const passwordValidate = await this.hashingService.Compare(
+      updateEmployeeDTO.currentPassword,
+      findEmployeeById.password_hash,
+    );
+
+    if (!passwordValidate) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    if (updateEmployeeDTO?.newPassword) {
+      const passwordHash = await this.hashingService.Hash(
+        updateEmployeeDTO.newPassword,
+      );
+
+      allowedData.password_hash = passwordHash;
     }
 
     const employeeUpdate = await this.employeeRepository.preload({
