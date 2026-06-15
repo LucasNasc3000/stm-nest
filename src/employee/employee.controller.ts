@@ -41,17 +41,12 @@ export class EmployeeController {
   }
 
   @SkipThrottle({ read: true, auth: true })
-  @Patch('update/self/:id')
+  @Patch('update/self')
   UpdateSelf(
-    @Param() id: UrlUuidDTO,
     @Body() updateEmployeeDTO: UpdateEmployeeDTO,
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    return this.employeesService.UpdateSelf(
-      id,
-      updateEmployeeDTO,
-      tokenPayloadDTO,
-    );
+    return this.employeesService.UpdateSelf(updateEmployeeDTO, tokenPayloadDTO);
   }
 
   @SkipThrottle({ read: true, auth: true })

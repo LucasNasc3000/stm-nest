@@ -102,25 +102,18 @@ export class EmployeeService {
   }
 
   async UpdateSelf(
-    employeeIdDTO: UrlUuidDTO,
     updateEmployeeDTO: UpdateEmployeeDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    const id = employeeIdDTO.id;
-
     const allowedData = {
       email: updateEmployeeDTO.email,
       name: updateEmployeeDTO.name,
       password_hash: updateEmployeeDTO?.newPassword,
     };
 
-    if (id !== tokenPayloadDTO.sub) {
-      throw new ForbiddenException('Ação não permitida');
-    }
-
     const findEmployeeById = await this.employeeRepository.findOne({
       where: {
-        id,
+        id: tokenPayloadDTO.sub,
       },
     });
 
@@ -146,7 +139,7 @@ export class EmployeeService {
     }
 
     const employeeUpdate = await this.employeeRepository.preload({
-      id,
+      id: tokenPayloadDTO.sub,
       ...allowedData,
     });
 
