@@ -271,6 +271,7 @@ export class ProductFindService {
         relations: {
           employee: true,
           product: true,
+          supplyRealTime: true,
         },
         select: {
           employee: {
@@ -281,6 +282,10 @@ export class ProductFindService {
             id: true,
             name: true,
             category: true,
+          },
+          supplyRealTime: {
+            id: true,
+            name: true,
           },
         },
       });

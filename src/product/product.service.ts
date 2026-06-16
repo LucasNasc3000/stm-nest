@@ -780,7 +780,7 @@ export class ProductService {
 
       if (!findSupply) {
         throw new NotFoundException(
-          `Insumo ${ingredient.supplyId} do ingrediente ${ingredient.id} não encontrado ou inativo`,
+          `Insumo ${ingredient.supplyId} não encontrado ou inativo`,
         );
       }
 
