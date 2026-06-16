@@ -73,7 +73,7 @@ export class AuthService {
     const create = await this.CreateTokensEmployee(findEmployee);
 
     return {
-      tokens: create,
+      loginData: create,
       permissions: findEmployee.role.permissions,
     };
   }
@@ -115,6 +115,7 @@ export class AuthService {
       await queryRunner.commitTransaction();
 
       return {
+        email: employeeData.email,
         accessToken,
         refreshToken,
       };
