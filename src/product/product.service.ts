@@ -462,9 +462,9 @@ export class ProductService {
         );
       }
 
-      if (updateProductDTO.addproductIngredient) {
+      if (updateProductDTO.addProductIngredient) {
         await this.AddIngredients(
-          updateProductDTO.addproductIngredient,
+          updateProductDTO.addProductIngredient,
           findProduct,
           findEmployee,
           queryRunner,
@@ -813,9 +813,6 @@ export class ProductService {
         {
           where: {
             id: ingredient.id,
-            product: {
-              id: ingredient.supplyId,
-            },
             isActive: true,
           },
           lock: { mode: 'pessimistic_write' },

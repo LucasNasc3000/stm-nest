@@ -131,5 +131,5 @@ export class UpdateProductDTO {
   @ArrayMinSize(1, { message: 'A receita deve ter ao menos 1 produto' })
   @ValidateNested({ each: true })
   @Type(() => AddProductIngredientDTO)
-  readonly addproductIngredient?: AddProductIngredientDTO[];
+  readonly addProductIngredient?: AddProductIngredientDTO[];
 }
