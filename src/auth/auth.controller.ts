@@ -42,6 +42,7 @@ export class AuthController {
       success: true,
       message: 'Autenticação concluída',
       email: createTokens.loginData.email,
+      name: createTokens.loginData.name,
       permissions: createTokens.permissions,
     };
   }

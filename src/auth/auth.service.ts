@@ -116,6 +116,7 @@ export class AuthService {
 
       return {
         email: employeeData.email,
+        name: employeeData.name,
         accessToken,
         refreshToken,
       };

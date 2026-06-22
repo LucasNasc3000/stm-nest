@@ -40,6 +40,7 @@ export class EmployeeController {
     return this.employeesService.Create(body);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/self')
   UpdateSelf(
@@ -49,6 +50,7 @@ export class EmployeeController {
     return this.employeesService.UpdateSelf(updateEmployeeDTO, tokenPayloadDTO);
   }
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/admin/:id')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.UPDATE })
