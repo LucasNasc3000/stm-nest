@@ -26,6 +26,7 @@ async function bootstrap() {
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:3001',
+    'https://cer-client-side.vercel.app',
   ];
 
   const isDevelopment = process.env.NODE_ENV === 'development';
