@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from 'src/auth/decorators/set-metadata.decorator';
+import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { CreateRoleDTO } from './dto/create-role.dto';
 import { UpdateRoleDTO } from './dto/update-role.dto';
@@ -18,6 +19,7 @@ import { RoleService } from './role.service';
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
+  @SkipCsrf()
   @Public()
   @SkipThrottle({ read: true, auth: true })
   // @SetRoutePolicy({ action: Action.CREATE, resource: Resource.EMPLOYEES })
