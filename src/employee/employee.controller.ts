@@ -37,7 +37,7 @@ export class EmployeeController {
   @SkipCsrf()
   // @SkipThrottle({ read: true, auth: true })
   @Post()
-  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
+  // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
   Create(@Body() body: CreateEmployeeDTO) {
     return this.employeesService.Create(body);
   }
