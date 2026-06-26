@@ -47,6 +47,7 @@ export class Employee {
 
   @ManyToOne(() => Employee, (employee) => employee.subordinates, {
     onDelete: 'RESTRICT',
+    nullable: true,
   })
   @JoinColumn({ name: 'boss' })
   boss?: Employee;

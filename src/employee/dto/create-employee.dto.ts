@@ -56,7 +56,7 @@ export class CreateEmployeeDTO {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => RoleIdDTO)
-  readonly role?: RoleIdDTO;
+  readonly role: RoleIdDTO;
 
   @IsOptional()
   readonly boss?: Employee;
