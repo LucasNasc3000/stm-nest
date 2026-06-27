@@ -14,6 +14,7 @@ import { TokenParam } from './params/token.param';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @SkipCsrf()
   @SkipThrottle({ read: true, write: true })
   @Post()
   async LoginEmployee(
