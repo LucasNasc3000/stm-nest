@@ -1,10 +1,9 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app/app.module';
-import { CsrfGuard } from './auth/guards/csrf.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -14,8 +13,6 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(cookieParser());
-
-  app.useGlobalGuards(new CsrfGuard(app.get(Reflector)));
 
   app.useGlobalPipes(
     new ValidationPipe({

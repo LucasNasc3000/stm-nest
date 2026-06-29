@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
-import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -39,7 +38,6 @@ export class EmployeeController {
     return this.employeesService.Create(body);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/self')
   UpdateSelf(
@@ -49,7 +47,6 @@ export class EmployeeController {
     return this.employeesService.UpdateSelf(updateEmployeeDTO, tokenPayloadDTO);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/admin/:id')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.UPDATE })

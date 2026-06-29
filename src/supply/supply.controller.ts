@@ -13,7 +13,6 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
-import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -43,7 +42,6 @@ export class SupplyController {
     private readonly supplyFindService: SupplyFindService,
   ) {}
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post()
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.CREATE })
@@ -54,7 +52,6 @@ export class SupplyController {
     return this.supplyService.Create(body, tokenPayloadDTO);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Patch('update/:id')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.UPDATE })

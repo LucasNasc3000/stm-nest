@@ -12,7 +12,6 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
-import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -32,7 +31,6 @@ import { OutflowService } from './outflow.service';
 export class OutflowController {
   constructor(private readonly outflowsService: OutflowService) {}
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/supply')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.CREATE })
@@ -43,7 +41,6 @@ export class OutflowController {
     return this.outflowsService.CreateForSupply(body, tokenPayloadDTO);
   }
 
-  @SkipCsrf()
   @SkipThrottle({ read: true, auth: true })
   @Post('create/product')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.CREATE })

@@ -2,7 +2,6 @@ import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { Public } from 'src/auth/decorators/set-metadata.decorator';
-import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { RefreshTokenGuard } from 'src/auth/guards/refresh-token.guard';
 import { RefreshTokensService } from './refresh-token.service';
 
@@ -12,7 +11,6 @@ import { RefreshTokensService } from './refresh-token.service';
 export class RefreshTokensController {
   constructor(private readonly refreshTokensService: RefreshTokensService) {}
 
-  @SkipCsrf()
   @Throttle({ refresh: { limit: 10, ttl: 60000 } })
   @Post()
   async RefreshTokensEmployee(

@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { SKIP_CSRF_KEY } from '../auth.constants';
-import { doubleCsrfProtection } from './csrf.config';
+import { doubleCsrfProtection } from '../config/csrf.config';
 
 @Injectable()
 export class CsrfGuard implements CanActivate {

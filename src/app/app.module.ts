@@ -87,11 +87,11 @@ import { AppService } from './app.service';
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerBehindProxyGuard,
+      useClass: CsrfGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: CsrfGuard,
+      useClass: ThrottlerBehindProxyGuard,
     },
   ],
 })

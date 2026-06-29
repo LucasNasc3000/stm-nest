@@ -1,20 +1,20 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { generateCsrfToken } from './config/csrf.config';
 import { Public } from './decorators/set-metadata.decorator';
 import { SkipCsrf } from './decorators/skip-csrf.decorator';
 import { LoginDTO } from './dto/login.dto';
 import { LogoutDTO } from './dto/logout.dto';
 import { TokenParam } from './params/token.param';
 
-@SkipCsrf()
-@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @SkipCsrf()
+  @Public()
   @SkipThrottle({ read: true, write: true })
   @Post()
   async LoginEmployee(
@@ -62,5 +62,11 @@ export class AuthController {
     res.clearCookie('x-csrf-token');
 
     return { success: true, message: 'Logout concluído' };
+  }
+
+  @Get('csrf-token')
+  getCsrfToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const csrfToken = generateCsrfToken(req, res, { overwrite: true });
+    return { csrfToken };
   }
 }
