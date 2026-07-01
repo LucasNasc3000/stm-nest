@@ -51,7 +51,7 @@ export class SupplyHistory {
   @Column({ type: 'enum', enum: SupplyReason })
   reason: SupplyReason;
 
-  @Column({ type: 'varchar', length: 600 })
+  @Column({ type: 'varchar', length: 600, nullable: true })
   details: string;
 
   @Column({
