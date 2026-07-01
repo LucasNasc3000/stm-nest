@@ -13,8 +13,8 @@ import { TokenParam } from './params/token.param';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @SkipCsrf()
   @Public()
+  @SkipCsrf()
   @SkipThrottle({ read: true, write: true })
   @Post()
   async LoginEmployee(
@@ -59,7 +59,12 @@ export class AuthController {
 
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
-    res.clearCookie('x-csrf-token');
+
+    if (process.env.NODE_ENV === 'production') {
+      res.clearCookie('__Host-stm.x-csrf-token');
+    } else {
+      res.clearCookie('stm.x-csrf-token');
+    }
 
     return { success: true, message: 'Logout concluído' };
   }
