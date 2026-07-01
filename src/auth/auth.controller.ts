@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Req, Res } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -11,7 +11,10 @@ import { TokenParam } from './params/token.param';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: Logger,
+  ) {}
 
   @Public()
   @SkipCsrf()
@@ -55,18 +58,23 @@ export class AuthController {
     @TokenParam() accessToken: string,
     @Body() logoutDto: LogoutDTO,
   ) {
-    await this.authService.LogoutEmployee(accessToken, logoutDto);
+    try {
+      await this.authService.LogoutEmployee(accessToken, logoutDto);
+    } catch (error) {
+      // Enviar email para mim futuramente avisando do erro
+      this.logger.log(error);
+    } finally {
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
 
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+      if (process.env.NODE_ENV === 'production') {
+        res.clearCookie('__Host-stm.x-csrf-token');
+      } else {
+        res.clearCookie('stm.x-csrf-token');
+      }
 
-    if (process.env.NODE_ENV === 'production') {
-      res.clearCookie('__Host-stm.x-csrf-token');
-    } else {
-      res.clearCookie('stm.x-csrf-token');
+      return { success: true, message: 'Logout concluído' };
     }
-
-    return { success: true, message: 'Logout concluído' };
   }
 
   @Get('csrf-token')
