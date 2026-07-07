@@ -22,14 +22,13 @@ async function bootstrap() {
     }),
   );
 
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://gridstock.vercel.app',
-  ];
+  const allowedOrigins = ['https://gridstock.vercel.app'];
 
   const isDevelopment = process.env.NODE_ENV === 'development';
+
+  if (isDevelopment === true) {
+    allowedOrigins.push('http://localhost:5173', 'http://localhost:3000');
+  }
 
   logger.log(`Environment: ${isDevelopment ? 'development' : 'production'}`);
   logger.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
