@@ -123,26 +123,36 @@ export class RefreshTokensService {
   }
 
   async RefreshTokensEmployee(refreshToken: string) {
-    const { sub, id } = await this.jwtService.verifyAsync(
-      refreshToken,
-      this.jwtConfiguration,
-    );
+    try {
+      const { sub, id } = await this.jwtService.verifyAsync(
+        refreshToken,
+        this.jwtConfiguration,
+      );
 
-    const findEmployee = await this.employeeRepository.findOne({
-      where: {
-        id: sub,
-        situation: EmployeeSituation.EMPLOYED,
-      },
-    });
+      const findEmployee = await this.employeeRepository.findOne({
+        where: {
+          id: sub,
+          situation: EmployeeSituation.EMPLOYED,
+        },
+      });
 
-    if (!findEmployee) {
-      // O Error vai pular para o Unauthorized no catch e a mensagem será esta
-      throw new Error('Usuário não encontrado ou inativo');
+      if (!findEmployee) {
+        // O Error vai pular para o Unauthorized no catch e a mensagem será esta
+        throw new Error('Usuário não encontrado ou inativo');
+      }
+
+      const create = await this.CreateTokensEmployee(findEmployee, id);
+
+      return create;
+    } catch (error) {
+      ErrorManagement(error, GeneralErrorType.UNAUTHORIZED, {
+        logger: 'Erro na autenticação do refreshToken',
+        queryFailedError: 'Erro nos registros durante reautenticação',
+        internalServerError:
+          'Erro interno ao emitir novos tokens de funcionário',
+        generalError: 'Erro ao emitir novos tokens de funcionário',
+      });
     }
-
-    const create = await this.CreateTokensEmployee(findEmployee, id);
-
-    return create;
   }
 
   async CreateTokensEmployee(

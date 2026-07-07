@@ -2,10 +2,12 @@ import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { Public } from 'src/auth/decorators/set-metadata.decorator';
+import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { RefreshTokenGuard } from 'src/auth/guards/refresh-token.guard';
 import { RefreshTokensService } from './refresh-token.service';
 
 @Public()
+@SkipCsrf()
 @UseGuards(RefreshTokenGuard)
 @Controller('refresh')
 export class RefreshTokensController {
