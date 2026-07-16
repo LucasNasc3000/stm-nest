@@ -8,6 +8,7 @@ import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Repository } from 'typeorm';
 import { CreatePlatformDTO } from './dto/create-platform.dto';
+import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { UpdatePlatformDTO } from './dto/update-platform.dto';
 import { Platform } from './entities/platform.entity';
 
@@ -68,5 +69,44 @@ export class PlaftormService {
     }
 
     return platformUpdated;
+  }
+
+  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+    const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
+
+    const [platformsFindByEmployee, total] =
+      await this.platformRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          employee: {
+            id: value,
+          },
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!platformsFindByEmployee) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao tentar pesquisar por plataformas',
+      );
+    }
+
+    if (platformsFindByEmployee.length < 1 && !forDisplay) {
+      throw new NotFoundException('Plataformas não encontradas');
+    }
+
+    return [total, platformsFindByEmployee];
   }
 }
