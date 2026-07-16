@@ -1,6 +1,7 @@
 import { IsEmail } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { Platform } from 'src/platform/entities/platform.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
 import { RefreshTokenEmployee } from 'src/refresh-tokens/entities/refresh-token-employee.entity';
 import { Role } from 'src/role/entities/role.entity';
@@ -69,6 +70,9 @@ export class Employee {
 
   @OneToMany(() => ProductIngredient, (ingredient) => ingredient.employee)
   productIngredient: ProductIngredient[];
+
+  @OneToMany(() => Platform, (platform) => platform.employee)
+  platforms: Platform[];
 
   @OneToMany(() => RefreshTokenEmployee, (token) => token.employee)
   refresh_tokens: RefreshTokenEmployee[];

@@ -1,0 +1,32 @@
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
+import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { TokenParam } from 'src/auth/params/token.param';
+import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
+import { CreatePlatformDTO } from './dto/create-platform.dto';
+import { UpdatePlatformDTO } from './dto/update-platform.dto';
+import { PlaftormService } from './platform.service';
+
+@Controller('platforms')
+export class PlatformController {
+  constructor(private readonly platformService: PlaftormService) {}
+
+  @SkipThrottle({ auth: true, read: true })
+  @Post()
+  @SetRoutePolicy({ action: Action.CREATE, resource: Resource.PLATFORMS })
+  Create(
+    @TokenParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Body() body: CreatePlatformDTO,
+  ) {
+    return this.platformService.Create(tokenPayloadDTO, body);
+  }
+
+  @SkipThrottle({ auth: true, read: true })
+  @Patch()
+  @SetRoutePolicy({ action: Action.UPDATE, resource: Resource.PLATFORMS })
+  Update(@Param() id: UrlUuidDTO, @Body() body: UpdatePlatformDTO) {
+    return this.platformService.Update(id.id, body);
+  }
+}

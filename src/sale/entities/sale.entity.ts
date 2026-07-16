@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Platform } from '../../platform/entities/platform.entity';
 import { SaleItems } from './sale-items.entity';
 
 @Entity()
@@ -40,6 +41,12 @@ export class Sale {
   })
   employee: Employee;
 
+  @ManyToOne(() => Platform, (platform) => platform.sales, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  platform: Platform;
+
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
   totalPrice: string;
 
@@ -54,6 +61,24 @@ export class Sale {
 
   @Column({ type: 'boolean', nullable: true, name: 'stock_fully_returned' })
   stockFullyReturned: boolean;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    name: 'applied_tax_percentage',
+    nullable: true,
+  })
+  appliedTaxPercentage: string;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    name: 'net_value',
+    nullable: true,
+  })
+  netValue: string;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

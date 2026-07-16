@@ -12,4 +12,5 @@ export enum Resource {
   SUPPLIES = 'SUPPLIES',
   OUTFLOWS = 'OUTFLOWS',
   SALES = 'SALES',
+  PLATFORMS = 'PLATFORMS',
 }
