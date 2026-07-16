@@ -62,6 +62,15 @@ export class CreateSaleDTO {
   })
   readonly status: SaleStatus;
 
+  @IsOptional()
+  @IsString({
+    message: 'campo "plataforma" deve estar em formato de texto',
+  })
+  @Length(2, 50, {
+    message: 'campo "plataforma" deve ter no máximo 50 caracteres',
+  })
+  readonly platform: string;
+
   @IsNotEmpty({
     message: 'campo "itens" não preenchido',
   })

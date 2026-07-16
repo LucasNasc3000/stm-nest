@@ -19,6 +19,7 @@ import { SaleStatus } from 'src/common/enums/sale-status.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
+import { Platform } from 'src/platform/entities/platform.entity';
 import { ProductInflow } from 'src/product/entities/product-inflow.entity';
 import { ErrorManagement } from 'src/utils/error.util';
 import { Formatter } from 'src/utils/format-timezone';
@@ -97,13 +98,38 @@ export class SaleService {
         totalPrice = totalPrice.add(price.mul(item.quantity));
       }
 
+      const { platform } = createSaleDTO;
+      let foundPlatform: Platform;
+      let netValue = '';
+
+      if (platform) {
+        foundPlatform = await queryRunner.manager.findOne(Platform, {
+          where: {
+            name: platform,
+          },
+        });
+
+        if (!foundPlatform) {
+          throw new NotFoundException('Plataforma não encontrada');
+        }
+
+        const decimalTax = new Decimal(foundPlatform.taxPercentage).div(100);
+
+        const mulByTotalPrice = totalPrice.mul(decimalTax);
+
+        netValue = totalPrice.sub(mulByTotalPrice).toString();
+      }
+
       const dataSale = {
         clientName: createSaleDTO.clientName,
         clientEmail: createSaleDTO.clientEmail || null,
         phoneNumber: createSaleDTO.phoneNumber || null,
         address: createSaleDTO.address || null,
         status: createSaleDTO.status,
+        appliedTaxPercentage: foundPlatform.taxPercentage || null,
+        netValue: netValue || null,
         saleItems: null,
+        platform: foundPlatform || null,
         totalPrice: totalPrice.toString(),
         employee: doesEmployeeReallyExists,
       };
