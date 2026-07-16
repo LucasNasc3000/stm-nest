@@ -12,6 +12,7 @@ import { EmployeeModule } from 'src/employee/employee.module';
 import { JWTBlacklistModule } from 'src/jwt-blacklist/jwt-blacklist.module';
 import { LogsModule } from 'src/logs-register/log.module';
 import { OutflowModule } from 'src/outflow/outflow.module';
+import { PlatformModule } from 'src/platform/platform.module';
 import { ProductModule } from 'src/product/product.module';
 import { RefreshTokensModule } from 'src/refresh-tokens/refresh-token.module';
 import { SaleModule } from 'src/sale/sale.module';
@@ -68,6 +69,7 @@ import { AppService } from './app.service';
     OutflowModule,
     SaleModule,
     ProductModule,
+    PlatformModule,
     AuthModule,
     JWTBlacklistModule,
     LogsModule,
