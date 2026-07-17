@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -16,11 +18,11 @@ import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreatePlatformDTO } from './dto/create-platform.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
 import { UpdatePlatformDTO } from './dto/update-platform.dto';
-import { PlaftormService } from './platform.service';
+import { PlatformService } from './platform.service';
 
 @Controller('platforms')
 export class PlatformController {
-  constructor(private readonly platformService: PlaftormService) {}
+  constructor(private readonly platformService: PlatformService) {}
 
   @SkipThrottle({ auth: true, read: true })
   @Post()
@@ -44,5 +46,17 @@ export class PlatformController {
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.READ })
   FindByEmployee(@Query() paginationByEmployeeDTO: PaginationByEmployeeDTO) {
     return this.platformService.FindByEmployee(paginationByEmployeeDTO);
+  }
+
+  @SkipThrottle({ read: true, auth: true })
+  @Delete()
+  @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.DELETE })
+  async Delete(@Param() id: UrlUuidDTO) {
+    const deletePlatform = await this.platformService.Delete(id.id);
+
+    return {
+      status: HttpStatus.NO_CONTENT,
+      message: deletePlatform,
+    };
   }
 }

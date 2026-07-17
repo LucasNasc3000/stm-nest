@@ -13,7 +13,7 @@ import { UpdatePlatformDTO } from './dto/update-platform.dto';
 import { Platform } from './entities/platform.entity';
 
 @Injectable()
-export class PlaftormService {
+export class PlatformService {
   constructor(
     @InjectRepository(Platform)
     private readonly platformRepository: Repository<Platform>,
@@ -47,13 +47,13 @@ export class PlaftormService {
   }
 
   async Update(id: string, updatePlatformDTO: UpdatePlatformDTO) {
-    const findPlaftorm = await this.platformRepository.findOne({
+    const findPlatform = await this.platformRepository.findOne({
       where: {
         id,
       },
     });
 
-    if (!findPlaftorm) {
+    if (!findPlatform) {
       throw new NotFoundException('Plataforma não encontrada');
     }
 
@@ -69,6 +69,26 @@ export class PlaftormService {
     }
 
     return platformUpdated;
+  }
+
+  async Delete(id: string) {
+    const findPlatform = await this.platformRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!findPlatform) {
+      throw new NotFoundException('Plataforma não encontrada');
+    }
+
+    const deletePlatform = await this.platformRepository.delete(id);
+
+    if (deletePlatform.affected < 1 || !deletePlatform) {
+      throw new InternalServerErrorException('Erro ao excluir plataforma');
+    }
+
+    return 'Plataforma deletada';
   }
 
   async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
