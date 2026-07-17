@@ -42,7 +42,7 @@ export class Sale {
   employee: Employee;
 
   @ManyToOne(() => Platform, (platform) => platform.sales, {
-    onDelete: 'RESTRICT',
+    onDelete: 'SET NULL',
     nullable: true,
   })
   platform: Platform;
@@ -61,6 +61,14 @@ export class Sale {
 
   @Column({ type: 'boolean', nullable: true, name: 'stock_fully_returned' })
   stockFullyReturned: boolean;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    name: 'platform_name_snapshot',
+    nullable: true,
+  })
+  platformNameSnapshot: string;
 
   @Column({
     type: 'numeric',

@@ -130,6 +130,7 @@ export class SaleService {
         netValue: netValue || null,
         saleItems: null,
         platform: foundPlatform || null,
+        platformNameSnapshot: foundPlatform.name,
         totalPrice: totalPrice.toString(),
         employee: doesEmployeeReallyExists,
       };
