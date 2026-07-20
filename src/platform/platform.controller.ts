@@ -12,7 +12,7 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
-import { TokenParam } from 'src/auth/params/token.param';
+import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { CreatePlatformDTO } from './dto/create-platform.dto';
@@ -28,7 +28,7 @@ export class PlatformController {
   @Post()
   @SetRoutePolicy({ action: Action.CREATE, resource: Resource.PLATFORMS })
   Create(
-    @TokenParam() tokenPayloadDTO: TokenPayloadDTO,
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Body() body: CreatePlatformDTO,
   ) {
     return this.platformService.Create(tokenPayloadDTO, body);

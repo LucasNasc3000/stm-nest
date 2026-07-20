@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +21,7 @@ export class PlatformService {
 
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
+    private readonly logger: Logger,
   ) {}
 
   async Create(
