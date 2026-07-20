@@ -392,6 +392,21 @@ export class EmployeeService {
     }
   }
 
+  async FindSelf(tokenPayloadDTO: TokenPayloadDTO) {
+    const employeeFindSelf = await this.employeeRepository.findOne({
+      where: {
+        id: tokenPayloadDTO.sub,
+        situation: EmployeeSituation.EMPLOYED,
+      },
+    });
+
+    if (!employeeFindSelf) {
+      throw new NotFoundException('Funcionário não encontrado');
+    }
+
+    return employeeFindSelf;
+  }
+
   async FindByEmail(emailDTO: SearchByEmailDTO) {
     const email = emailDTO.value;
 

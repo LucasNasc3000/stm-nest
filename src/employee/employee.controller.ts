@@ -63,6 +63,12 @@ export class EmployeeController {
   }
 
   @SkipThrottle({ write: true, auth: true })
+  @Get('search/self')
+  FindSelf(@TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO) {
+    return this.employeesService.FindSelf(tokenPayloadDTO);
+  }
+
+  @SkipThrottle({ write: true, auth: true })
   @Get('search/email/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   FindByEmail(@Query() email: SearchByEmailDTO) {
