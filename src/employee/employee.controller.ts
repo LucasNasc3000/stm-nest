@@ -102,10 +102,10 @@ export class EmployeeController {
       await this.employeesService.FindByBoss(paginationByBossDto);
 
     if (findByBoss.length === 0) {
-      return res.status(204).send();
+      return res.status(204).send('Nenhum funcionário cadastrado ainda');
     }
 
-    return findByBoss;
+    return res.status(HttpStatus.OK).json(findByBoss);
   }
 
   @SkipThrottle({ write: true, auth: true })
