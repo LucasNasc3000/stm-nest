@@ -18,10 +18,10 @@ export class CreatePlatformDTO {
     message: 'Campo "taxa" não preenchido',
   })
   @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return value.trim();
+    if (value === undefined || value === null) {
+      return value;
     }
-    return value;
+    return typeof value === 'string' ? value.trim() : value;
   })
   @IsDecimalString({
     message: 'O campo "taxa" deve ser um string decimal ex: 59.99',

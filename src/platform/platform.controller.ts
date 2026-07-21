@@ -8,8 +8,10 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
@@ -35,7 +37,7 @@ export class PlatformController {
   }
 
   @SkipThrottle({ read: true, auth: true })
-  @Patch()
+  @Patch(':id')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.UPDATE })
   Update(@Param() id: UrlUuidDTO, @Body() body: UpdatePlatformDTO) {
     return this.platformService.Update(id.id, body);
@@ -44,19 +46,31 @@ export class PlatformController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.READ })
-  FindByEmployee(@Query() paginationByEmployeeDTO: PaginationByEmployeeDTO) {
-    return this.platformService.FindByEmployee(paginationByEmployeeDTO);
+  async FindByEmployee(
+    @Res() res: Response,
+    @Query() paginationByEmployeeDTO: PaginationByEmployeeDTO,
+  ) {
+    const findPlatforms = await this.platformService.FindByEmployee(
+      paginationByEmployeeDTO,
+    );
+
+    if (
+      paginationByEmployeeDTO.forDisplay === true &&
+      findPlatforms[1].length === 0
+    ) {
+      return res
+        .status(HttpStatus.NO_CONTENT)
+        .send('Nenhuma plataforma registrada ainda');
+    }
+
+    return res.status(HttpStatus.OK).json(findPlatforms);
   }
 
   @SkipThrottle({ read: true, auth: true })
-  @Delete()
+  @Delete(':id')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.DELETE })
-  async Delete(@Param() id: UrlUuidDTO) {
+  async Delete(@Res() res: Response, @Param() id: UrlUuidDTO) {
     const deletePlatform = await this.platformService.Delete(id.id);
-
-    return {
-      status: HttpStatus.NO_CONTENT,
-      message: deletePlatform,
-    };
+    return res.status(HttpStatus.NO_CONTENT).send(deletePlatform);
   }
 }

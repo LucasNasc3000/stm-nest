@@ -49,18 +49,14 @@ export class PlatformService {
   }
 
   async Update(id: string, updatePlatformDTO: UpdatePlatformDTO) {
-    const findPlatform = await this.platformRepository.findOne({
-      where: {
-        id,
-      },
+    const platformUpdate = await this.platformRepository.preload({
+      id,
+      ...updatePlatformDTO,
     });
 
-    if (!findPlatform) {
+    if (!platformUpdate) {
       throw new NotFoundException('Plataforma não encontrada');
     }
-
-    const platformUpdate =
-      await this.platformRepository.preload(updatePlatformDTO);
 
     const platformUpdated = await this.platformRepository.save(platformUpdate);
 
@@ -93,7 +89,9 @@ export class PlatformService {
     return 'Plataforma deletada';
   }
 
-  async FindByEmployee(paginationByEmployeeDTO: PaginationByEmployeeDTO) {
+  async FindByEmployee(
+    paginationByEmployeeDTO: PaginationByEmployeeDTO,
+  ): Promise<[number, Platform[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
 
     const [platformsFindByEmployee, total] =

@@ -101,18 +101,20 @@ export class ProductController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  async FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
+  async FindByName(
+    @Res() res: Response,
+    @Query() paginationByNameDto: PaginationByNameDTO,
+  ) {
     const findProducts =
       await this.productFindService.FindByName(paginationByNameDto);
 
     if (paginationByNameDto.forDisplay && findProducts.length === 0) {
-      return {
-        status: HttpStatus.NO_CONTENT,
-        message: 'Nenhum produto cadastrado com este nome',
-      };
+      return res
+        .status(HttpStatus.NO_CONTENT)
+        .send('Nenhum produto cadastrado com este nome');
     }
 
-    return findProducts;
+    return res.status(HttpStatus.OK).json(findProducts);
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -194,7 +196,9 @@ export class ProductController {
       paginationByInflowEmployeeDto.forDisplay === true &&
       findInflows[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT).send();
+      return res
+        .status(HttpStatus.NO_CONTENT)
+        .send('Nenhuma entrada registrada ainda');
     }
 
     return res.status(HttpStatus.OK).json(findInflows);
