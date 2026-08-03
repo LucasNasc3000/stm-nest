@@ -126,11 +126,11 @@ export class SaleService {
         phoneNumber: createSaleDTO.phoneNumber || null,
         address: createSaleDTO.address || null,
         status: createSaleDTO.status,
-        appliedTaxPercentage: foundPlatform.taxPercentage || null,
+        appliedTaxPercentage: foundPlatform?.taxPercentage || null,
         netValue: netValue || null,
         saleItems: null,
         platform: foundPlatform || null,
-        platformNameSnapshot: foundPlatform.name,
+        platformNameSnapshot: foundPlatform?.name,
         totalPrice: totalPrice.toString(),
         employee: doesEmployeeReallyExists,
       };

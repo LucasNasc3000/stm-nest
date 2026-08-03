@@ -11,12 +11,12 @@ export class UpdateProductIngredientDTO {
   @IsUUID(4, {
     message: 'O id do ingrediente deve ser um uuid',
   })
-  id: string;
+  readonly id: string;
 
   @IsUUID(4, {
     message: 'O id do insumo deve ser um uuid',
   })
-  supplyId: string;
+  readonly supplyId: string;
 
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
