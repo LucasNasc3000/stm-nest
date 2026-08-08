@@ -6,6 +6,7 @@ import { SkipCsrf } from 'src/auth/decorators/skip-csrf.decorator';
 import { RefreshTokenGuard } from 'src/auth/guards/refresh-token.guard';
 import { RefreshTokensService } from './refresh-token.service';
 
+@Throttle({ refresh: { limit: 10, ttl: 60000 } })
 @Public()
 @SkipCsrf()
 @UseGuards(RefreshTokenGuard)
@@ -13,7 +14,6 @@ import { RefreshTokensService } from './refresh-token.service';
 export class RefreshTokensController {
   constructor(private readonly refreshTokensService: RefreshTokensService) {}
 
-  @Throttle({ refresh: { limit: 10, ttl: 60000 } })
   @Post()
   async RefreshTokensEmployee(
     @Req() req: Request,

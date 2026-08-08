@@ -42,11 +42,10 @@ export class RoleService {
         resource: p.resource,
       }));
 
-      const newRole = await queryRunner.manager.upsert(
-        Permission,
-        permissions,
-        ['action', 'resource'],
-      );
+      await queryRunner.manager.upsert(Permission, permissions, [
+        'action',
+        'resource',
+      ]);
 
       const savedPermissions = await queryRunner.manager.find(Permission, {
         where: permissions,
@@ -57,7 +56,7 @@ export class RoleService {
         permissions: savedPermissions,
       });
 
-      await queryRunner.manager.save(Role, createRole);
+      const newRole = await queryRunner.manager.save(Role, createRole);
 
       await queryRunner.commitTransaction();
 
