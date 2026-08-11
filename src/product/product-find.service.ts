@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductSearch } from 'src/common/enums/product-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { ILike, Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -363,7 +363,7 @@ export class ProductFindService {
         },
         where: {
           product: {
-            name: value,
+            name: ILike(`${value}%`),
           },
         },
         relations: {
