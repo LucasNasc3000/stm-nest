@@ -84,7 +84,8 @@ export class ProductFindService {
   }
 
   async FindByName(paginationByNameDTO: PaginationByNameDTO) {
-    const { limit, offset, value, productType } = paginationByNameDTO;
+    const { limit, offset, value, productType, forDisplay } =
+      paginationByNameDTO;
 
     const query = this.QueryBuilderGenerator(productType);
 
@@ -102,7 +103,7 @@ export class ProductFindService {
       );
     }
 
-    if (productFindByName.length < 1) {
+    if (productFindByName.length < 1 && !forDisplay) {
       throw new NotFoundException('Produtos não encontrados');
     }
 
