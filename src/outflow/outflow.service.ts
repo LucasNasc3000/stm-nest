@@ -76,7 +76,7 @@ export class OutflowService {
 
       if (!doesProductReallyExists) {
         throw new NotFoundException(
-          `Ocorreu um erro interno ou o produto ${createOutflowDTO.name} não está cadastrado`,
+          `Produto ${createOutflowDTO.name} não encontrado`,
         );
       }
 
@@ -193,7 +193,7 @@ export class OutflowService {
 
       if (!doesSupplyReallyExists) {
         throw new NotFoundException(
-          `Ocorreu um erro interno ou o insumo ${createOutflowDTO.name} não está cadastrado`,
+          `Insumo ${createOutflowDTO.name} não encontrado`,
         );
       }
 
