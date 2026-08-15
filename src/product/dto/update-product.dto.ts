@@ -57,7 +57,7 @@ export class UpdateProductDTO {
   @IsDateString()
   readonly expirationDate?: string;
 
-  @ValidateIf((o) => o.addUnities > 0)
+  @ValidateIf((o) => o.addUnities > 0 || o.updateProductIngredient)
   @IsNotEmpty({
     message:
       'O campo "usar insumos em estoque é obrigatório ao adicionar unidades"',

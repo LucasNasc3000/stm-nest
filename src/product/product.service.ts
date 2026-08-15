@@ -428,7 +428,7 @@ export class ProductService {
         },
       });
 
-      if (updateProductDTO.useStockSupplies === true) {
+      if (updateProductDTO.updateProductIngredient) {
         const findProductIngredient = await queryRunner.manager.find(
           ProductIngredient,
           {
@@ -453,9 +453,7 @@ export class ProductService {
         }
 
         recipe.push(...findProductIngredient);
-      }
 
-      if (updateProductDTO.updateProductIngredient) {
         await this.UpdateProductIngredient(
           updateProductDTO.updateProductIngredient,
           queryRunner,
