@@ -151,7 +151,7 @@ export class ProductFindService {
     const query = this.QueryBuilderGenerator(productType);
 
     query
-      .andWhere('CAST(product.price AS TEXT) LIKE :price', {
+      .andWhere('CAST(product_general.price AS TEXT) LIKE :price', {
         price: `${value}%`,
       })
       .orderBy('product_general.id', 'DESC')
