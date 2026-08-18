@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
-import { Raw, Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -391,6 +391,15 @@ export class SupplyFindService {
         where: {
           reason: value,
         },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
       });
 
     if (!supplyFindByReason) {
@@ -422,12 +431,7 @@ export class SupplyFindService {
           id: 'desc',
         },
         where: {
-          totalWeightPerRegister: Raw(
-            (alias) => `CAST(${alias} AS TEXT) LIKE :value`,
-            {
-              value: `${value}%`,
-            },
-          ),
+          totalWeightPerRegister: value,
         },
         relations: {
           employee: true,
