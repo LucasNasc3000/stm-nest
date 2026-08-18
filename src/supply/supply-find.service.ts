@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
-import { Raw, Repository, SelectQueryBuilder } from 'typeorm';
+import { Like, Raw, Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationByCategoryDTO } from './dto/pagination-category.dto';
 import { PaginationByDateDTO } from './dto/pagination-date.dto';
 import { PaginationByEmployeeDTO } from './dto/pagination-employee.dto';
@@ -346,38 +346,6 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByExpirationDate(paginatioByExpDateDTO: PaginationByExpDateDTO) {
-    const { limit, offset, value, supplyType } = paginatioByExpDateDTO;
-
-    const query = this.QueryBuilderGenerator(supplyType);
-
-    query
-      .andWhere('supply.expiration_date ILIKE :expirationDate', {
-        expirationDate: `${value}%`,
-      })
-      .orderBy('supply.id', 'DESC')
-      .take(limit)
-      .skip(offset);
-
-    const [supplyFindByExpirationDate, total] = await query.getManyAndCount();
-
-    if (!supplyFindByExpirationDate) {
-      throw new InternalServerErrorException(
-        'Erro desconhecido ao tentar pesquisar por insumos',
-      );
-    }
-
-    if (supplyFindByExpirationDate.length < 1) {
-      throw new NotFoundException('Insumos não encontrados');
-    }
-
-    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
-      supplyFindByExpirationDate,
-    );
-
-    return [total, formattedCreatedAndUpdatedAt];
-  }
-
   async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
     const { limit, offset, value, supplyType } = paginatioByDateDTO;
 
@@ -460,6 +428,41 @@ export class SupplyFindService {
               value: `${value}%`,
             },
           ),
+        },
+        relations: {
+          employee: true,
+        },
+        select: {
+          employee: {
+            id: true,
+            email: true,
+          },
+        },
+      });
+
+    if (!supplyHistoryFindByTotalWeightPerRegister) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      supplyHistoryFindByTotalWeightPerRegister,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
+  }
+
+  async FindByExpirationDate(paginationByExpDateDTO: PaginationByExpDateDTO) {
+    const { limit, offset, value } = paginationByExpDateDTO;
+
+    const [supplyHistoryFindByTotalWeightPerRegister, total] =
+      await this.supplyHistoryRepository.findAndCount({
+        take: limit,
+        skip: offset,
+        order: {
+          id: 'desc',
+        },
+        where: {
+          expirationDate: Like(`${value}%`),
         },
         relations: {
           employee: true,
