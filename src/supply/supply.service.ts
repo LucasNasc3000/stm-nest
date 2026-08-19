@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -94,102 +95,11 @@ export class SupplyService {
             name: createSupplyDTO.name,
             isActive: true,
           },
-          lock: { mode: 'pessimistic_write' },
         },
       );
 
       if (doesSupplyAlreadyExists) {
-        const weightPerUnitDecimalSupplyExists = new Decimal(
-          doesSupplyAlreadyExists.weightPerUnit,
-        );
-
-        const totalWeightDecimal = new Decimal(
-          doesSupplyAlreadyExists.totalWeight,
-        );
-
-        const addToTotalWeight = weightPerUnitDecimalSupplyExists.mul(
-          createSupplyDTO.quantity,
-        );
-
-        const newTotalWeight = totalWeightDecimal
-          .add(addToTotalWeight)
-          .toString();
-
-        const updatedQuantity =
-          doesSupplyAlreadyExists.quantity + createSupplyDTO.quantity;
-
-        const currentTotalPrice = new Decimal(
-          doesSupplyAlreadyExists.totalPrice,
-        );
-
-        const updatedTotalPrice = currentTotalPrice.add(totalPrice).toString();
-
-        const weightedAveragePrice = new Decimal(updatedTotalPrice)
-          .div(updatedQuantity)
-          .toDecimalPlaces(2)
-          .toString();
-
-        const supplyUpdate = await queryRunner.manager.update(
-          SupplyRealTime,
-          doesSupplyAlreadyExists.id,
-          {
-            totalWeight: newTotalWeight,
-            quantity: updatedQuantity,
-            totalPrice: updatedTotalPrice,
-            price: weightedAveragePrice,
-          },
-        );
-
-        if (!supplyUpdate || supplyUpdate.affected < 1) {
-          throw new InternalServerErrorException(
-            'Erro ao atualizar insumo existente',
-          );
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { totalWeight, ...withoutTotalWeight } = data;
-
-        const supplyHistoryData = {
-          ...withoutTotalWeight,
-          reason: createSupplyDTO.reason,
-          details: createSupplyDTO.details,
-          totalWeightPerRegister: totalWeightValue,
-          employee: doesEmployeeReallyExists,
-          supplyRealTime: doesSupplyAlreadyExists,
-        };
-
-        await this.SaveSupplyHistory(supplyHistoryData, queryRunner);
-
-        await queryRunner.commitTransaction();
-
-        const recoverUpdatedSupplyData =
-          await this.supplyRealTimeRepository.findOne({
-            where: {
-              id: doesSupplyAlreadyExists.id,
-            },
-            relations: {
-              employee: true,
-              supplyHistory: true,
-            },
-            select: {
-              employee: {
-                id: true,
-                email: true,
-              },
-            },
-          });
-
-        const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
-        const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
-
-        return {
-          message: 'Insumo já existente atualizado',
-          supplyRealTime: {
-            ...recoverUpdatedSupplyData,
-            createdAt,
-            updatedAt,
-          },
-        };
+        throw new BadRequestException('Insumo já cadastrado');
       }
 
       const supplyRealTimeCreate = queryRunner.manager.create(
