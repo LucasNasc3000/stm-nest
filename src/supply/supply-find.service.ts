@@ -224,8 +224,8 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .andWhere('CAST(supply.price AS TEXT) LIKE :price', {
-        price: `${value}%`,
+      .andWhere('supply.price = :price', {
+        price: value,
       })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -255,8 +255,8 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .andWhere('CAST(supply.total_price AS TEXT) LIKE :totalPrice', {
-        totalPrice: `${value}%`,
+      .andWhere('supply.total_price = :totalPrice', {
+        totalPrice: value,
       })
       .orderBy('supply.id', 'DESC')
       .take(limit)
@@ -288,8 +288,8 @@ export class SupplyFindService {
     const query = this.QueryBuilderGenerator(supplyType);
 
     query
-      .andWhere('CAST(supply.weight_per_unit AS TEXT) LIKE :weightPerUnit', {
-        weightPerUnit: `${value}%`,
+      .andWhere('supply.weight_per_unit = :weightPerUnit', {
+        weightPerUnit: value,
       })
       .orderBy('supply.id', 'DESC')
       .take(limit)
