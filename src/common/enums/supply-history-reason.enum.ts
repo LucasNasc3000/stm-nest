@@ -5,4 +5,5 @@ export enum SupplyReason {
   DONATION = 'doacao', // Recebimento por doação
   TRANSFER = 'transferencia', // Transferência entre unidades
   LOSS_CORRECTION = 'correcao de perda', // Correção de perda registrada indevidamente
+  OTHER = 'outro',
 }

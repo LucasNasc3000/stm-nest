@@ -191,6 +191,14 @@ export class SupplyService {
         throw new NotFoundException('Insumo não encontrado');
       }
 
+      if (updateSupplyRealtimeDTO.quantity) {
+        await this.UpdateQuantity(
+          updateSupplyRealtimeDTO.quantity,
+          doesSupplyReallyExists,
+          queryRunner,
+        );
+      }
+
       const supplyUpdate = await queryRunner.manager.update(
         SupplyRealTime,
         doesSupplyReallyExists.id,
@@ -369,6 +377,34 @@ export class SupplyService {
       });
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  private async UpdateQuantity(
+    quantity: number,
+    supplyRealTime: SupplyRealTime,
+    queryRunner: QueryRunner,
+  ) {
+    const decimalTotalWeight = new Decimal(supplyRealTime.totalWeight);
+    const decimalWeightPerUnit = new Decimal(supplyRealTime.weightPerUnit);
+
+    const quantityWeight = decimalWeightPerUnit.mul(quantity);
+
+    const newTotalWeight = decimalTotalWeight.add(quantityWeight).toString();
+
+    const updateSupplyRealTime = await queryRunner.manager.update(
+      SupplyRealTime,
+      supplyRealTime.id,
+      {
+        totalWeight: newTotalWeight,
+        quantity,
+      },
+    );
+
+    if (!updateSupplyRealTime || updateSupplyRealTime.affected < 1) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao atualizar quantidade de insumo',
+      );
     }
   }
 }

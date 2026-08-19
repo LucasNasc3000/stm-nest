@@ -3,11 +3,11 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
   Length,
+  ValidateIf,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
@@ -50,6 +50,17 @@ export class UpdateSupplyRealtimeDTO {
   })
   readonly lowStock?: number;
 
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt({
+    message: 'campo "Quantidade" deve ser um número inteiro',
+  })
+  @IsPositive({
+    message: 'campo "Quantidade" deve ser maior que zero',
+  })
+  readonly quantity?: number;
+
+  @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'string') {
       return value.trim();
@@ -65,20 +76,16 @@ export class UpdateSupplyRealtimeDTO {
   @IsBoolean()
   readonly isActive?: boolean;
 
-  @IsNotEmpty({
-    message: 'campo "motivo" não preenchido',
-  })
+  @ValidateIf((o) => o.quantity > 0)
   @IsEnum(SupplyReason, {
     message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReason).join(', ')}`,
   })
-  readonly reason: SupplyReason;
+  readonly reason?: SupplyReason;
 
-  @IsNotEmpty({
-    message: 'campo "detalhes" deve ser preenchido',
-  })
+  @ValidateIf((o) => o.reason === SupplyReason.OTHER)
   @IsString()
   @Length(12, 600, {
     message: 'campo "detalhes" deve ter no máximo 600 caracteres',
   })
-  readonly details: string;
+  readonly details?: string;
 }
