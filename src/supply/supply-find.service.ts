@@ -445,6 +445,12 @@ export class SupplyFindService {
       });
 
     if (!supplyHistoryFindByTotalWeightPerRegister) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao buscar insumos',
+      );
+    }
+
+    if (supplyHistoryFindByTotalWeightPerRegister.length < 1) {
       throw new NotFoundException('Insumos não encontrados');
     }
 
@@ -480,6 +486,12 @@ export class SupplyFindService {
       });
 
     if (!supplyHistoryFindByTotalWeightPerRegister) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao buscar insumos',
+      );
+    }
+
+    if (supplyHistoryFindByTotalWeightPerRegister.length < 1) {
       throw new NotFoundException('Insumos não encontrados');
     }
 

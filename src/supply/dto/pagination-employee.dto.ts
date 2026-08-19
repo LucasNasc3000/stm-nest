@@ -36,7 +36,7 @@ export class PaginationByEmployeeDTO {
     message: 'campo "supplySearch" não preenchido',
   })
   @IsEnum(SupplySearch, {
-    message: 'Tipo de r;egistro inválido',
+    message: 'Tipo de registro inválido',
   })
   supplyType: SupplySearch;
 
