@@ -62,6 +62,14 @@ export class SupplyHistory {
   })
   totalWeightPerRegister: string;
 
+  @Column({
+    type: 'bigint',
+    generated: 'increment',
+    insert: false,
+    update: false,
+  })
+  seq: number;
+
   @ManyToOne(() => SupplyRealTime, (supply) => supply.supplyHistory, {
     onDelete: 'RESTRICT',
     nullable: false,

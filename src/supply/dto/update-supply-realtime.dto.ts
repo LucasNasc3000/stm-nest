@@ -1,8 +1,10 @@
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsDateString,
   IsEnum,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
@@ -39,6 +41,10 @@ export class UpdateSupplyRealtimeDTO {
     message: 'campo "fornecedor" deve ter no máximo 125 caracteres',
   })
   readonly supplier?: string;
+
+  @IsOptional()
+  @IsDateString()
+  readonly expirationDate?: string;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -83,7 +89,9 @@ export class UpdateSupplyRealtimeDTO {
   readonly reason?: SupplyReason;
 
   @ValidateIf((o) => o.reason === SupplyReason.OTHER)
-  @IsString()
+  @IsNotEmpty({
+    message: `Descreva quando o motivo for "outro"`,
+  })
   @Length(12, 600, {
     message: 'campo "detalhes" deve ter no máximo 600 caracteres',
   })

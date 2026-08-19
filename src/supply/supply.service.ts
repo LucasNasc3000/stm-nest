@@ -191,6 +191,23 @@ export class SupplyService {
         throw new NotFoundException('Insumo não encontrado');
       }
 
+      const findThisSupplyHistory = await queryRunner.manager.find(
+        SupplyHistory,
+        {
+          where: {
+            supplyRealTime: {
+              id,
+            },
+          },
+        },
+      );
+
+      if (findThisSupplyHistory.length < 1) {
+        throw new NotFoundException(
+          'Histórico do insumo não encontrado, não é possível editar',
+        );
+      }
+
       if (updateSupplyRealtimeDTO.quantity) {
         await this.UpdateQuantity(
           updateSupplyRealtimeDTO.quantity,
@@ -199,11 +216,14 @@ export class SupplyService {
         );
       }
 
+      const { reason, details, ...onlySupplyRealTimeData } =
+        updateSupplyRealtimeDTO;
+
       const supplyUpdate = await queryRunner.manager.update(
         SupplyRealTime,
         doesSupplyReallyExists.id,
         {
-          ...updateSupplyRealtimeDTO,
+          ...onlySupplyRealTimeData,
         },
       );
 
@@ -220,11 +240,23 @@ export class SupplyService {
           },
         });
 
+      const [lastInflow] = findThisSupplyHistory.map((i) => {
+        const allSeq = [i.seq];
+        return Math.max(...allSeq);
+      });
+
+      const [lastInflowData] = findThisSupplyHistory.map((i) => {
+        if (Number(i.seq) === lastInflow) return i;
+      });
+
       const supplyHistoryData = {
         ...recoverUpdatedSupplyDataTransaction,
-        reason: updateSupplyRealtimeDTO.reason,
-        details: updateSupplyRealtimeDTO.details,
+        reason,
+        details,
         totalWeightPerRegister: '00.00',
+        expirationDate:
+          updateSupplyRealtimeDTO.expirationDate ||
+          lastInflowData.expirationDate,
       };
 
       const supplyHistory = await this.SaveSupplyHistory(
