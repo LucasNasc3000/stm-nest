@@ -249,11 +249,12 @@ export class SupplyService {
         if (Number(i.seq) === lastInflow) return i;
       });
 
-      const supplyHistoryData = {
+      const supplyHistoryData: CreateSupplyHistoryDTO = {
         ...recoverUpdatedSupplyDataTransaction,
         reason,
         details,
         totalWeightPerRegister: '00.00',
+        supplyRealTime: doesSupplyReallyExists,
         expirationDate:
           updateSupplyRealtimeDTO.expirationDate ||
           lastInflowData.expirationDate,
@@ -356,10 +357,11 @@ export class SupplyService {
           },
         });
 
-      const supplyHistoryData = {
+      const supplyHistoryData: CreateSupplyHistoryDTO = {
         ...recoverUpdatedSupplyDataTransaction,
         reason: updatePriceSupplyRealtimeDTO.reason,
         details: updatePriceSupplyRealtimeDTO.details,
+        supplyRealTime: doesSupplyReallyExists,
         totalWeightPerRegister: '00.00',
       };
 

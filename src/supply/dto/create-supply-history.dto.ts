@@ -3,6 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
+import { SupplyRealTime } from '../entities/supply-realtime.entity';
 import { CreateSupplyDTO } from './create-supply.dto';
 
 export class CreateSupplyHistoryDTO extends PartialType(CreateSupplyDTO) {
@@ -37,4 +38,7 @@ export class CreateSupplyHistoryDTO extends PartialType(CreateSupplyDTO) {
       'O campo "peso total por registro" deve ser um string decimal ex: 59.99',
   })
   readonly totalWeightPerRegister: string;
+
+  @IsNotEmpty()
+  readonly supplyRealTime: SupplyRealTime;
 }
