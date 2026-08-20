@@ -269,6 +269,7 @@ export class SupplyService {
         createdAt,
         updatedAt,
         totalWeight,
+        quantity,
         ...extractedFromRecovery
       } = recoverUpdatedSupplyDataTransaction;
 
@@ -280,6 +281,7 @@ export class SupplyService {
 
       const supplyHistoryData: CreateSupplyHistoryDTO = {
         ...extractedFromRecovery,
+        quantity: updateSupplyRealtimeDTO.quantity,
         totalPrice,
         reason,
         details,

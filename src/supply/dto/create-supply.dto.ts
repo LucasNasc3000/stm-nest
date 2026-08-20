@@ -112,7 +112,6 @@ export class CreateSupplyDTO {
   readonly reason: SupplyReason;
 
   @ValidateIf((o) => o.reason !== SupplyReason.ENTRY)
-  @IsString()
   @Length(12, 600, {
     message: 'campo "detalhes" deve ter no máximo 600 caracteres',
   })
