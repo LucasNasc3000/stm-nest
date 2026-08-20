@@ -411,42 +411,12 @@ export class SupplyService {
         );
       }
 
-      const recoverUpdatedSupplyDataTransaction =
-        await queryRunner.manager.findOne(SupplyRealTime, {
-          where: {
-            id: doesSupplyReallyExists.id,
-          },
-        });
-
-      const {
-        id,
-        createdAt,
-        updatedAt,
-        totalWeight,
-        ...extractedFromRecovery
-      } = recoverUpdatedSupplyDataTransaction;
-
-      const supplyHistoryData: CreateSupplyHistoryDTO = {
-        ...extractedFromRecovery,
-        reason: updatePriceSupplyRealtimeDTO.reason,
-        details: updatePriceSupplyRealtimeDTO.details,
-        supplyRealTime: doesSupplyReallyExists,
-        totalWeightPerRegister: '00.00',
-        totalPrice: '00.00',
-        employee: findEmployee,
-      };
-
-      const supplyHistory = await this.SaveSupplyHistory(
-        supplyHistoryData,
-        queryRunner,
-      );
-
       await queryRunner.commitTransaction();
 
       const recoverUpdatedSupplyData =
         await this.supplyRealTimeRepository.findOne({
           where: {
-            id,
+            id: supplyId,
           },
           relations: {
             employee: true,
@@ -463,12 +433,9 @@ export class SupplyService {
       const formattedUpdatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
 
       return {
-        updatedSupplyRealTime: {
-          ...recoverUpdatedSupplyData,
-          formattedCreatedAt,
-          formattedUpdatedAt,
-        },
-        supplyHistory,
+        ...recoverUpdatedSupplyData,
+        formattedCreatedAt,
+        formattedUpdatedAt,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
