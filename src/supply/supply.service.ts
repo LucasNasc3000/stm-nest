@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   Injectable,
@@ -169,7 +170,11 @@ export class SupplyService {
     return newSupplyHistory;
   }
 
-  async Update(id: string, updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO) {
+  async Update(
+    tokenPayloadDTO: TokenPayloadDTO,
+    supplyId: string,
+    updateSupplyRealtimeDTO: UpdateSupplyRealtimeDTO,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -177,11 +182,21 @@ export class SupplyService {
     const updatesPerformed = [];
 
     try {
+      const findEmployee = await queryRunner.manager.findOne(Employee, {
+        where: {
+          id: tokenPayloadDTO.sub,
+        },
+      });
+
+      if (!findEmployee) {
+        throw new NotFoundException('Funcionário não encontrado');
+      }
+
       const doesSupplyReallyExists = await queryRunner.manager.findOne(
         SupplyRealTime,
         {
           where: {
-            id,
+            id: supplyId,
             isActive: true,
           },
         },
@@ -196,7 +211,7 @@ export class SupplyService {
         {
           where: {
             supplyRealTime: {
-              id,
+              id: supplyId,
             },
           },
         },
@@ -249,12 +264,28 @@ export class SupplyService {
         if (Number(i.seq) === lastInflow) return i;
       });
 
+      const {
+        id,
+        createdAt,
+        updatedAt,
+        totalWeight,
+        ...extractedFromRecovery
+      } = recoverUpdatedSupplyDataTransaction;
+
+      const decimalQuantity = new Decimal(updateSupplyRealtimeDTO.quantity);
+
+      const totalPrice = decimalQuantity
+        .mul(extractedFromRecovery.price)
+        .toString();
+
       const supplyHistoryData: CreateSupplyHistoryDTO = {
-        ...recoverUpdatedSupplyDataTransaction,
+        ...extractedFromRecovery,
+        totalPrice,
         reason,
         details,
-        totalWeightPerRegister: '00.00',
+        totalWeightPerRegister: totalWeight,
         supplyRealTime: doesSupplyReallyExists,
+        employee: findEmployee,
         expirationDate:
           updateSupplyRealtimeDTO.expirationDate ||
           lastInflowData.expirationDate,
@@ -283,8 +314,8 @@ export class SupplyService {
           },
         });
 
-      const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
-      const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+      const formattedCreatedAt = Formatter(recoverUpdatedSupplyData.createdAt);
+      const formattedUpdatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
 
       for (let i = 0; i < Object.keys(updateSupplyRealtimeDTO).length; i++) {
         updatesPerformed.push(Object.keys(updateSupplyRealtimeDTO));
@@ -293,8 +324,8 @@ export class SupplyService {
       return {
         updatedSupplyRealTime: {
           ...recoverUpdatedSupplyData,
-          createdAt,
-          updatedAt,
+          formattedCreatedAt,
+          formattedUpdatedAt,
         },
         updatedFields: updatesPerformed,
         supplyHistory,
@@ -314,7 +345,8 @@ export class SupplyService {
   }
 
   async UpdatePrice(
-    id: string,
+    tokenPayloadDTO: TokenPayloadDTO,
+    supplyId: string,
     updatePriceSupplyRealtimeDTO: UpdatePriceSupplyRealtimeDTO,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -322,11 +354,21 @@ export class SupplyService {
     await queryRunner.startTransaction();
 
     try {
+      const findEmployee = await queryRunner.manager.findOne(Employee, {
+        where: {
+          id: tokenPayloadDTO.sub,
+        },
+      });
+
+      if (!findEmployee) {
+        throw new NotFoundException('Funcionário não encontrado');
+      }
+
       const doesSupplyReallyExists = await queryRunner.manager.findOne(
         SupplyRealTime,
         {
           where: {
-            id,
+            id: supplyId,
             isActive: true,
           },
         },
@@ -357,12 +399,22 @@ export class SupplyService {
           },
         });
 
+      const {
+        id,
+        createdAt,
+        updatedAt,
+        totalWeight,
+        ...extractedFromRecovery
+      } = recoverUpdatedSupplyDataTransaction;
+
       const supplyHistoryData: CreateSupplyHistoryDTO = {
-        ...recoverUpdatedSupplyDataTransaction,
+        ...extractedFromRecovery,
         reason: updatePriceSupplyRealtimeDTO.reason,
         details: updatePriceSupplyRealtimeDTO.details,
         supplyRealTime: doesSupplyReallyExists,
         totalWeightPerRegister: '00.00',
+        totalPrice: '00.00',
+        employee: findEmployee,
       };
 
       const supplyHistory = await this.SaveSupplyHistory(
@@ -388,14 +440,14 @@ export class SupplyService {
           },
         });
 
-      const createdAt = Formatter(recoverUpdatedSupplyData.createdAt);
-      const updatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
+      const formattedCreatedAt = Formatter(recoverUpdatedSupplyData.createdAt);
+      const formattedUpdatedAt = Formatter(recoverUpdatedSupplyData.updatedAt);
 
       return {
         updatedSupplyRealTime: {
           ...recoverUpdatedSupplyData,
-          createdAt,
-          updatedAt,
+          formattedCreatedAt,
+          formattedUpdatedAt,
         },
         supplyHistory,
       };
@@ -419,12 +471,9 @@ export class SupplyService {
     supplyRealTime: SupplyRealTime,
     queryRunner: QueryRunner,
   ) {
-    const decimalTotalWeight = new Decimal(supplyRealTime.totalWeight);
     const decimalWeightPerUnit = new Decimal(supplyRealTime.weightPerUnit);
 
-    const quantityWeight = decimalWeightPerUnit.mul(quantity);
-
-    const newTotalWeight = decimalTotalWeight.add(quantityWeight).toString();
+    const newTotalWeight = decimalWeightPerUnit.mul(quantity).toString();
 
     const updateSupplyRealTime = await queryRunner.manager.update(
       SupplyRealTime,
