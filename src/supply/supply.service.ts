@@ -273,10 +273,27 @@ export class SupplyService {
         ...extractedFromRecovery
       } = recoverUpdatedSupplyDataTransaction;
 
-      const decimalQuantity = new Decimal(updateSupplyRealtimeDTO.quantity);
+      const quantityDifference = quantity - doesSupplyReallyExists.quantity;
+
+      const decimalQuantity = new Decimal(quantityDifference);
 
       const totalPrice = decimalQuantity
         .mul(extractedFromRecovery.price)
+        .toString();
+
+      const currentTotalWeight = new Decimal(
+        doesSupplyReallyExists.totalWeight,
+      );
+
+      const decimalWeightPerUnit = new Decimal(
+        doesSupplyReallyExists.weightPerUnit,
+      );
+
+      const totalWeightPerRegisterPre =
+        decimalWeightPerUnit.mul(quantityDifference);
+
+      const totalWeightPerRegister = currentTotalWeight
+        .sub(totalWeightPerRegisterPre)
         .toString();
 
       const supplyHistoryData: CreateSupplyHistoryDTO = {
@@ -285,7 +302,7 @@ export class SupplyService {
         totalPrice,
         reason,
         details,
-        totalWeightPerRegister: totalWeight,
+        totalWeightPerRegister,
         supplyRealTime: doesSupplyReallyExists,
         employee: findEmployee,
         expirationDate:
@@ -474,8 +491,13 @@ export class SupplyService {
     queryRunner: QueryRunner,
   ) {
     const decimalWeightPerUnit = new Decimal(supplyRealTime.weightPerUnit);
+    const currentTotalWeight = new Decimal(supplyRealTime.totalWeight);
 
-    const newTotalWeight = decimalWeightPerUnit.mul(quantity).toString();
+    const quantityDifference = quantity - supplyRealTime.quantity;
+
+    const subTotalWeight = decimalWeightPerUnit.mul(quantityDifference);
+
+    const newTotalWeight = currentTotalWeight.sub(subTotalWeight).toString();
 
     const updateSupplyRealTime = await queryRunner.manager.update(
       SupplyRealTime,
