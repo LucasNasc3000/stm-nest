@@ -464,7 +464,7 @@ export class SupplyService {
 
     const subTotalWeight = decimalWeightPerUnit.mul(quantityDifference);
 
-    const newTotalWeight = currentTotalWeight.sub(subTotalWeight).toString();
+    const newTotalWeight = currentTotalWeight.add(subTotalWeight).toString();
 
     const updateSupplyRealTime = await queryRunner.manager.update(
       SupplyRealTime,
