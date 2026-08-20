@@ -1,6 +1,12 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+  Length,
+  ValidateIf,
+} from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
@@ -22,9 +28,7 @@ export class CreateSupplyHistoryDTO extends PartialType(CreateSupplyDTO) {
   })
   readonly totalPrice: string;
 
-  @IsNotEmpty({
-    message: 'campo "motivo" não preenchido',
-  })
+  @ValidateIf((o) => o.quantity > 0)
   @IsEnum(SupplyReason, {
     message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReason).join(', ')}`,
   })

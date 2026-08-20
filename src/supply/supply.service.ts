@@ -298,7 +298,7 @@ export class SupplyService {
 
       const supplyHistoryData: CreateSupplyHistoryDTO = {
         ...extractedFromRecovery,
-        quantity: updateSupplyRealtimeDTO.quantity,
+        quantity: quantityDifference || quantity,
         totalPrice,
         reason,
         details,

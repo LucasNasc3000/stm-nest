@@ -88,7 +88,7 @@ export class UpdateSupplyRealtimeDTO {
   })
   readonly reason?: SupplyReason;
 
-  @ValidateIf((o) => o.reason === SupplyReason.OTHER)
+  @ValidateIf((o) => o.reason !== SupplyReason.ENTRY)
   @IsNotEmpty({
     message: `Descreva quando o motivo for "outro"`,
   })

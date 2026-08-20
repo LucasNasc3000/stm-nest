@@ -48,7 +48,7 @@ export class SupplyHistory {
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })
   totalPrice: string;
 
-  @Column({ type: 'enum', enum: SupplyReason })
+  @Column({ type: 'enum', enum: SupplyReason, nullable: true })
   reason: SupplyReason;
 
   @Column({ type: 'varchar', length: 600, nullable: true })
