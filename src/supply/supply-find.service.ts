@@ -18,7 +18,7 @@ import { PaginationBySupplierDTO } from './dto/pagination-supplier.dto';
 import { PaginationByTotalWeightDTO } from './dto/pagination-totalweight.dto';
 import { PaginationByWeightPerUnitDTO } from './dto/pagination-weightperunit.dto';
 import { SupplyHistoryResponse } from './dto/supply-history-response.dto';
-import { SupplyRealTimeResponse } from './dto/supply-realtime-response.dto copy';
+import { SupplyRealTimeResponse } from './dto/supply-realtime-response.dto';
 import { SupplyHistory } from './entities/supply-history.entity';
 import { SupplyRealTime } from './entities/supply-realtime.entity';
 

@@ -19,6 +19,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
 import { ErrorManagement } from 'src/utils/error.util';
+import { Formatter } from 'src/utils/format-timezone';
 import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import { AddProductIngredientDTO } from './dto/add-product-ingredient.dto';
 import { CreateProductWithRecipeDTO } from './dto/create-product-with-recipe.dto';
@@ -428,7 +429,10 @@ export class ProductService {
         },
       });
 
-      if (updateProductDTO.updateProductIngredient) {
+      if (
+        updateProductDTO.updateProductIngredient ||
+        updateProductDTO.addUnities
+      ) {
         const findProductIngredient = await queryRunner.manager.find(
           ProductIngredient,
           {
@@ -453,7 +457,9 @@ export class ProductService {
         }
 
         recipe.push(...findProductIngredient);
+      }
 
+      if (updateProductDTO.updateProductIngredient) {
         await this.UpdateProductIngredient(
           updateProductDTO.updateProductIngredient,
           queryRunner,
@@ -504,21 +510,28 @@ export class ProductService {
 
       await this.UpdateRegularData(findProduct, regularData, queryRunner);
 
-      for (let i = 0; i < Object.keys(updateProductDTO).length; i++) {
-        updatesPerformed.push(Object.keys(updateProductDTO));
-      }
-
       await queryRunner.commitTransaction();
 
-      const findUpdatedProduct = await this.productRepository.findOne({
+      const recoverUpdatedProduct = await this.productRepository.findOne({
         where: {
           id: productId,
         },
       });
 
+      const formattedCreatedAt = Formatter(recoverUpdatedProduct.createdAt);
+      const formattedUpdatedAt = Formatter(recoverUpdatedProduct.updatedAt);
+
+      for (let i = 0; i < Object.keys(updateProductDTO).length; i++) {
+        updatesPerformed.push(Object.keys(updateProductDTO));
+      }
+
       return {
+        updatedProduct: {
+          ...recoverUpdatedProduct,
+          formattedCreatedAt,
+          formattedUpdatedAt,
+        },
         updatedFields: updatesPerformed,
-        product: findUpdatedProduct,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -586,6 +599,7 @@ export class ProductService {
 
     // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
     if (useStockSupplies && addUnities > 0) {
+      console.log('CHEGOU AQUI');
       for (const ingredient of recipe) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
           SupplyRealTime,
@@ -652,6 +666,11 @@ export class ProductService {
             quantity: updatedQuantity,
           },
         );
+
+        console.log({
+          recipe,
+          supplyUpdate,
+        });
 
         if (!supplyUpdate || supplyUpdate.affected < 1) {
           throw new InternalServerErrorException(

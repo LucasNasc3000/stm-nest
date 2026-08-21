@@ -25,7 +25,9 @@ export class PaginationByWeightPerUnitDTO {
   @Type(() => Number)
   offset: number;
 
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Peso unitário não informado',
+  })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
       return value.trim();

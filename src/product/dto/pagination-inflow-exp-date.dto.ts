@@ -26,6 +26,11 @@ export class PaginationByInflowExpDateDTO {
   @IsNotEmpty({
     message: 'campo "data" não preenchido',
   })
-  @IsDateString()
+  @IsDateString(
+    {},
+    {
+      message: 'Formato de data inválido',
+    },
+  )
   value: string;
 }

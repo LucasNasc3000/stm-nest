@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, Length, Max, Min } from 'class-validator';
 
 export class PaginationByInflowProductDTO {
   @IsInt({
@@ -26,7 +26,6 @@ export class PaginationByInflowProductDTO {
   @IsNotEmpty({
     message: 'Nome do produto não fornecido',
   })
-  @IsString()
   @Length(0, 50, {
     message: 'O nome do produto deve ter no máximo 50 caracteres',
   })

@@ -24,7 +24,9 @@ export class PaginationByTotalWeightDTO {
   @Type(() => Number)
   offset: number;
 
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Peso total não informado',
+  })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
       return value.trim();
