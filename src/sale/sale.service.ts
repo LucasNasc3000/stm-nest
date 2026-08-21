@@ -300,7 +300,7 @@ export class SaleService {
 
         if (findSale.stockFullyReturned) {
           throw new BadRequestException(
-            'A venda já foi cancelada, não é possível atualizar seus dados',
+            'Produtos devolvidos ao estoque. Não é possível editar mais os dados da venda',
           );
         }
       }
