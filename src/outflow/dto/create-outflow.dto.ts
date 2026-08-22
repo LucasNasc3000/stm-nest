@@ -67,7 +67,8 @@ export class CreateOutflowDTO {
   @IsNotEmpty({
     message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
   })
-  @IsString()
-  @MaxLength(500)
+  @MaxLength(500, {
+    message: 'Os detalhes não devem passar dos 500 caracteres',
+  })
   readonly notes?: string;
 }

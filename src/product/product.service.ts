@@ -429,10 +429,12 @@ export class ProductService {
         },
       });
 
-      if (
-        updateProductDTO.updateProductIngredient ||
-        updateProductDTO.addUnities
-      ) {
+      const { addUnities, updateProductIngredient, useStockSupplies } =
+        updateProductDTO;
+
+      const needsRecipe = addUnities && useStockSupplies;
+
+      if (updateProductIngredient || needsRecipe) {
         const findProductIngredient = await queryRunner.manager.find(
           ProductIngredient,
           {

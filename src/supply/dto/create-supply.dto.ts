@@ -11,6 +11,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
+import { SupplyReasonCreate } from 'src/common/enums/supply-history-reason-create.enum';
 import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 
 export class CreateSupplyDTO {
@@ -103,15 +104,22 @@ export class CreateSupplyDTO {
   })
   readonly price: string;
 
+  // O tipo na propriedade continuou SupplyReason por conveniência.
+  // Para criar o regstro precisa ser SupplyReason, a única coisa que muda é
+  // o aviso que o front-end vai receber, indicando os motivos de SupplyReasonCreate em vez dos motivos
+  // de SupplyReason
   @IsNotEmpty({
     message: 'campo "motivo" não preenchido',
   })
-  @IsEnum(SupplyReason, {
-    message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReason).join(', ')}`,
+  @IsEnum(SupplyReasonCreate, {
+    message: `campo "motivo" deve ser uma das seguintes opções: ${Object.values(SupplyReasonCreate).join(', ')}`,
   })
   readonly reason: SupplyReason;
 
   @ValidateIf((o) => o.reason !== SupplyReason.ENTRY)
+  @IsNotEmpty({
+    message: `Descreva quando o motivo não for "entrada"`,
+  })
   @Length(12, 600, {
     message: 'campo "detalhes" deve ter no máximo 600 caracteres',
   })
