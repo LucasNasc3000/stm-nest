@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -73,6 +74,14 @@ export class CreateOutflowDTO {
     message: 'O campo quantidade deve ser um string decimal ex: 59.99',
   })
   readonly quantity?: string;
+
+  @IsNotEmpty({
+    message: 'Campo "unidade de insumo" não preenchido',
+  })
+  @IsBoolean({
+    message: 'O campo "unidade de insumo" deve ser booleano',
+  })
+  readonly isUnitForSupply?: boolean;
 
   @ValidateIf((o) => o.reason === OutflowReason.OTHER)
   @IsNotEmpty({

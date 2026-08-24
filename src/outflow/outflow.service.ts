@@ -255,9 +255,23 @@ export class OutflowService {
   }
 
   QuantityCheck(supply: SupplyRealTime, outflow: CreateOutflowDTO) {
+    const { quantity } = outflow;
+
+    const { weightPerUnit } = supply;
+
     const totalWeightDecimal = new Decimal(supply.totalWeight);
 
-    const updatedTotalWeight = totalWeightDecimal.sub(outflow.quantity);
+    let updatedTotalWeight: Decimal;
+
+    if (outflow.isUnitForSupply === true) {
+      const decimalWeightPerUnit = new Decimal(weightPerUnit);
+
+      const toSupplyDefaultUnit = decimalWeightPerUnit.mul(quantity);
+
+      updatedTotalWeight = totalWeightDecimal.sub(toSupplyDefaultUnit);
+    } else {
+      updatedTotalWeight = totalWeightDecimal.sub(quantity);
+    }
 
     if (updatedTotalWeight.lessThan(0)) {
       throw new BadRequestException(
@@ -266,7 +280,7 @@ export class OutflowService {
     }
 
     const updatedQuantity = Math.ceil(
-      updatedTotalWeight.div(supply.weightPerUnit).toNumber(),
+      updatedTotalWeight.div(weightPerUnit).toNumber(),
     );
 
     if (updatedQuantity === 0) {
