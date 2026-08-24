@@ -223,7 +223,7 @@ export class OutflowService {
         category: createOutflowDTO.category,
         reason: createOutflowDTO.reason,
         notes: createOutflowDTO.notes || null,
-        unities: createOutflowDTO.unities,
+        quantity: createOutflowDTO.quantity,
         employee: doesEmployeeReallyExists,
         supplyRealTime: doesSupplyReallyExists,
       };
@@ -257,7 +257,7 @@ export class OutflowService {
   QuantityCheck(supply: SupplyRealTime, outflow: CreateOutflowDTO) {
     const totalWeightDecimal = new Decimal(supply.totalWeight);
 
-    const updatedTotalWeight = totalWeightDecimal.sub(outflow.unities);
+    const updatedTotalWeight = totalWeightDecimal.sub(outflow.quantity);
 
     if (updatedTotalWeight.lessThan(0)) {
       throw new BadRequestException(

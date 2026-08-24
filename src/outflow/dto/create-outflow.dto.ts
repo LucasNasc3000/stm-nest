@@ -9,6 +9,7 @@ import {
   MaxLength,
   ValidateIf,
 } from 'class-validator';
+import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 
@@ -51,9 +52,7 @@ export class CreateOutflowDTO {
   })
   readonly reason: OutflowReason;
 
-  @IsNotEmpty({
-    message: 'campo "unidades" não preenchido',
-  })
+  @ValidateIf((o) => o.targetType === OutflowType.PRODUCT)
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "unidades" deve ser um número inteiro',
@@ -61,7 +60,19 @@ export class CreateOutflowDTO {
   @IsPositive({
     message: 'campo "unidades" deve ser maior que zero',
   })
-  readonly unities: number;
+  readonly unities?: number;
+
+  @ValidateIf((o) => o.targetType === OutflowType.SUPPLY)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
+  })
+  @IsDecimalString({
+    message: 'O campo quantidade deve ser um string decimal ex: 59.99',
+  })
+  readonly quantity?: string;
 
   @ValidateIf((o) => o.reason === OutflowReason.OTHER)
   @IsNotEmpty({

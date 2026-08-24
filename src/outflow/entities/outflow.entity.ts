@@ -36,8 +36,11 @@ export class Outflow {
   @Column({ type: 'varchar', length: 500, nullable: true })
   notes: string;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true })
   unities: number;
+
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
+  quantity: string;
 
   @ManyToOne(() => Employee, (employee) => employee.outflows, {
     onDelete: 'RESTRICT',
