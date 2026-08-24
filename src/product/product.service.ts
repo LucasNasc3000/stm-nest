@@ -703,9 +703,7 @@ export class ProductService {
       productUnities -= takeUnities;
 
       if (productUnities < 0) {
-        throw new BadRequestException(
-          'A quantidade do produto em estoque não pode ser negativa',
-        );
+        throw new BadRequestException('Unidades insuficientes em estoque');
       }
 
       if (productUnities === 0) {
