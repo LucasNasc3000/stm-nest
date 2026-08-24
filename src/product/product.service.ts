@@ -349,7 +349,7 @@ export class ProductService {
           name: doesSupplyReallyExists.name,
           category: doesSupplyReallyExists.category,
           reason: OutflowReason.PRODUCT_REGISTER,
-          unities: supply.quantity,
+          quantity: supply.quantity,
           employee: doesEmployeeReallyExists,
           supplyRealTime: doesSupplyReallyExists,
           targetType: OutflowType.SUPPLY,
@@ -601,7 +601,6 @@ export class ProductService {
 
     // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
     if (useStockSupplies && addUnities > 0) {
-      console.log('CHEGOU AQUI');
       for (const ingredient of recipe) {
         const doesSupplyReallyExists = await queryRunner.manager.findOne(
           SupplyRealTime,
@@ -624,7 +623,11 @@ export class ProductService {
           doesSupplyReallyExists.totalWeight,
         );
 
-        const updatedQuantityByAddUnities = ingredient.quantity * addUnities;
+        const decimalIngredientQuantity = new Decimal(ingredient.quantity);
+
+        const updatedQuantityByAddUnities = decimalIngredientQuantity
+          .mul(addUnities)
+          .toString();
 
         const newTotalWeight = totalWeightDecimal.sub(
           updatedQuantityByAddUnities,
@@ -669,11 +672,6 @@ export class ProductService {
           },
         );
 
-        console.log({
-          recipe,
-          supplyUpdate,
-        });
-
         if (!supplyUpdate || supplyUpdate.affected < 1) {
           throw new InternalServerErrorException(
             `Erro ao atualizar insumo ${doesSupplyReallyExists.name} para a receita do produto`,
@@ -686,7 +684,7 @@ export class ProductService {
           category: doesSupplyReallyExists.category,
           reason: OutflowReason.PRODUCT_REGISTER,
           notes: updateProductUnitiesDTO.notes || null,
-          unities: updatedQuantityByAddUnities,
+          quantity: updatedQuantityByAddUnities,
           employee,
           supplyRealTime: doesSupplyReallyExists,
           product,
@@ -862,7 +860,7 @@ export class ProductService {
         continue;
       }
 
-      if (ingredient.quantity > 0) {
+      if (ingredient.quantity) {
         if (findIngredient.isActive !== true) {
           throw new BadRequestException(
             `Não é possível atualizar o ingrediente ${ingredient.id}, está inativo`,

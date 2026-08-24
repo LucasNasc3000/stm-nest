@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsDecimalString } from 'src/common/decoratos/decimal-string.decorator';
 
 export class CreateProductIngredientDTO {
   @IsNotEmpty({
@@ -11,14 +12,16 @@ export class CreateProductIngredientDTO {
   supplyId: string;
 
   @IsNotEmpty({
-    message: 'campo "quantidade" não preenchido',
+    message: 'Campo "quantidade" não preenchido',
   })
-  @Transform(({ value }) => parseInt(value, 10))
-  @IsInt({
-    message: 'campo "quantidade" deve ser um número inteiro',
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   })
-  @IsPositive({
-    message: 'campo "quantidade" deve ser maior que zero',
+  @IsDecimalString({
+    message: 'O campo preco deve ser um string decimal ex: 59.99',
   })
-  readonly quantity: number;
+  readonly quantity: string;
 }

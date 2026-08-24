@@ -18,7 +18,7 @@ export class CreateSupplyHistoryDTO extends PartialType(CreateSupplyDTO) {
     return value;
   })
   @IsDecimalString({
-    message: 'O campo preco deve ser um string decima ex: 59.99',
+    message: 'O campo preco deve ser um string decimal ex: 59.99',
   })
   readonly totalPrice: string;
 
