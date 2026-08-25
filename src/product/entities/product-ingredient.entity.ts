@@ -38,7 +38,7 @@ export class ProductIngredient {
   @OneToMany(() => Outflow, (outflow) => outflow.ingredient)
   outflows: Outflow[];
 
-  @Column({ type: 'numeric', precision: 10, scale: 2 })
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
   quantity: string;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })
