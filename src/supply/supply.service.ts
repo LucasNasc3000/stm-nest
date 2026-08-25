@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import Decimal from 'decimal.js';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
+import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { ErrorManagement } from 'src/utils/error.util';
@@ -180,6 +181,7 @@ export class SupplyService {
     await queryRunner.startTransaction();
 
     const updatesPerformed = [];
+    let supplyHistory: SupplyHistory;
 
     try {
       const findEmployee = await queryRunner.manager.findOne(Employee, {
@@ -248,79 +250,90 @@ export class SupplyService {
         );
       }
 
-      const recoverUpdatedSupplyDataTransaction =
-        await queryRunner.manager.findOne(SupplyRealTime, {
-          where: {
-            id: doesSupplyReallyExists.id,
-          },
+      if (
+        updateSupplyRealtimeDTO.quantity ||
+        updateSupplyRealtimeDTO.weightPerUnit ||
+        updateSupplyRealtimeDTO.expirationDate
+      ) {
+        const recoverUpdatedSupplyDataTransaction =
+          await queryRunner.manager.findOne(SupplyRealTime, {
+            where: {
+              id: doesSupplyReallyExists.id,
+            },
+          });
+
+        const [lastInflow] = findThisSupplyHistory.map((i) => {
+          const allSeq = [i.seq];
+          return Math.max(...allSeq);
         });
 
-      const [lastInflow] = findThisSupplyHistory.map((i) => {
-        const allSeq = [i.seq];
-        return Math.max(...allSeq);
-      });
+        const [lastInflowData] = findThisSupplyHistory.map((i) => {
+          if (Number(i.seq) === lastInflow) return i;
+        });
 
-      const [lastInflowData] = findThisSupplyHistory.map((i) => {
-        if (Number(i.seq) === lastInflow) return i;
-      });
+        const {
+          id,
+          createdAt,
+          updatedAt,
+          totalWeight,
+          quantity,
+          ...extractedFromRecovery
+        } = recoverUpdatedSupplyDataTransaction;
 
-      const {
-        id,
-        createdAt,
-        updatedAt,
-        totalWeight,
-        quantity,
-        ...extractedFromRecovery
-      } = recoverUpdatedSupplyDataTransaction;
+        const quantityDifference = quantity - doesSupplyReallyExists.quantity;
 
-      const quantityDifference = quantity - doesSupplyReallyExists.quantity;
+        const decimalQuantity = new Decimal(quantityDifference);
 
-      const decimalQuantity = new Decimal(quantityDifference);
+        const totalPrice = decimalQuantity
+          .mul(extractedFromRecovery.price)
+          .toString();
 
-      const totalPrice = decimalQuantity
-        .mul(extractedFromRecovery.price)
-        .toString();
+        const currentTotalWeight = new Decimal(
+          doesSupplyReallyExists.totalWeight,
+        );
 
-      const currentTotalWeight = new Decimal(
-        doesSupplyReallyExists.totalWeight,
-      );
+        const decimalWeightPerUnit = new Decimal(
+          doesSupplyReallyExists.weightPerUnit,
+        );
 
-      const decimalWeightPerUnit = new Decimal(
-        doesSupplyReallyExists.weightPerUnit,
-      );
+        const totalWeightPerRegister = decimalWeightPerUnit
+          .mul(quantityDifference)
+          .toString();
 
-      const totalWeightPerRegisterPre =
-        decimalWeightPerUnit.mul(quantityDifference);
+        let automaticReason: SupplyReason;
 
-      const totalWeightPerRegister = currentTotalWeight
-        .sub(totalWeightPerRegisterPre)
-        .toString();
+        if (updateSupplyRealtimeDTO.weightPerUnit) {
+          automaticReason = SupplyReason.WEIGHT_PER_UNIT_EDIT;
+        } else if (updateSupplyRealtimeDTO.expirationDate) {
+          automaticReason = SupplyReason.EXPIRATION_DATE_EDIT;
+        }
 
-      const supplyHistoryData: CreateSupplyHistoryDTO = {
-        ...extractedFromRecovery,
-        quantity: quantityDifference || quantity,
-        totalPrice,
-        reason,
-        details,
-        totalWeightPerRegister,
-        supplyRealTime: doesSupplyReallyExists,
-        employee: findEmployee,
-        expirationDate:
-          updateSupplyRealtimeDTO.expirationDate ||
-          lastInflowData.expirationDate,
-      };
+        const supplyHistoryData: CreateSupplyHistoryDTO = {
+          ...extractedFromRecovery,
+          quantity: quantityDifference || quantity,
+          totalPrice,
+          reason: reason || automaticReason,
+          details,
+          totalWeightPerRegister,
+          supplyRealTime: doesSupplyReallyExists,
+          employee: findEmployee,
+          expirationDate:
+            updateSupplyRealtimeDTO.expirationDate ||
+            lastInflowData.expirationDate,
+        };
 
-      const supplyHistory = await this.SaveSupplyHistory(
-        supplyHistoryData,
-        queryRunner,
-      );
+        supplyHistory = await this.SaveSupplyHistory(
+          supplyHistoryData,
+          queryRunner,
+        );
+      }
 
       await queryRunner.commitTransaction();
 
       const recoverUpdatedSupplyData =
         await this.supplyRealTimeRepository.findOne({
           where: {
-            id,
+            id: supplyId,
           },
           relations: {
             employee: true,

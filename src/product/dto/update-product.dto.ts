@@ -54,7 +54,12 @@ export class UpdateProductDTO {
   readonly disableProduct?: boolean;
 
   @IsOptional()
-  @IsDateString()
+  @IsDateString(
+    {},
+    {
+      message: 'Formato de data inválido',
+    },
+  )
   readonly expirationDate?: string;
 
   @ValidateIf((o) => o.addUnities > 0)

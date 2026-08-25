@@ -72,6 +72,11 @@ export class CreateProductWithoutRecipeDTO {
   @IsNotEmpty({
     message: 'campo "validade" não preenchido',
   })
-  @IsDateString()
+  @IsDateString(
+    {},
+    {
+      message: 'Formato de data inválido',
+    },
+  )
   readonly expirationDate: string;
 }

@@ -77,7 +77,12 @@ export class CreateSupplyDTO {
   @IsNotEmpty({
     message: 'campo "validade" não preenchido',
   })
-  @IsDateString()
+  @IsDateString(
+    {},
+    {
+      message: 'Formato de data inválido',
+    },
+  )
   readonly expirationDate: string;
 
   @IsOptional()

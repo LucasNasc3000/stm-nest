@@ -43,7 +43,12 @@ export class UpdateSupplyRealtimeDTO {
   readonly supplier?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsDateString(
+    {},
+    {
+      message: 'Formato de data inválido',
+    },
+  )
   readonly expirationDate?: string;
 
   @IsOptional()
@@ -90,7 +95,7 @@ export class UpdateSupplyRealtimeDTO {
 
   @ValidateIf((o) => o.reason && o.reason !== SupplyReason.ENTRY)
   @IsNotEmpty({
-    message: `Descreva quando o motivo for "outro"`,
+    message: `Descreva quando o motivo não for "entrada"`,
   })
   @Length(12, 600, {
     message: 'campo "detalhes" deve ter no máximo 600 caracteres',

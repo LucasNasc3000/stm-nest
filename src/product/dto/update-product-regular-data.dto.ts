@@ -28,7 +28,12 @@ export class UpdateProductRegularDataDTO {
   readonly category?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsDateString(
+    {},
+    {
+      message: 'Formato de data inválido',
+    },
+  )
   readonly expirationDate?: string;
 
   @IsOptional()
