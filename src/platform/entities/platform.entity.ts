@@ -13,7 +13,7 @@ export class Platform {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true })
+  @Column({ type: 'varchar', length: 50 })
   name: string;
 
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'tax_percentage' })
