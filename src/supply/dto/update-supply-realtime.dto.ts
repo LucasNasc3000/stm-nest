@@ -56,9 +56,6 @@ export class UpdateSupplyRealtimeDTO {
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
   })
-  @IsPositive({
-    message: 'campo "Quantidade mínima" deve ser maior que zero',
-  })
   readonly lowStock?: number;
 
   @IsOptional()

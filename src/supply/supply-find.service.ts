@@ -462,28 +462,20 @@ export class SupplyFindService {
   }
 
   async FindByExpirationDate(paginationByExpDateDTO: PaginationByExpDateDTO) {
-    const { limit, offset, value } = paginationByExpDateDTO;
+    const { limit, offset, value, supplyType } = paginationByExpDateDTO;
+
+    const query = this.QueryBuilderGenerator(supplyType);
+
+    query
+      .andWhere('supply.expiration_date = :expiration_date', {
+        expiration_date: value,
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
 
     const [supplyHistoryFindByTotalWeightPerRegister, total] =
-      await this.supplyHistoryRepository.findAndCount({
-        take: limit,
-        skip: offset,
-        order: {
-          id: 'desc',
-        },
-        where: {
-          expirationDate: value,
-        },
-        relations: {
-          employee: true,
-        },
-        select: {
-          employee: {
-            id: true,
-            email: true,
-          },
-        },
-      });
+      await query.getManyAndCount();
 
     if (!supplyHistoryFindByTotalWeightPerRegister) {
       throw new InternalServerErrorException(

@@ -236,6 +236,10 @@ export class SupplyService {
       const { reason, details, ...onlySupplyRealTimeData } =
         updateSupplyRealtimeDTO;
 
+      if (onlySupplyRealTimeData.lowStock === 0) {
+        onlySupplyRealTimeData.lowStock = null;
+      }
+
       const supplyUpdate = await queryRunner.manager.update(
         SupplyRealTime,
         doesSupplyReallyExists.id,
