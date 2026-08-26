@@ -304,8 +304,6 @@ export class SupplyService {
 
         if (updateSupplyRealtimeDTO.weightPerUnit) {
           automaticReason = SupplyReason.WEIGHT_PER_UNIT_EDIT;
-        } else if (updateSupplyRealtimeDTO.expirationDate) {
-          automaticReason = SupplyReason.EXPIRATION_DATE_EDIT;
         }
 
         const supplyHistoryData: CreateSupplyHistoryDTO = {

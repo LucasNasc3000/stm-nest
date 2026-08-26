@@ -93,7 +93,12 @@ export class UpdateSupplyRealtimeDTO {
   })
   readonly reason?: SupplyReason;
 
-  @ValidateIf((o) => o.reason && o.reason !== SupplyReason.ENTRY)
+  @ValidateIf(
+    (o) =>
+      o.reason &&
+      o.reason !== SupplyReason.ENTRY &&
+      o.reason !== SupplyReason.EXPIRATION_DATE_EDIT,
+  )
   @IsNotEmpty({
     message: `Descreva quando o motivo não for "entrada"`,
   })
