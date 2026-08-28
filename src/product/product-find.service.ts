@@ -16,6 +16,7 @@ import { PaginationByInflowProductDTO } from './dto/pagination-inflow-product.dt
 import { PaginationByIngredientDTO } from './dto/pagination-ingredient.dto';
 import { PaginationByNameDTO } from './dto/pagination-name.dto';
 import { PaginationByPriceDTO } from './dto/pagination-price.dto';
+import { ProductInflowResponse } from './dto/product-inflow-response.dto';
 import { ProductResponse } from './dto/product-response.dto';
 import { ProductInflow } from './entities/product-inflow.entity';
 import { ProductIngredient } from './entities/product-ingredient.entity';
@@ -89,6 +90,14 @@ export class ProductFindService {
       ...product,
       createdAt: Formatter(product.createdAt),
       updatedAt: Formatter(product.updatedAt),
+    }));
+  }
+
+  FormatterForSearchOnlyProductInflows(productInflowsFound: ProductInflow[]) {
+    return productInflowsFound.map((inflow) => ({
+      ...inflow,
+      createdAt: Formatter(inflow.createdAt),
+      updatedAt: Formatter(inflow.updatedAt),
     }));
   }
 
@@ -319,7 +328,7 @@ export class ProductFindService {
 
   async FindInflowByEmployee(
     paginationByInflowDto: PaginationByInflowEmployeeDTO,
-  ): Promise<[number, ProductInflow[]]> {
+  ): Promise<[number, ProductInflowResponse[]]> {
     const { limit, offset, email, id, forDisplay } = paginationByInflowDto;
 
     const conditionalWhere = email ? { email: email } : { id: id };
@@ -360,7 +369,10 @@ export class ProductFindService {
       throw new NotFoundException('Registros de produtos não encontrados');
     }
 
-    return [total, inflowFindByEmployee];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearchOnlyProductInflows(inflowFindByEmployee);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindInflowByProduct(
