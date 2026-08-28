@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { IsEmail } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
@@ -32,6 +33,7 @@ export class Employee {
   name: string;
 
   @Column({ type: 'varchar', length: 255 })
+  @Exclude()
   password_hash: string;
 
   @ManyToOne(() => Role, (role) => role.employees, {

@@ -13,11 +13,11 @@ import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
-import { Resource } from 'src/common/enums/permissions.enum';
+import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
 import { ErrorManagement } from 'src/utils/error.util';
-import { DataSource, Like, QueryRunner, Repository } from 'typeorm';
+import { DataSource, ILike, QueryRunner, Repository } from 'typeorm';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
 import { PaginationByBossDTO } from './dto/pagination-employee-boss.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
@@ -170,6 +170,18 @@ export class EmployeeService {
       where: {
         id,
       },
+      relations: {
+        boss: true,
+        role: {
+          permissions: true,
+        },
+      },
+      select: {
+        boss: {
+          id: true,
+          email: true,
+        },
+      },
     });
 
     if (!findEmployeeById) {
@@ -314,6 +326,10 @@ export class EmployeeService {
     const findAdminRole = await queryRunner.manager.findOne(Role, {
       where: {
         name: 'admin',
+        permissions: {
+          action: Action.UPDATE,
+          resource: Resource.EMPLOYEES,
+        },
       },
     });
 
@@ -336,6 +352,10 @@ export class EmployeeService {
     const findAdminRole = await queryRunnerSub.manager.findOne(Role, {
       where: {
         name: 'admin',
+        permissions: {
+          action: Action.UPDATE,
+          resource: Resource.EMPLOYEES,
+        },
       },
     });
 
@@ -446,7 +466,7 @@ export class EmployeeService {
           id: 'desc',
         },
         where: {
-          name: Like(`${value}%`),
+          name: ILike(`${value}%`),
           situation: EmployeeSituation.EMPLOYED,
         },
       });

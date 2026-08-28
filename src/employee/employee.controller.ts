@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpStatus,
@@ -9,6 +10,7 @@ import {
   Query,
   Res,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
@@ -28,6 +30,7 @@ import { UpdateEmployeeAdminDTO } from './dto/update-employee-admin.dto';
 import { UpdateEmployeeDTO } from './dto/update-employee.dto';
 import { EmployeeService } from './employee.service';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(RoutePolicyGuard)
 @Controller('employees')
 export class EmployeeController {
@@ -95,7 +98,7 @@ export class EmployeeController {
   @Get('search/boss/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   async FindByBoss(
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
     @Query() paginationByBossDto: PaginationByBossDTO,
   ) {
     const findByBoss =
@@ -105,14 +108,16 @@ export class EmployeeController {
       return res.status(204).send('Nenhum funcionário cadastrado ainda');
     }
 
-    return res.status(HttpStatus.OK).json(findByBoss);
+    res.status(HttpStatus.OK);
+
+    return findByBoss;
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('exemployees')
+  @Get('search/exemployees')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   async ListExEmployees(
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
     @Query() paginationExEmployeesDTO: PaginationExEmployeesDTO,
   ) {
     const exEmployees = await this.employeesService.FindExEmployees(
@@ -120,9 +125,11 @@ export class EmployeeController {
     );
 
     if (exEmployees.length < 1) {
-      return res.status(HttpStatus.NO_CONTENT).send('Não há ex-funcionários');
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(exEmployees);
+    res.status(HttpStatus.OK);
+
+    return exEmployees;
   }
 }
