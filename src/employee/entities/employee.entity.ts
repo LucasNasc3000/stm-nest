@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { IsEmail } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
@@ -39,6 +39,7 @@ export class Employee {
   @ManyToOne(() => Role, (role) => role.employees, {
     onDelete: 'RESTRICT',
   })
+  @Type(() => Role)
   role: Role;
 
   @Column({
@@ -53,30 +54,39 @@ export class Employee {
     nullable: true,
   })
   @JoinColumn({ name: 'boss' })
+  @Type(() => Employee)
   boss?: Employee;
 
   @OneToMany(() => Employee, (employee) => employee.boss)
+  @Type(() => Employee)
   subordinates: Employee[];
 
   @OneToMany(() => SupplyRealTime, (supply) => supply.employee)
+  @Type(() => SupplyHistory)
   supplies: SupplyRealTime[];
 
   @OneToMany(() => SupplyHistory, (supply) => supply.employee)
+  @Type(() => SupplyHistory)
   suppliesHistory: SupplyHistory[];
 
   @OneToMany(() => Outflow, (outflow) => outflow.employee)
+  @Type(() => Outflow)
   outflows: Outflow[];
 
   @OneToMany(() => Sale, (sale) => sale.employee)
+  @Type(() => Sale)
   sales: Sale[];
 
   @OneToMany(() => ProductIngredient, (ingredient) => ingredient.employee)
+  @Type(() => ProductIngredient)
   productIngredient: ProductIngredient[];
 
   @OneToMany(() => Platform, (platform) => platform.employee)
+  @Type(() => Platform)
   platforms: Platform[];
 
   @OneToMany(() => RefreshTokenEmployee, (token) => token.employee)
+  @Type(() => RefreshTokenEmployee)
   refresh_tokens: RefreshTokenEmployee[];
 
   @CreateDateColumn({ name: 'created_at' })

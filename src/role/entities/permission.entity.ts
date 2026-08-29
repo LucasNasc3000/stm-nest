@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import {
   Column,
@@ -21,5 +22,6 @@ export class Permission {
   resource: Resource;
 
   @ManyToMany(() => Role, (role) => role.permissions)
+  @Type(() => Role)
   roles: Role[];
 }

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsEmail, IsString } from 'class-validator';
 import { Employee } from 'src/employee/entities/employee.entity';
 
@@ -24,6 +25,7 @@ export class LogEmployee {
   name: string;
 
   @ManyToOne(() => Employee, { onDelete: 'RESTRICT' })
+  @Type(() => Employee)
   employee: Employee;
 
   @CreateDateColumn()

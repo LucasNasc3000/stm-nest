@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
@@ -50,9 +51,11 @@ export class ProductInflow {
   @ManyToOne(() => Product, (product) => product.inflows, {
     onDelete: 'RESTRICT',
   })
+  @Type(() => Product)
   product: Product;
 
   @ManyToOne(() => Employee, { onDelete: 'RESTRICT', nullable: true })
+  @Type(() => Employee)
   employee: Employee;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })

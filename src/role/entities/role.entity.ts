@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   Column,
   Entity,
@@ -21,8 +22,10 @@ export class Role {
     cascade: true,
   })
   @JoinTable()
+  @Type(() => Permission)
   permissions: Permission[];
 
   @OneToMany(() => Employee, (employee) => employee.role)
+  @Type(() => Employee)
   employees: Employee[];
 }

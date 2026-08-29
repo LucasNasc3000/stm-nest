@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
@@ -40,6 +41,7 @@ export class Product {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @OneToMany(() => ProductIngredient, (recipe) => recipe.product)

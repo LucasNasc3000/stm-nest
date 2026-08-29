@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { SupplyRealTime } from 'src/supply/entities/supply-realtime.entity';
@@ -21,21 +22,25 @@ export class ProductIngredient {
     onDelete: 'RESTRICT',
     nullable: false,
   })
+  @Type(() => SupplyRealTime)
   supplyRealTime: SupplyRealTime;
 
   @ManyToOne(() => Product, (product) => product.recipe, {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Product)
   product: Product;
 
   @ManyToOne(() => Employee, (employee) => employee.productIngredient, {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @OneToMany(() => Outflow, (outflow) => outflow.ingredient)
+  @Type(() => Outflow)
   outflows: Outflow[];
 
   @Column({ type: 'numeric', precision: 10, scale: 2 })

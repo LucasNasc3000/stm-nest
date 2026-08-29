@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { SupplyReason } from 'src/common/enums/supply-history-reason.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
@@ -37,6 +38,7 @@ export class SupplyHistory {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
@@ -74,6 +76,7 @@ export class SupplyHistory {
     onDelete: 'RESTRICT',
     nullable: false,
   })
+  @Type(() => SupplyRealTime)
   supplyRealTime: SupplyRealTime;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })

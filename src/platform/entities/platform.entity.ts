@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
   Column,
@@ -23,8 +24,10 @@ export class Platform {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @OneToMany(() => Sale, (sale) => sale.platform)
+  @Type(() => Sale)
   sales: Sale[];
 }

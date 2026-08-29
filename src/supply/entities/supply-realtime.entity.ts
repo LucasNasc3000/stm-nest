@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { ProductIngredient } from 'src/product/entities/product-ingredient.entity';
@@ -41,6 +42,7 @@ export class SupplyRealTime {
   @ManyToOne(() => Employee, (employee) => employee.supplies, {
     onDelete: 'RESTRICT',
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
@@ -56,12 +58,15 @@ export class SupplyRealTime {
   isActive: boolean;
 
   @OneToMany(() => SupplyHistory, (supply) => supply.supplyRealTime)
+  @Type(() => SupplyHistory)
   supplyHistory: SupplyHistory[];
 
   @OneToMany(() => Outflow, (outflow) => outflow.supplyRealTime)
+  @Type(() => Outflow)
   outflows: Outflow[];
 
   @OneToMany(() => ProductIngredient, (recipe) => recipe.supplyRealTime)
+  @Type(() => ProductIngredient)
   recipes: ProductIngredient[];
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })

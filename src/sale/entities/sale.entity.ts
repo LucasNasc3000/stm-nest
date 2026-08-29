@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsEmail } from 'class-validator';
 import { SaleReason } from 'src/common/enums/sale-reason.enum';
 import { SaleStatus } from 'src/common/enums/sale-status.enum';
@@ -33,18 +34,21 @@ export class Sale {
   address: string;
 
   @OneToMany(() => SaleItems, (saleItems) => saleItems.sale)
+  @Type(() => SaleItems)
   saleItems: SaleItems[];
 
   @ManyToOne(() => Employee, (employee) => employee.outflows, {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @ManyToOne(() => Platform, (platform) => platform.sales, {
     onDelete: 'SET NULL',
     nullable: true,
   })
+  @Type(() => Platform)
   platform: Platform;
 
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_price' })

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Employee } from 'src/employee/entities/employee.entity';
 import {
   Column,
@@ -26,6 +27,7 @@ export class RefreshTokenEmployee {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'employee_id' })
+  @Type(() => Employee)
   employee: Employee;
 
   @CreateDateColumn()

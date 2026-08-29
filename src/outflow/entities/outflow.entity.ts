@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { OutflowReason } from 'src/common/enums/outflow-reason.enum';
 import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Employee } from 'src/employee/entities/employee.entity';
@@ -46,6 +47,7 @@ export class Outflow {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Employee)
   employee: Employee;
 
   @ManyToOne(
@@ -56,18 +58,21 @@ export class Outflow {
       nullable: true,
     },
   )
+  @Type(() => SupplyRealTime)
   supplyRealTime: SupplyRealTime;
 
   @ManyToOne(() => ProductIngredient, (ingredient) => ingredient.outflows, {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => ProductIngredient)
   ingredient: ProductIngredient;
 
   @ManyToOne(() => Product, (product) => product.outflows, {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Product)
   product: Product;
 
   @OneToOne(() => SaleItems, (saleItem) => saleItem.outflow, {
@@ -75,6 +80,7 @@ export class Outflow {
     nullable: true,
   })
   @JoinColumn()
+  @Type(() => SaleItems)
   saleItem: SaleItems;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })

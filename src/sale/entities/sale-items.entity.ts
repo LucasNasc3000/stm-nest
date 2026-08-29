@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import {
   Column,
@@ -26,15 +27,18 @@ export class SaleItems {
     onDelete: 'RESTRICT',
     nullable: true,
   })
+  @Type(() => Product)
   product: Product;
 
   @ManyToOne(() => Sale, (sale) => sale.saleItems, {
     onDelete: 'RESTRICT',
     nullable: false,
   })
+  @Type(() => Sale)
   sale: Sale;
 
   @OneToOne(() => Outflow, (outflow) => outflow.saleItem, { nullable: true })
+  @Type(() => Outflow)
   outflow: Outflow;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
