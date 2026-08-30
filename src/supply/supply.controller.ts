@@ -107,19 +107,19 @@ export class SupplyController {
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   async FindByName(
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
     @Query() paginationByNameDto: PaginationByNameDTO,
   ) {
     const findSupplies =
       await this.supplyFindService.FindByName(paginationByNameDto);
 
     if (paginationByNameDto.forDisplay && findSupplies.length === 0) {
-      return res
-        .status(HttpStatus.NO_CONTENT)
-        .send('Nenhum insumo cadastrado com este nome');
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findSupplies);
+    res.status(HttpStatus.OK);
+
+    return findSupplies;
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -159,7 +159,7 @@ export class SupplyController {
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const findSupplies = await this.supplyFindService.FindByEmployee(
       paginationByEmployeeDto,
@@ -169,10 +169,12 @@ export class SupplyController {
       paginationByEmployeeDto.forDisplay === true &&
       findSupplies[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT).send();
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findSupplies);
+    res.status(HttpStatus.OK);
+
+    return findSupplies;
   }
 
   @SkipThrottle({ write: true, auth: true })

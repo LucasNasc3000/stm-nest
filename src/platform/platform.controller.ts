@@ -47,7 +47,7 @@ export class PlatformController {
   @Get('search/employee')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.READ })
   async FindByEmployee(
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
     @Query() paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ) {
     const findPlatforms = await this.platformService.FindByEmployee(
@@ -58,19 +58,22 @@ export class PlatformController {
       paginationByEmployeeDTO.forDisplay === true &&
       findPlatforms[1].length === 0
     ) {
-      return res
-        .status(HttpStatus.NO_CONTENT)
-        .send('Nenhuma plataforma registrada ainda');
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findPlatforms);
+    res.status(HttpStatus.OK);
+
+    return findPlatforms;
   }
 
   @SkipThrottle({ read: true, auth: true })
   @Delete(':id')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.DELETE })
-  async Delete(@Res() res: Response, @Param() id: UrlUuidDTO) {
-    const deletePlatform = await this.platformService.Delete(id.id);
-    return res.status(HttpStatus.NO_CONTENT).send(deletePlatform);
+  async Delete(
+    @Res({ passthrough: true }) res: Response,
+    @Param() id: UrlUuidDTO,
+  ) {
+    await this.platformService.Delete(id.id);
+    return res.status(HttpStatus.NO_CONTENT);
   }
 }

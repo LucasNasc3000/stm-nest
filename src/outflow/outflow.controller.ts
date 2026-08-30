@@ -105,7 +105,7 @@ export class OutflowController {
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const findOutflows = await this.outflowsService.FindByEmployee(
       paginationByEmployeeDto,
@@ -115,9 +115,11 @@ export class OutflowController {
       paginationByEmployeeDto.forDisplay === true &&
       findOutflows[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT).send();
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findOutflows);
+    res.status(HttpStatus.OK);
+
+    return findOutflows;
   }
 }

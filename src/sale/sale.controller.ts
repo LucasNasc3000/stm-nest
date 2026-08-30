@@ -88,7 +88,7 @@ export class SaleController {
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const findSales = await this.salesService.FindByEmployee(
       paginationByEmployeeDto,
@@ -101,6 +101,8 @@ export class SaleController {
       return res.status(HttpStatus.NO_CONTENT).send();
     }
 
-    return res.status(HttpStatus.OK).json(findSales);
+    res.status(HttpStatus.OK);
+
+    return findSales;
   }
 }

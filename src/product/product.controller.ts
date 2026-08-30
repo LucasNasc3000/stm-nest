@@ -102,19 +102,19 @@ export class ProductController {
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByName(
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
     @Query() paginationByNameDto: PaginationByNameDTO,
   ) {
     const findProducts =
       await this.productFindService.FindByName(paginationByNameDto);
 
     if (paginationByNameDto.forDisplay && findProducts.length === 0) {
-      return res
-        .status(HttpStatus.NO_CONTENT)
-        .send('Nenhum produto cadastrado com este nome');
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findProducts);
+    res.status(HttpStatus.OK);
+
+    return findProducts;
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -136,7 +136,7 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByEmployee(
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const findProducts = await this.productFindService.FindByEmployee(
       paginationByEmployeeDto,
@@ -146,10 +146,12 @@ export class ProductController {
       paginationByEmployeeDto.forDisplay === true &&
       findProducts[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT).send();
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findProducts);
+    res.status(HttpStatus.OK);
+
+    return findProducts;
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -157,7 +159,7 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByProductIngredient(
     @Query() paginationByIngredientDto: PaginationByIngredientDTO,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const findIngredients =
       await this.productFindService.FindIngredientByProduct(
@@ -171,7 +173,9 @@ export class ProductController {
       return res.status(HttpStatus.NO_CONTENT).send();
     }
 
-    return res.status(HttpStatus.OK).json(findIngredients);
+    res.status(HttpStatus.OK);
+
+    return findIngredients;
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -186,7 +190,7 @@ export class ProductController {
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByInflowsEmployee(
     @Query() paginationByInflowEmployeeDto: PaginationByInflowEmployeeDTO,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const findInflows = await this.productFindService.FindInflowByEmployee(
       paginationByInflowEmployeeDto,
@@ -196,12 +200,12 @@ export class ProductController {
       paginationByInflowEmployeeDto.forDisplay === true &&
       findInflows[1].length === 0
     ) {
-      return res
-        .status(HttpStatus.NO_CONTENT)
-        .send('Nenhuma entrada registrada ainda');
+      return res.status(HttpStatus.NO_CONTENT);
     }
 
-    return res.status(HttpStatus.OK).json(findInflows);
+    res.status(HttpStatus.OK);
+
+    return findInflows;
   }
 
   @SkipThrottle({ write: true, auth: true })
