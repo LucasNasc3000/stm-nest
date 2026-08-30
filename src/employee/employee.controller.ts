@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpStatus,
@@ -10,7 +9,6 @@ import {
   Query,
   Res,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
@@ -30,7 +28,6 @@ import { UpdateEmployeeAdminDTO } from './dto/update-employee-admin.dto';
 import { UpdateEmployeeDTO } from './dto/update-employee.dto';
 import { EmployeeService } from './employee.service';
 
-@UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(RoutePolicyGuard)
 @Controller('employees')
 export class EmployeeController {
