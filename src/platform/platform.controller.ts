@@ -73,7 +73,10 @@ export class PlatformController {
     @Res({ passthrough: true }) res: Response,
     @Param() id: UrlUuidDTO,
   ) {
-    await this.platformService.Delete(id.id);
-    return res.status(HttpStatus.NO_CONTENT);
+    const deletePlatform = await this.platformService.Delete(id.id);
+
+    res.status(HttpStatus.NO_CONTENT);
+
+    return deletePlatform;
   }
 }
