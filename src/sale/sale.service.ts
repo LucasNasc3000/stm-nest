@@ -26,8 +26,8 @@ import { Formatter } from 'src/utils/format-timezone';
 import {
   Between,
   DataSource,
+  ILike,
   In,
-  Like,
   QueryRunner,
   Repository,
 } from 'typeorm';
@@ -615,7 +615,7 @@ export class SaleService {
           id: 'desc',
         },
         where: {
-          clientName: Like(`${value}%`),
+          clientName: ILike(`${value}%`),
         },
         relations: {
           employee: true,
@@ -660,7 +660,7 @@ export class SaleService {
         id: 'desc',
       },
       where: {
-        address: Like(`${value}%`),
+        address: ILike(`${value}%`),
       },
       relations: {
         employee: true,

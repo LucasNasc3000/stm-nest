@@ -113,8 +113,13 @@ export class SupplyController {
     const findSupplies =
       await this.supplyFindService.FindByName(paginationByNameDto);
 
-    if (paginationByNameDto.forDisplay && findSupplies.length === 0) {
-      return res.status(HttpStatus.NO_CONTENT);
+    if (findSupplies.length === 0) {
+      if (paginationByNameDto.forDisplay === true) {
+        return res.status(HttpStatus.NO_CONTENT);
+      } else {
+        res.status(HttpStatus.NOT_FOUND);
+        return findSupplies;
+      }
     }
 
     res.status(HttpStatus.OK);
