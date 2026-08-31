@@ -113,16 +113,13 @@ export class SupplyController {
     const findSupplies =
       await this.supplyFindService.FindByName(paginationByNameDto);
 
-    if (findSupplies.length === 0) {
-      if (paginationByNameDto.forDisplay === true) {
-        return res.status(HttpStatus.NO_CONTENT);
-      } else {
-        res.status(HttpStatus.NOT_FOUND);
-        return findSupplies;
-      }
+    if (
+      findSupplies[1].length === 0 &&
+      paginationByNameDto.forDisplay === true
+    ) {
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return findSupplies;
   }
@@ -170,14 +167,15 @@ export class SupplyController {
       paginationByEmployeeDto,
     );
 
-    if (
-      paginationByEmployeeDto.forDisplay === true &&
-      findSupplies[1].length === 0
-    ) {
-      return res.status(HttpStatus.NO_CONTENT);
+    if (findSupplies[1].length === 0) {
+      if (paginationByEmployeeDto.forDisplay === true) {
+        res.status(HttpStatus.NO_CONTENT);
+        return;
+      } else {
+        res.status(HttpStatus.NOT_FOUND);
+        return findSupplies;
+      }
     }
-
-    res.status(HttpStatus.OK);
 
     return findSupplies;
   }

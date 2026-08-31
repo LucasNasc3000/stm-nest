@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
 
@@ -43,6 +43,6 @@ export class PaginationByEmployeeDTO {
   @IsNotEmpty({
     message: 'campo "para exibição" não preenchido',
   })
-  @Type(() => Boolean)
+  @Transform(({ value }) => value === 'true')
   forDisplay: boolean;
 }

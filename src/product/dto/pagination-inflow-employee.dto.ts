@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEmail,
   IsInt,
@@ -55,6 +55,6 @@ export class PaginationByInflowEmployeeDTO {
   @IsNotEmpty({
     message: 'campo "para exibição" não preenchido',
   })
-  @Type(() => Boolean)
+  @Transform(({ value }) => value === 'true')
   forDisplay: boolean;
 }

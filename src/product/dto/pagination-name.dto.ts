@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -54,6 +54,6 @@ export class PaginationByNameDTO {
   @IsNotEmpty({
     message: 'campo "para exibição" não preenchido',
   })
-  @Type(() => Boolean)
+  @Transform(({ value }) => value === 'true')
   forDisplay: boolean;
 }

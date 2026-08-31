@@ -159,7 +159,9 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByName(paginationByNameDTO: PaginationByNameDTO) {
+  async FindByName(
+    paginationByNameDTO: PaginationByNameDTO,
+  ): Promise<[number, (SupplyHistoryResponse | SupplyRealTimeResponse)[]]> {
     const { limit, offset, value, supplyType, forDisplay } =
       paginationByNameDTO;
 

@@ -108,11 +108,10 @@ export class ProductController {
     const findProducts =
       await this.productFindService.FindByName(paginationByNameDto);
 
-    if (paginationByNameDto.forDisplay && findProducts.length === 0) {
-      return res.status(HttpStatus.NO_CONTENT);
+    if (paginationByNameDto.forDisplay && findProducts[1].length === 0) {
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return findProducts;
   }
@@ -146,10 +145,9 @@ export class ProductController {
       paginationByEmployeeDto.forDisplay === true &&
       findProducts[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT);
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return findProducts;
   }
@@ -170,10 +168,9 @@ export class ProductController {
       paginationByIngredientDto.forDisplay === true &&
       findIngredients[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT).send();
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return findIngredients;
   }
@@ -200,10 +197,9 @@ export class ProductController {
       paginationByInflowEmployeeDto.forDisplay === true &&
       findInflows[1].length === 0
     ) {
-      return res.status(HttpStatus.NO_CONTENT);
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return findInflows;
   }

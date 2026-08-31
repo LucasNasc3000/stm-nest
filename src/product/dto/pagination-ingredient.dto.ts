@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
 
 export class PaginationByIngredientDTO {
@@ -34,6 +34,6 @@ export class PaginationByIngredientDTO {
   @IsNotEmpty({
     message: 'campo "para exibição" não preenchido',
   })
-  @Type(() => Boolean)
+  @Transform(({ value }) => value === 'true')
   forDisplay: boolean;
 }

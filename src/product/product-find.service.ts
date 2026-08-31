@@ -101,7 +101,9 @@ export class ProductFindService {
     }));
   }
 
-  async FindByName(paginationByNameDTO: PaginationByNameDTO) {
+  async FindByName(
+    paginationByNameDTO: PaginationByNameDTO,
+  ): Promise<[number, (ProductResponse | ProductInflowResponse)[]]> {
     const { limit, offset, value, productType, forDisplay } =
       paginationByNameDTO;
 

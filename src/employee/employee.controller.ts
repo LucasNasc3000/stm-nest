@@ -102,10 +102,9 @@ export class EmployeeController {
       await this.employeesService.FindByBoss(paginationByBossDto);
 
     if (findByBoss.length === 0) {
-      return res.status(204).send('Nenhum funcionário cadastrado ainda');
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return findByBoss;
   }
@@ -121,11 +120,10 @@ export class EmployeeController {
       paginationExEmployeesDTO,
     );
 
-    if (exEmployees.length < 1) {
-      return res.status(HttpStatus.NO_CONTENT);
+    if (exEmployees.length === 0) {
+      res.status(HttpStatus.NO_CONTENT);
+      return;
     }
-
-    res.status(HttpStatus.OK);
 
     return exEmployees;
   }
