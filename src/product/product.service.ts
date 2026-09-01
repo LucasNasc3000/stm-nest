@@ -890,6 +890,8 @@ export class ProductService {
     updateProductRegularDataDTO: UpdateProductRegularDataDTO,
     queryRunner: QueryRunner,
   ) {
+    const { lowStock, ...rest } = updateProductRegularDataDTO;
+
     if (Object.keys(updateProductRegularDataDTO).length < 1) return;
 
     const productUpdate = await queryRunner.manager.update(
@@ -897,7 +899,8 @@ export class ProductService {
       product.id,
       {
         id: product.id,
-        ...updateProductRegularDataDTO,
+        lowStock: lowStock === 0 ? null : lowStock,
+        ...rest,
       },
     );
 

@@ -11,7 +11,6 @@ import {
   IsPositive,
   IsString,
   Length,
-  MaxLength,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
@@ -43,9 +42,6 @@ export class UpdateProductDTO {
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt({
     message: 'campo "Quantidade mínima" deve ser um número inteiro',
-  })
-  @IsPositive({
-    message: 'campo "Quantidade mínima" deve ser maior que zero',
   })
   readonly lowStock?: number;
 
@@ -116,8 +112,9 @@ export class UpdateProductDTO {
   @IsNotEmpty({
     message: `Escreva o motivo quando o motivo for ${OutflowReason.OTHER}`,
   })
-  @IsString()
-  @MaxLength(500)
+  @Length(10, 500, {
+    message: 'Campo "detalhes" deve ter no máximo 500 caracteres',
+  })
   readonly notes?: string;
 
   @IsOptional()
