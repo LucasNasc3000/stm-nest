@@ -312,11 +312,16 @@ export class OutflowService {
       },
       relations: {
         employee: true,
+        product: true,
       },
       select: {
         employee: {
           id: true,
           email: true,
+        },
+        product: {
+          id: true,
+          name: true,
         },
       },
     });
@@ -347,11 +352,16 @@ export class OutflowService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          product: {
+            id: true,
+            name: true,
           },
         },
       });
@@ -390,11 +400,16 @@ export class OutflowService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          product: {
+            id: true,
+            name: true,
           },
         },
       });
@@ -425,6 +440,8 @@ export class OutflowService {
       .createQueryBuilder('outflow')
       .leftJoinAndSelect('outflow.employee', 'employee')
       .addSelect(['employee.id', 'employee.email'])
+      .leftJoinAndSelect('outflow.product', 'product')
+      .addSelect(['product.id', 'product.name'])
       .orderBy('outflow.id', 'DESC')
       .take(limit)
       .skip(offset);
@@ -496,11 +513,16 @@ export class OutflowService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          product: {
+            id: true,
+            name: true,
           },
         },
       });
@@ -536,11 +558,16 @@ export class OutflowService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          product: {
+            id: true,
+            name: true,
           },
         },
       });
@@ -577,11 +604,16 @@ export class OutflowService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          product: {
+            id: true,
+            name: true,
           },
         },
       });
@@ -621,11 +653,16 @@ export class OutflowService {
         },
         relations: {
           employee: true,
+          product: true,
         },
         select: {
           employee: {
             id: true,
             email: true,
+          },
+          product: {
+            id: true,
+            name: true,
           },
         },
       });
