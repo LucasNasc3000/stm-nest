@@ -379,7 +379,7 @@ export class ProductFindService {
 
   async FindInflowByProduct(
     paginationByInflowDto: PaginationByInflowProductDTO,
-  ) {
+  ): Promise<[number, ProductInflowResponse[]]> {
     const { limit, offset, value } = paginationByInflowDto;
 
     const [inflowFindByProduct, total] =
@@ -421,7 +421,10 @@ export class ProductFindService {
       throw new NotFoundException('Registros de produtos não encontrados');
     }
 
-    return [total, inflowFindByProduct];
+    const formattedCreatedAndUpdatedAt =
+      this.FormatterForSearchOnlyProductInflows(inflowFindByProduct);
+
+    return [total, formattedCreatedAndUpdatedAt];
   }
 
   async FindInflowByExpirationDate(

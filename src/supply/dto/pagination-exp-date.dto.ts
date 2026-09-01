@@ -32,7 +32,7 @@ export class PaginationByExpDateDTO {
   offset: number;
 
   @IsNotEmpty({
-    message: 'campo "supplySearch" não preenchido',
+    message: 'campo "supplyType" não preenchido',
   })
   @IsEnum(SupplySearch, {
     message: 'Tipo de registro inválido',

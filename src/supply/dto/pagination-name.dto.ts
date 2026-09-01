@@ -44,7 +44,7 @@ export class PaginationByNameDTO {
   value: string;
 
   @IsNotEmpty({
-    message: 'campo "supplySearch" não preenchido',
+    message: 'campo "supplyType" não preenchido',
   })
   @IsEnum(SupplySearch, {
     message: 'Tipo de registro inválido',
