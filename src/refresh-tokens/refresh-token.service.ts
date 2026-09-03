@@ -215,6 +215,10 @@ export class RefreshTokensService {
         {
           email: doesEmployeeReallyExists.email,
           roleId: doesEmployeeReallyExists.role.id,
+          adminId:
+            employeeData.boss === null
+              ? employeeData.id
+              : employeeData.boss?.id,
         },
       );
 

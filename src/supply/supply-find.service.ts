@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { SupplySearch } from 'src/common/enums/supply-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
 import { Repository, SelectQueryBuilder } from 'typeorm';
@@ -34,6 +35,7 @@ export class SupplyFindService {
 
   QueryBuilderGenerator(
     supply: SupplySearch,
+    adminId: string,
   ): SelectQueryBuilder<SupplyRealTime | SupplyHistory> {
     let query: SelectQueryBuilder<SupplyHistory | SupplyRealTime>;
 
@@ -41,6 +43,9 @@ export class SupplyFindService {
       case SupplySearch.SUPPLY_HISTORY:
         query = this.supplyHistoryRepository
           .createQueryBuilder('supply')
+          .where('supply.adminId = :adminId', {
+            adminId,
+          })
           .leftJoinAndSelect('supply.employee', 'employee');
         break;
 
@@ -48,6 +53,9 @@ export class SupplyFindService {
         query = this.supplyRealTimeRepository
           .createQueryBuilder('supply')
           .where('supply.is_active = true')
+          .andWhere('supply.adminId = :adminId', {
+            adminId,
+          })
           .leftJoinAndSelect('supply.employee', 'employee');
         break;
 
@@ -68,72 +76,16 @@ export class SupplyFindService {
     }));
   }
 
-  async FindByIdSupplyRealTime(id: string) {
-    const supplyRealTimeFindById = await this.supplyRealTimeRepository.findOne({
-      where: {
-        id,
-        isActive: true,
-      },
-      relations: {
-        employee: true,
-      },
-      select: {
-        employee: {
-          id: true,
-          email: true,
-        },
-      },
-    });
-
-    if (!supplyRealTimeFindById) {
-      throw new NotFoundException('Insumo não encontrado');
-    }
-
-    // FormatterForSearch() não foi usado aqui por que o valor retornado não é um array de objetos mas sim um objeto único
-    const createdAt = Formatter(supplyRealTimeFindById.createdAt);
-    const updatedAt = Formatter(supplyRealTimeFindById.updatedAt);
-
-    return {
-      ...supplyRealTimeFindById,
-      createdAt,
-      updatedAt,
-    };
-  }
-
-  async FindByIdSupplyHistory(id: string) {
-    const supplyHistoryFindById = await this.supplyHistoryRepository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        employee: true,
-      },
-      select: {
-        employee: {
-          id: true,
-          email: true,
-        },
-      },
-    });
-
-    if (!supplyHistoryFindById) {
-      throw new NotFoundException('Insumo não encontrado');
-    }
-
-    const createdAt = Formatter(supplyHistoryFindById.createdAt);
-    const updatedAt = Formatter(supplyHistoryFindById.updatedAt);
-
-    return {
-      ...supplyHistoryFindById,
-      createdAt,
-      updatedAt,
-    };
-  }
-
-  async FindBySupplier(paginationBySupplierDTO: PaginationBySupplierDTO) {
+  async FindBySupplier(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationBySupplierDTO: PaginationBySupplierDTO,
+  ) {
     const { limit, offset, value, supplyType } = paginationBySupplierDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.supplier ILIKE :supplier', { supplier: `${value}%` })
@@ -160,12 +112,16 @@ export class SupplyFindService {
   }
 
   async FindByName(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByNameDTO: PaginationByNameDTO,
   ): Promise<[number, (SupplyHistoryResponse | SupplyRealTimeResponse)[]]> {
     const { limit, offset, value, supplyType, forDisplay } =
       paginationByNameDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.name ILIKE :name', { name: `${value}%` })
@@ -191,10 +147,16 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByCategory(paginationByCategoryDTO: PaginationByCategoryDTO) {
+  async FindByCategory(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByCategoryDTO: PaginationByCategoryDTO,
+  ) {
     const { limit, offset, value, supplyType } = paginationByCategoryDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.category ILIKE :category', { category: `${value}%` })
@@ -220,10 +182,16 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
+  async FindByPrice(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByPriceDTO: PaginationByPriceDTO,
+  ) {
     const { limit, offset, value, supplyType } = paginationByPriceDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.price = :price', {
@@ -251,10 +219,16 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByTotalPrice(paginationByPriceDTO: PaginationByPriceDTO) {
+  async FindByTotalPrice(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByPriceDTO: PaginationByPriceDTO,
+  ) {
     const { limit, offset, value, supplyType } = paginationByPriceDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.total_price = :totalPrice', {
@@ -283,11 +257,15 @@ export class SupplyFindService {
   }
 
   async FindByWeightPerUnit(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByWeightPerUnitDTO: PaginationByWeightPerUnitDTO,
   ) {
     const { limit, offset, value, supplyType } = paginationByWeightPerUnitDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.weight_per_unit = :weightPerUnit', {
@@ -316,13 +294,56 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
+  async FindByExpirationDate(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByExpDateDTO: PaginationByExpDateDTO,
+  ) {
+    const { limit, offset, value, supplyType } = paginationByExpDateDTO;
+
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
+
+    query
+      .andWhere('supply.expiration_date = :expiration_date', {
+        expiration_date: value,
+      })
+      .orderBy('supply.id', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    const [supplyHistoryFindByTotalWeightPerRegister, total] =
+      await query.getManyAndCount();
+
+    if (!supplyHistoryFindByTotalWeightPerRegister) {
+      throw new InternalServerErrorException(
+        'Erro desconhecido ao buscar insumos',
+      );
+    }
+
+    if (supplyHistoryFindByTotalWeightPerRegister.length < 1) {
+      throw new NotFoundException('Insumos não encontrados');
+    }
+
+    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
+      supplyHistoryFindByTotalWeightPerRegister,
+    );
+
+    return [total, formattedCreatedAndUpdatedAt];
+  }
+
   async FindByEmployee(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ): Promise<[number, (SupplyHistoryResponse | SupplyRealTimeResponse)[]]> {
     const { limit, offset, value, supplyType, forDisplay } =
       paginationByEmployeeDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.employee = :employee', { employee: value })
@@ -348,10 +369,16 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
+  async FindByDate(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginatioByDateDTO: PaginationByDateDTO,
+  ) {
     const { limit, offset, value, supplyType } = paginatioByDateDTO;
 
-    const query = this.QueryBuilderGenerator(supplyType);
+    const query = this.QueryBuilderGenerator(
+      supplyType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('supply.created_at BETWEEN :startDate AND :endDate', {
@@ -445,39 +472,6 @@ export class SupplyFindService {
           },
         },
       });
-
-    if (!supplyHistoryFindByTotalWeightPerRegister) {
-      throw new InternalServerErrorException(
-        'Erro desconhecido ao buscar insumos',
-      );
-    }
-
-    if (supplyHistoryFindByTotalWeightPerRegister.length < 1) {
-      throw new NotFoundException('Insumos não encontrados');
-    }
-
-    const formattedCreatedAndUpdatedAt = this.FormatterForSearch(
-      supplyHistoryFindByTotalWeightPerRegister,
-    );
-
-    return [total, formattedCreatedAndUpdatedAt];
-  }
-
-  async FindByExpirationDate(paginationByExpDateDTO: PaginationByExpDateDTO) {
-    const { limit, offset, value, supplyType } = paginationByExpDateDTO;
-
-    const query = this.QueryBuilderGenerator(supplyType);
-
-    query
-      .andWhere('supply.expiration_date = :expiration_date', {
-        expiration_date: value,
-      })
-      .orderBy('supply.id', 'DESC')
-      .take(limit)
-      .skip(offset);
-
-    const [supplyHistoryFindByTotalWeightPerRegister, total] =
-      await query.getManyAndCount();
 
     if (!supplyHistoryFindByTotalWeightPerRegister) {
       throw new InternalServerErrorException(

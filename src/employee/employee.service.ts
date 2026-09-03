@@ -418,6 +418,13 @@ export class EmployeeService {
         id: tokenPayloadDTO.sub,
         situation: EmployeeSituation.EMPLOYED,
       },
+      relations: {
+        boss: true,
+      },
+      select: {
+        id: true,
+        email: true,
+      },
     });
 
     if (!employeeFindSelf) {
@@ -427,12 +434,18 @@ export class EmployeeService {
     return employeeFindSelf;
   }
 
-  async FindByEmail(emailDTO: SearchByEmailDTO) {
+  async FindByEmail(
+    tokenPayloadDTO: TokenPayloadDTO,
+    emailDTO: SearchByEmailDTO,
+  ) {
     const email = emailDTO.value;
 
     const employeeFindByEmail = await this.employeeRepository.findOneBy({
       email,
       situation: EmployeeSituation.EMPLOYED,
+      boss: {
+        id: tokenPayloadDTO.sub,
+      },
     });
 
     if (!employeeFindByEmail) {
@@ -442,7 +455,7 @@ export class EmployeeService {
     return employeeFindByEmail;
   }
 
-  async FindById(id: string) {
+  async FindByIdInternal(id: string) {
     const employeeFindByEmail = await this.employeeRepository.findOneBy({
       id,
       situation: EmployeeSituation.EMPLOYED,
@@ -455,7 +468,10 @@ export class EmployeeService {
     return employeeFindByEmail;
   }
 
-  async FindByName(paginationByNameDTO: PaginationByNameDTO) {
+  async FindByName(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByNameDTO: PaginationByNameDTO,
+  ) {
     const { limit, offset, value } = paginationByNameDTO;
 
     const [employeeFindByName, total] =
@@ -468,6 +484,9 @@ export class EmployeeService {
         where: {
           name: ILike(`${value}%`),
           situation: EmployeeSituation.EMPLOYED,
+          boss: {
+            id: tokenPayloadDTO.sub,
+          },
         },
       });
 
@@ -484,7 +503,10 @@ export class EmployeeService {
     return [total, ...employeeFindByName];
   }
 
-  async FindByRole(paginationByRoleDTO: PaginationByRoleDTO) {
+  async FindByRole(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByRoleDTO: PaginationByRoleDTO,
+  ) {
     const { limit, offset, value } = paginationByRoleDTO;
 
     const [employeeFindByRole, total] =
@@ -497,6 +519,9 @@ export class EmployeeService {
         where: {
           role: {
             id: value,
+          },
+          boss: {
+            id: tokenPayloadDTO.sub,
           },
           situation: EmployeeSituation.EMPLOYED,
         },
@@ -542,7 +567,10 @@ export class EmployeeService {
     return [total, ...employeeFindByBoss];
   }
 
-  async FindExEmployees(paginationExEmployeesDTO?: PaginationExEmployeesDTO) {
+  async FindExEmployees(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationExEmployeesDTO?: PaginationExEmployeesDTO,
+  ) {
     const { limit, offset } = paginationExEmployeesDTO;
 
     const [employeeFindByName, total] =
@@ -554,6 +582,9 @@ export class EmployeeService {
         },
         where: {
           situation: EmployeeSituation.FIRED,
+          boss: {
+            id: tokenPayloadDTO.sub,
+          },
         },
       });
 

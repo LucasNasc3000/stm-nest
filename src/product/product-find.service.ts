@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { ProductSearch } from 'src/common/enums/product-search.enum';
 import { Formatter } from 'src/utils/format-timezone';
 import { ILike, Repository, SelectQueryBuilder } from 'typeorm';
@@ -37,6 +38,7 @@ export class ProductFindService {
 
   QueryBuilderGenerator(
     product: ProductSearch,
+    adminId: string,
   ): SelectQueryBuilder<Product | ProductInflow> {
     let query: SelectQueryBuilder<ProductInflow | Product>;
 
@@ -44,6 +46,9 @@ export class ProductFindService {
       case ProductSearch.PRODUCT_INFLOW:
         query = this.productInflowRepository
           .createQueryBuilder('product_general')
+          .where('product_general.adminId = :adminId', {
+            adminId,
+          })
           .leftJoin('product_general.employee', 'employee')
           .leftJoin('product_general.product', 'product')
           .select([
@@ -58,6 +63,9 @@ export class ProductFindService {
         query = this.productRepository
           .createQueryBuilder('product_general')
           .where('product_general.is_active = true')
+          .andWhere('product_general.adminId = :adminId', {
+            adminId,
+          })
           .leftJoin('product_general.employee', 'employee')
           .leftJoin('product_general.recipe', 'recipe')
           .select([
@@ -102,12 +110,16 @@ export class ProductFindService {
   }
 
   async FindByName(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByNameDTO: PaginationByNameDTO,
   ): Promise<[number, (ProductResponse | ProductInflowResponse)[]]> {
     const { limit, offset, value, productType, forDisplay } =
       paginationByNameDTO;
 
-    const query = this.QueryBuilderGenerator(productType);
+    const query = this.QueryBuilderGenerator(
+      productType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('product_general.name ILIKE :name', { name: `${value}%` })
@@ -133,10 +145,16 @@ export class ProductFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByCategory(paginationByCategoryDTO: PaginationByCategoryDTO) {
+  async FindByCategory(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByCategoryDTO: PaginationByCategoryDTO,
+  ) {
     const { limit, offset, value, productType } = paginationByCategoryDTO;
 
-    const query = this.QueryBuilderGenerator(productType);
+    const query = this.QueryBuilderGenerator(
+      productType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('product_general.category ILIKE :category', {
@@ -165,10 +183,16 @@ export class ProductFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByPrice(paginationByPriceDTO: PaginationByPriceDTO) {
+  async FindByPrice(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByPriceDTO: PaginationByPriceDTO,
+  ) {
     const { limit, offset, value, productType } = paginationByPriceDTO;
 
-    const query = this.QueryBuilderGenerator(productType);
+    const query = this.QueryBuilderGenerator(
+      productType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('CAST(product_general.price AS TEXT) LIKE :price', {
@@ -196,10 +220,16 @@ export class ProductFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByDate(paginatioByDateDTO: PaginationByDateDTO) {
+  async FindByDate(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginatioByDateDTO: PaginationByDateDTO,
+  ) {
     const { limit, offset, value, productType } = paginatioByDateDTO;
 
-    const query = this.QueryBuilderGenerator(productType);
+    const query = this.QueryBuilderGenerator(
+      productType,
+      tokenPayloadDTO.adminId,
+    );
 
     query
       .andWhere('product_general.created_at BETWEEN :startDate AND :endDate', {
@@ -276,6 +306,7 @@ export class ProductFindService {
   }
 
   async FindIngredientByProduct(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByIngredientDTO: PaginationByIngredientDTO,
   ): Promise<[number, ProductIngredient[]]> {
     const { limit, offset, value, forDisplay } = paginationByIngredientDTO;
@@ -290,6 +321,9 @@ export class ProductFindService {
         where: {
           product: {
             id: value,
+          },
+          admin: {
+            id: tokenPayloadDTO.adminId,
           },
           isActive: true,
         },
@@ -378,6 +412,7 @@ export class ProductFindService {
   }
 
   async FindInflowByProduct(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByInflowDto: PaginationByInflowProductDTO,
   ): Promise<[number, ProductInflowResponse[]]> {
     const { limit, offset, value } = paginationByInflowDto;
@@ -392,6 +427,9 @@ export class ProductFindService {
         where: {
           product: {
             name: ILike(`${value}%`),
+          },
+          admin: {
+            id: tokenPayloadDTO.adminId,
           },
         },
         relations: {
@@ -428,6 +466,7 @@ export class ProductFindService {
   }
 
   async FindInflowByExpirationDate(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByExpDto: PaginationByInflowExpDateDTO,
   ) {
     const { limit, offset, value } = paginationByExpDto;
@@ -441,6 +480,9 @@ export class ProductFindService {
         },
         where: {
           expirationDate: value,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           product: true,

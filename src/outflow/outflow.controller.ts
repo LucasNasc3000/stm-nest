@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpStatus,
-  Param,
   Post,
   Query,
   Res,
@@ -52,52 +51,81 @@ export class OutflowController {
   }
 
   @SkipThrottle({ write: true, auth: true })
-  @Get('search/id/:id')
-  @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindById(@Param() id: string) {
-    return this.outflowsService.FindById(id);
-  }
-
-  @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
-    return this.outflowsService.FindByName(paginationByNameDto);
+  FindByName(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByNameDto: PaginationByNameDTO,
+  ) {
+    return this.outflowsService.FindByName(
+      tokenPayloadDTO,
+      paginationByNameDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/category/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
-    return this.outflowsService.FindByCategory(paginationByCategoryDto);
+  FindByCategory(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByCategoryDto: PaginationByCategoryDTO,
+  ) {
+    return this.outflowsService.FindByCategory(
+      tokenPayloadDTO,
+      paginationByCategoryDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/type/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByType(@Query() paginationByTypeDto: PaginationByTypeDTO) {
-    return this.outflowsService.FindByType(paginationByTypeDto);
+  FindByType(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByTypeDto: PaginationByTypeDTO,
+  ) {
+    return this.outflowsService.FindByType(
+      tokenPayloadDTO,
+      paginationByTypeDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
-    return this.outflowsService.FindByDate(paginationByDateDto);
+  FindByDate(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByDateDto: PaginationByDateDTO,
+  ) {
+    return this.outflowsService.FindByDate(
+      tokenPayloadDTO,
+      paginationByDateDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/hour/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByHour(@Query() paginationByHourDto: PaginationByHourDTO) {
-    return this.outflowsService.FindByHour(paginationByHourDto);
+  FindByHour(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByHourDto: PaginationByHourDTO,
+  ) {
+    return this.outflowsService.FindByHour(
+      tokenPayloadDTO,
+      paginationByHourDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/reason/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
-  FindByReason(@Query() paginationByReasonDto: PaginationByReasonDTO) {
-    return this.outflowsService.FindByReason(paginationByReasonDto);
+  FindByReason(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByReasonDto: PaginationByReasonDTO,
+  ) {
+    return this.outflowsService.FindByReason(
+      tokenPayloadDTO,
+      paginationByReasonDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })

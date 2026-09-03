@@ -102,11 +102,14 @@ export class ProductController {
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByName(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Res({ passthrough: true }) res: Response,
     @Query() paginationByNameDto: PaginationByNameDTO,
   ) {
-    const findProducts =
-      await this.productFindService.FindByName(paginationByNameDto);
+    const findProducts = await this.productFindService.FindByName(
+      tokenPayloadDTO,
+      paginationByNameDto,
+    );
 
     if (paginationByNameDto.forDisplay && findProducts[1].length === 0) {
       res.status(HttpStatus.NO_CONTENT);
@@ -119,15 +122,27 @@ export class ProductController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/category/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByCategory(@Query() paginationByCategoryDto: PaginationByCategoryDTO) {
-    return this.productFindService.FindByCategory(paginationByCategoryDto);
+  FindByCategory(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByCategoryDto: PaginationByCategoryDTO,
+  ) {
+    return this.productFindService.FindByCategory(
+      tokenPayloadDTO,
+      paginationByCategoryDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/price/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByPrice(@Query() paginationByPriceDto: PaginationByPriceDTO) {
-    return this.productFindService.FindByPrice(paginationByPriceDto);
+  FindByPrice(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByPriceDto: PaginationByPriceDTO,
+  ) {
+    return this.productFindService.FindByPrice(
+      tokenPayloadDTO,
+      paginationByPriceDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -156,11 +171,13 @@ export class ProductController {
   @Get('search/recipe/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByProductIngredient(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByIngredientDto: PaginationByIngredientDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
     const findIngredients =
       await this.productFindService.FindIngredientByProduct(
+        tokenPayloadDTO,
         paginationByIngredientDto,
       );
 
@@ -178,8 +195,14 @@ export class ProductController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
-  FindByExpirationDate(@Query() paginationByDateDto: PaginationByDateDTO) {
-    return this.productFindService.FindByDate(paginationByDateDto);
+  FindByExpirationDate(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByDateDto: PaginationByDateDTO,
+  ) {
+    return this.productFindService.FindByDate(
+      tokenPayloadDTO,
+      paginationByDateDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -208,9 +231,11 @@ export class ProductController {
   @Get('search/inflows/product')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByInflowsProduct(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByInflowProductDto: PaginationByInflowProductDTO,
   ) {
     return this.productFindService.FindInflowByProduct(
+      tokenPayloadDTO,
       paginationByInflowProductDto,
     );
   }
@@ -219,9 +244,11 @@ export class ProductController {
   @Get('search/inflows/expirationDate')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   FindByInflowsExpirationDate(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByInflowExpDateDto: PaginationByInflowExpDateDTO,
   ) {
     return this.productFindService.FindInflowByExpirationDate(
+      tokenPayloadDTO,
       paginationByInflowExpDateDto,
     );
   }

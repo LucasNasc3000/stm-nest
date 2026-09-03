@@ -56,31 +56,47 @@ export class SaleController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/date/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
-  FindByDate(@Query() paginationByDateDto: PaginationByDateDTO) {
-    return this.salesService.FindByDate(paginationByDateDto);
+  FindByDate(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByDateDto: PaginationByDateDTO,
+  ) {
+    return this.salesService.FindByDate(tokenPayloadDTO, paginationByDateDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/hour/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
-  FindByHour(@Query() paginationByHourDto: PaginationByHourDTO) {
-    return this.salesService.FindByHour(paginationByHourDto);
+  FindByHour(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByHourDto: PaginationByHourDTO,
+  ) {
+    return this.salesService.FindByHour(tokenPayloadDTO, paginationByHourDto);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/clientName/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   FindByClientName(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByClientNameDto: PaginationByClientNameDTO,
   ) {
-    return this.salesService.FindByClientName(paginationByClientNameDto);
+    return this.salesService.FindByClientName(
+      tokenPayloadDTO,
+      paginationByClientNameDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/address/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
-  FindByAddress(@Query() paginationByAddressDto: PaginationByAddressDTO) {
-    return this.salesService.FindByAddress(paginationByAddressDto);
+  FindByAddress(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByAddressDto: PaginationByAddressDTO,
+  ) {
+    return this.salesService.FindByAddress(
+      tokenPayloadDTO,
+      paginationByAddressDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })

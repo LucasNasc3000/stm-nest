@@ -3,6 +3,7 @@ import { Employee } from 'src/employee/entities/employee.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -26,6 +27,14 @@ export class Platform {
   })
   @Type(() => Employee)
   employee: Employee;
+
+  @ManyToOne(() => Employee, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'adminId' })
+  @Type(() => Employee)
+  admin: Employee;
 
   @OneToMany(() => Sale, (sale) => sale.platform)
   @Type(() => Sale)

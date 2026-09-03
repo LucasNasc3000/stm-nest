@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -40,6 +41,14 @@ export class SupplyHistory {
   })
   @Type(() => Employee)
   employee: Employee;
+
+  @ManyToOne(() => Employee, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'adminId' })
+  @Type(() => Employee)
+  admin: Employee;
 
   @Column({ type: 'integer', nullable: true, name: 'low_stock' })
   lowStock: number;

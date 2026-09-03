@@ -7,6 +7,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -43,6 +44,14 @@ export class Sale {
   })
   @Type(() => Employee)
   employee: Employee;
+
+  @ManyToOne(() => Employee, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'adminId' })
+  @Type(() => Employee)
+  admin: Employee;
 
   @ManyToOne(() => Platform, (platform) => platform.sales, {
     onDelete: 'SET NULL',

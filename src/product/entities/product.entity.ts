@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -43,6 +44,14 @@ export class Product {
   })
   @Type(() => Employee)
   employee: Employee;
+
+  @ManyToOne(() => Employee, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'adminId' })
+  @Type(() => Employee)
+  admin: Employee;
 
   @OneToMany(() => ProductIngredient, (recipe) => recipe.product)
   recipe: ProductIngredient[];

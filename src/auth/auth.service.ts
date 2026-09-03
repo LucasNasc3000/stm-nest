@@ -51,6 +51,7 @@ export class AuthService {
         situation: EmployeeSituation.EMPLOYED,
       },
       relations: {
+        boss: true,
         role: {
           permissions: true,
         },
@@ -95,7 +96,14 @@ export class AuthService {
       accessToken = await this.SignJwtAsync(
         employeeData.id,
         this.jwtConfiguration.jwtTtl,
-        { email: employeeData.email, roleId: employeeData.role.id },
+        {
+          email: employeeData.email,
+          roleId: employeeData.role.id,
+          adminId:
+            employeeData.boss === null
+              ? employeeData.id
+              : employeeData.boss?.id,
+        },
       );
 
       refreshToken = await this.SignJwtAsync(

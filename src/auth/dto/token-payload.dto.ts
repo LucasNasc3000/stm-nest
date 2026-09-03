@@ -1,5 +1,6 @@
 export class TokenPayloadDTO {
   sub: string;
+  adminId: string;
   roleId: string;
   id?: string;
   email: string;

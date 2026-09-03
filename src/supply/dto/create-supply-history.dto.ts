@@ -56,4 +56,7 @@ export class CreateSupplyHistoryDTO extends PartialType(CreateSupplyDTO) {
 
   @IsNotEmpty()
   readonly employee: Employee;
+
+  @IsNotEmpty()
+  readonly admin: Employee;
 }

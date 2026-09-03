@@ -38,7 +38,7 @@ export class SupplyService {
     createSupplyDTO: CreateSupplyDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    const findEmployee = await this.employeesService.FindById(
+    const findEmployee = await this.employeesService.FindByIdInternal(
       tokenPayloadDTO.sub,
     );
 
@@ -56,6 +56,15 @@ export class SupplyService {
         {
           where: {
             id: tokenPayloadDTO.sub,
+          },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
           },
         },
       );
@@ -76,6 +85,11 @@ export class SupplyService {
 
       const totalPrice = priceDecimal.mul(createSupplyDTO.quantity).toString();
 
+      const admin =
+        doesEmployeeReallyExists.boss === null
+          ? doesEmployeeReallyExists
+          : doesEmployeeReallyExists.boss;
+
       const data = {
         category: createSupplyDTO.category,
         name: createSupplyDTO.name,
@@ -85,6 +99,7 @@ export class SupplyService {
         supplier: createSupplyDTO.supplier,
         expirationDate: createSupplyDTO.expirationDate,
         employee: doesEmployeeReallyExists,
+        admin,
         lowStock: createSupplyDTO.lowStock,
         price: createSupplyDTO.price,
         totalPrice,
@@ -123,6 +138,7 @@ export class SupplyService {
         details: createSupplyDTO.details,
         totalWeightPerRegister: totalWeightValue,
         employee: doesEmployeeReallyExists,
+        admin,
         supplyRealTime: newSupplyRealTime,
       };
 
@@ -187,6 +203,15 @@ export class SupplyService {
       const findEmployee = await queryRunner.manager.findOne(Employee, {
         where: {
           id: tokenPayloadDTO.sub,
+        },
+        relations: {
+          boss: true,
+        },
+        select: {
+          boss: {
+            id: true,
+            email: true,
+          },
         },
       });
 
@@ -292,10 +317,6 @@ export class SupplyService {
           .mul(extractedFromRecovery.price)
           .toString();
 
-        const currentTotalWeight = new Decimal(
-          doesSupplyReallyExists.totalWeight,
-        );
-
         const decimalWeightPerUnit = new Decimal(
           doesSupplyReallyExists.weightPerUnit,
         );
@@ -310,6 +331,9 @@ export class SupplyService {
           automaticReason = SupplyReason.WEIGHT_PER_UNIT_EDIT;
         }
 
+        const admin =
+          findEmployee.boss === null ? findEmployee : findEmployee.boss;
+
         const supplyHistoryData: CreateSupplyHistoryDTO = {
           ...extractedFromRecovery,
           quantity: quantityDifference || quantity,
@@ -319,6 +343,7 @@ export class SupplyService {
           totalWeightPerRegister,
           supplyRealTime: doesSupplyReallyExists,
           employee: findEmployee,
+          admin,
           expirationDate:
             updateSupplyRealtimeDTO.expirationDate ||
             lastInflowData.expirationDate,
@@ -336,6 +361,9 @@ export class SupplyService {
         await this.supplyRealTimeRepository.findOne({
           where: {
             id: supplyId,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
           relations: {
             employee: true,
@@ -432,6 +460,9 @@ export class SupplyService {
         await this.supplyRealTimeRepository.findOne({
           where: {
             id: supplyId,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
           relations: {
             employee: true,

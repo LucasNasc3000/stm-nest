@@ -5,7 +5,6 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Post,
   Query,
   Res,
   UseGuards,
@@ -34,8 +33,8 @@ export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
 
   @SkipThrottle({ read: true, auth: true })
-  @Post()
-  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
+  // @Post()
+  // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
   Create(@Body() body: CreateEmployeeDTO) {
     return this.employeesService.Create(body);
   }
@@ -73,22 +72,37 @@ export class EmployeeController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/email/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
-  FindByEmail(@Query() email: SearchByEmailDTO) {
-    return this.employeesService.FindByEmail(email);
+  FindByEmail(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() email: SearchByEmailDTO,
+  ) {
+    return this.employeesService.FindByEmail(tokenPayloadDTO, email);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/name/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
-  FindByName(@Query() paginationByNameDto: PaginationByNameDTO) {
-    return this.employeesService.FindByName(paginationByNameDto);
+  FindByName(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByNameDto: PaginationByNameDTO,
+  ) {
+    return this.employeesService.FindByName(
+      tokenPayloadDTO,
+      paginationByNameDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/role/')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
-  FindByRole(@Query() paginationByRoleDto: PaginationByRoleDTO) {
-    return this.employeesService.FindByRole(paginationByRoleDto);
+  FindByRole(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByRoleDto: PaginationByRoleDTO,
+  ) {
+    return this.employeesService.FindByRole(
+      tokenPayloadDTO,
+      paginationByRoleDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -115,8 +129,10 @@ export class EmployeeController {
   async ListExEmployees(
     @Res({ passthrough: true }) res: Response,
     @Query() paginationExEmployeesDTO: PaginationExEmployeesDTO,
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
     const exEmployees = await this.employeesService.FindExEmployees(
+      tokenPayloadDTO,
       paginationExEmployeesDTO,
     );
 

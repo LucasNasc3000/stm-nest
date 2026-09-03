@@ -55,6 +55,15 @@ export class ProductService {
           where: {
             id: tokenPayloadDTO.sub,
           },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
+          },
         });
 
         if (!findEmployee) {
@@ -63,9 +72,13 @@ export class ProductService {
 
         const { expirationDate, ...rest } = createProductWithoutRecipeDTO;
 
+        const admin =
+          findEmployee.boss === null ? findEmployee : findEmployee.boss;
+
         const createProduct = manager.create(Product, {
           ...rest,
           employee: findEmployee,
+          admin,
         });
 
         newProduct = await manager.save(Product, createProduct);
@@ -81,6 +94,7 @@ export class ProductService {
           notes: null,
           product: newProduct,
           employee: findEmployee,
+          admin,
         });
 
         await manager.save(ProductInflow, createProductInflow);
@@ -104,14 +118,6 @@ export class ProductService {
     tokenPayloadDTO: TokenPayloadDTO,
     createProductWithRecipeDTO: CreateProductWithRecipeDTO,
   ) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
-
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
-    }
-
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -125,12 +131,26 @@ export class ProductService {
           where: {
             id: tokenPayloadDTO.sub,
           },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
+          },
         },
       );
 
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
+
+      const admin =
+        doesEmployeeReallyExists.boss === null
+          ? doesEmployeeReallyExists
+          : doesEmployeeReallyExists.boss;
 
       const createProduct = queryRunner.manager.create(Product, {
         name: createProductWithRecipeDTO.name,
@@ -139,6 +159,7 @@ export class ProductService {
         price: createProductWithRecipeDTO.price,
         unities: 0,
         employee: doesEmployeeReallyExists,
+        admin,
       });
 
       const newProduct = await queryRunner.manager.save(Product, createProduct);
@@ -153,7 +174,8 @@ export class ProductService {
         expirationDate: createProductWithRecipeDTO.expirationDate,
         notes: null,
         product: newProduct,
-        employee: findEmployee,
+        employee: doesEmployeeReallyExists,
+        admin,
       });
 
       await queryRunner.manager.save(ProductInflow, createProductInflow);
@@ -179,6 +201,7 @@ export class ProductService {
           supplyRealTime: doesSupplyReallyExists,
           product: newProduct,
           employee: doesEmployeeReallyExists,
+          admin,
           quantity: supply.quantity,
         };
 
@@ -220,14 +243,6 @@ export class ProductService {
     tokenPayloadDTO: TokenPayloadDTO,
     createProductWithRecipeDTO: CreateProductWithRecipeDTO,
   ) {
-    const findEmployee = await this.employeesService.FindById(
-      tokenPayloadDTO.sub,
-    );
-
-    if (!findEmployee) {
-      throw new UnauthorizedException('Funcionário não encontrado');
-    }
-
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -242,12 +257,26 @@ export class ProductService {
           where: {
             id: tokenPayloadDTO.sub,
           },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
+          },
         },
       );
 
       if (!doesEmployeeReallyExists) {
         throw new UnauthorizedException('Funcionário não encontrado');
       }
+
+      const admin =
+        doesEmployeeReallyExists.boss === null
+          ? doesEmployeeReallyExists
+          : doesEmployeeReallyExists.boss;
 
       const data = {
         name: createProductWithRecipeDTO.name,
@@ -256,6 +285,7 @@ export class ProductService {
         lowStock: createProductWithRecipeDTO.lowStock || null,
         price: createProductWithRecipeDTO.price,
         employee: doesEmployeeReallyExists,
+        admin,
       };
 
       const createProduct = queryRunner.manager.create(Product, data);
@@ -272,7 +302,8 @@ export class ProductService {
         expirationDate: createProductWithRecipeDTO.expirationDate,
         notes: null,
         product: newProduct,
-        employee: findEmployee,
+        employee: doesEmployeeReallyExists,
+        admin,
       });
 
       await queryRunner.manager.save(ProductInflow, createProductInflow);
@@ -330,6 +361,7 @@ export class ProductService {
           supplyRealTime: doesSupplyReallyExists,
           product: newProduct,
           employee: doesEmployeeReallyExists,
+          admin,
           quantity: supply.quantity,
         };
 
@@ -351,6 +383,7 @@ export class ProductService {
           reason: OutflowReason.PRODUCT_REGISTER,
           quantity: supply.quantity,
           employee: doesEmployeeReallyExists,
+          admin,
           supplyRealTime: doesSupplyReallyExists,
           targetType: OutflowType.SUPPLY,
           product: newProduct,

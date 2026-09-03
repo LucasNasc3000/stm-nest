@@ -56,6 +56,15 @@ export class OutflowService {
           where: {
             id: tokenPayloadDTO.sub,
           },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
+          },
         },
       );
 
@@ -117,6 +126,11 @@ export class OutflowService {
         throw new InternalServerErrorException('Erro ao atualizar produto');
       }
 
+      const admin =
+        doesEmployeeReallyExists.boss === null
+          ? doesEmployeeReallyExists
+          : doesEmployeeReallyExists.boss;
+
       const data = {
         targetType: createOutflowDTO.targetType,
         name: createOutflowDTO.name,
@@ -125,6 +139,7 @@ export class OutflowService {
         notes: createOutflowDTO.notes || null,
         unities: createOutflowDTO.unities,
         employee: doesEmployeeReallyExists,
+        admin,
         product: doesProductReallyExists,
       };
 
@@ -173,6 +188,15 @@ export class OutflowService {
           where: {
             id: tokenPayloadDTO.sub,
           },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
+          },
         },
       );
 
@@ -217,6 +241,11 @@ export class OutflowService {
         );
       }
 
+      const admin =
+        doesEmployeeReallyExists.boss === null
+          ? doesEmployeeReallyExists
+          : doesEmployeeReallyExists.boss;
+
       const data = {
         targetType: createOutflowDTO.targetType,
         name: createOutflowDTO.name,
@@ -225,6 +254,7 @@ export class OutflowService {
         notes: createOutflowDTO.notes || null,
         quantity: createOutflowDTO.quantity,
         employee: doesEmployeeReallyExists,
+        admin,
         supplyRealTime: doesSupplyReallyExists,
       };
 
@@ -305,39 +335,10 @@ export class OutflowService {
     }));
   }
 
-  async FindById(id: string) {
-    const outflowFindById = await this.outflowRepository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        employee: true,
-        product: true,
-      },
-      select: {
-        employee: {
-          id: true,
-          email: true,
-        },
-        product: {
-          id: true,
-          name: true,
-        },
-      },
-    });
-
-    if (!outflowFindById) {
-      throw new NotFoundException('Saída não encontrada');
-    }
-
-    return {
-      ...outflowFindById,
-      createdAt: Formatter(outflowFindById.createdAt),
-      updatedAt: Formatter(outflowFindById.updatedAt),
-    };
-  }
-
-  async FindByType(paginationByType: PaginationByTypeDTO) {
+  async FindByType(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByType: PaginationByTypeDTO,
+  ) {
     const { limit, offset, value } = paginationByType;
 
     const [outflowFindByType, total] =
@@ -349,6 +350,9 @@ export class OutflowService {
         },
         where: {
           targetType: value,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,
@@ -382,7 +386,10 @@ export class OutflowService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByDate(paginationByDate: PaginationByDateDTO) {
+  async FindByDate(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByDate: PaginationByDateDTO,
+  ) {
     const { limit, offset, value } = paginationByDate;
 
     const [outflowFindByDate, total] =
@@ -397,6 +404,9 @@ export class OutflowService {
             new Date(`${value}T00:00:00`),
             new Date(`${value}T23:59:59`),
           ),
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,
@@ -430,7 +440,10 @@ export class OutflowService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByHour(paginationByHour: PaginationByHourDTO) {
+  async FindByHour(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByHour: PaginationByHourDTO,
+  ) {
     const { limit, offset, value } = paginationByHour;
     const [hour, minute, second] = value.split(':').map(Number);
 
@@ -442,26 +455,32 @@ export class OutflowService {
       .addSelect(['employee.id', 'employee.email'])
       .leftJoinAndSelect('outflow.product', 'product')
       .addSelect(['product.id', 'product.name'])
+      .where('outflow.admin.id = :adminId', {
+        adminId: tokenPayloadDTO.adminId,
+      })
       .orderBy('outflow.id', 'DESC')
       .take(limit)
       .skip(offset);
 
     switch (true) {
       case minute === undefined || isNaN(minute):
-        query.where(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
+        query.andWhere(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
           hour,
         });
         break;
 
       case !isNaN(minute) && (isNaN(second) || second === undefined):
-        query.where(`EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`, {
-          minute,
-        });
+        query.andWhere(
+          `EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`,
+          {
+            minute,
+          },
+        );
         break;
 
       case !isNaN(minute) && (isNaN(second) || second === undefined):
         query
-          .where(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
+          .andWhere(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
             hour,
           })
           .andWhere(`EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`, {
@@ -471,7 +490,9 @@ export class OutflowService {
 
       case !isNaN(minute) && !isNaN(second):
         query
-          .where(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, { hour })
+          .andWhere(`EXTRACT(HOUR FROM outflow.createdAt ${tz}) = :hour`, {
+            hour,
+          })
           .andWhere(`EXTRACT(MINUTE FROM outflow.createdAt ${tz}) = :minute`, {
             minute,
           })
@@ -498,7 +519,10 @@ export class OutflowService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByName(paginationByName: PaginationByNameDTO) {
+  async FindByName(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByName: PaginationByNameDTO,
+  ) {
     const { limit, offset, value } = paginationByName;
 
     const [outflowFindByName, total] =
@@ -510,6 +534,9 @@ export class OutflowService {
         },
         where: {
           name: ILike(`${value}%`),
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,
@@ -543,7 +570,10 @@ export class OutflowService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByCategory(paginationByCategory: PaginationByCategoryDTO) {
+  async FindByCategory(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByCategory: PaginationByCategoryDTO,
+  ) {
     const { limit, offset, value } = paginationByCategory;
 
     const [outflowFindByCategory, total] =
@@ -555,6 +585,9 @@ export class OutflowService {
         },
         where: {
           category: ILike(`${value}%`),
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,
@@ -589,7 +622,10 @@ export class OutflowService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByReason(paginationByReason: PaginationByReasonDTO) {
+  async FindByReason(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByReason: PaginationByReasonDTO,
+  ) {
     const { limit, offset, value } = paginationByReason;
 
     const [outflowFindByReason, total] =
@@ -601,6 +637,9 @@ export class OutflowService {
         },
         where: {
           reason: value,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,

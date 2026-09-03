@@ -32,6 +32,15 @@ export class PlatformService {
       where: {
         id: tokenPayloadDTO.sub,
       },
+      relations: {
+        boss: true,
+      },
+      select: {
+        boss: {
+          id: true,
+          email: true,
+        },
+      },
     });
 
     if (!findEmployee) {
@@ -41,6 +50,7 @@ export class PlatformService {
     const createPlatform = this.platformRepository.create({
       ...createPlatformDTO,
       employee: findEmployee,
+      admin: findEmployee.boss === null ? findEmployee : findEmployee.boss,
     });
 
     const newPlatform = await this.platformRepository.save(createPlatform);

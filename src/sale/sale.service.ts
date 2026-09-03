@@ -16,7 +16,6 @@ import { OutflowType } from 'src/common/enums/outflow-type.enum';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { ProductInflowReason } from 'src/common/enums/product-inflow-reason.enum';
 import { SaleStatus } from 'src/common/enums/sale-status.enum';
-import { EmployeeService } from 'src/employee/employee.service';
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Outflow } from 'src/outflow/entities/outflow.entity';
 import { Platform } from 'src/platform/entities/platform.entity';
@@ -49,7 +48,6 @@ export class SaleService {
   constructor(
     @InjectRepository(Sale)
     private readonly salesRepository: Repository<Sale>,
-    private readonly employeesService: EmployeeService,
     private dataSource: DataSource,
     private readonly logger: Logger,
   ) {}
@@ -65,6 +63,15 @@ export class SaleService {
         {
           where: {
             id: tokenPayloadDTO.sub,
+          },
+          relations: {
+            boss: true,
+          },
+          select: {
+            boss: {
+              id: true,
+              email: true,
+            },
           },
         },
       );
@@ -120,6 +127,11 @@ export class SaleService {
         netValue = totalPrice.sub(mulByTotalPrice).toString();
       }
 
+      const admin =
+        doesEmployeeReallyExists.boss === null
+          ? doesEmployeeReallyExists
+          : doesEmployeeReallyExists.boss;
+
       const dataSale = {
         clientName: createSaleDTO.clientName,
         clientEmail: createSaleDTO.clientEmail || null,
@@ -133,6 +145,7 @@ export class SaleService {
         platformNameSnapshot: foundPlatform?.name,
         totalPrice: totalPrice.toString(),
         employee: doesEmployeeReallyExists,
+        admin,
       };
 
       const saleCreate = queryRunner.manager.create(Sale, dataSale);
@@ -194,6 +207,7 @@ export class SaleService {
           reason: OutflowReason.SALE,
           unities: item.quantity,
           employee: doesEmployeeReallyExists,
+          admin,
           targetType: OutflowType.PRODUCT,
           product,
           saleItem: newSaleItem,
@@ -409,6 +423,8 @@ export class SaleService {
   ) {
     const inflows: ProductInflow[] = [];
 
+    const admin = employee.boss === null ? employee : employee.boss;
+
     for (const product of sale.saleItems) {
       const findProduct = await queryRunner.manager.findOne(Product, {
         where: {
@@ -454,7 +470,8 @@ export class SaleService {
         price: product.priceAtSale,
         useStockSupplies: false,
         product: findProduct,
-        employee: employee,
+        employee,
+        admin,
         expirationDate: lastInflowData.expirationDate,
       });
 
@@ -482,7 +499,10 @@ export class SaleService {
     }));
   }
 
-  async FindByDate(paginationByDate: PaginationByDateDTO) {
+  async FindByDate(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByDate: PaginationByDateDTO,
+  ) {
     const { limit, offset, value } = paginationByDate;
 
     const [salesFindByDate, total] = await this.salesRepository.findAndCount({
@@ -496,6 +516,9 @@ export class SaleService {
           new Date(`${value}T00:00:00`),
           new Date(`${value}T23:59:59`),
         ),
+        admin: {
+          id: tokenPayloadDTO.adminId,
+        },
       },
       relations: {
         employee: true,
@@ -530,7 +553,10 @@ export class SaleService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByHour(paginationByHour: PaginationByHourDTO) {
+  async FindByHour(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByHour: PaginationByHourDTO,
+  ) {
     const { limit, offset, value } = paginationByHour;
 
     const [hour, minute, second] = value.split(':').map(Number);
@@ -539,6 +565,9 @@ export class SaleService {
 
     const query = this.salesRepository
       .createQueryBuilder('sale')
+      .where('sale.admin.id = :adminId', {
+        adminId: tokenPayloadDTO.adminId,
+      })
       .leftJoinAndSelect('sale.employee', 'employee')
       .addSelect(['employee.id', 'employee.email'])
       .leftJoinAndSelect('sale.saleItems', 'sale_items')
@@ -554,20 +583,20 @@ export class SaleService {
     switch (true) {
       // Se não houverem minutos não haverão segundos
       case minute === undefined || isNaN(minute):
-        query.where(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, {
+        query.andWhere(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, {
           hour,
         });
         break;
 
       case !isNaN(minute) && (isNaN(second) || second === undefined):
-        query.where(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
+        query.andWhere(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
           minute,
         });
         break;
 
       case !isNaN(minute) && (isNaN(second) || second === undefined):
         query
-          .where(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, {
+          .andWhere(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, {
             hour,
           })
           .andWhere(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
@@ -577,7 +606,7 @@ export class SaleService {
 
       case !isNaN(minute) && !isNaN(second):
         query
-          .where(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, { hour })
+          .andWhere(`EXTRACT(HOUR FROM sale.createdAt ${tz}) = :hour`, { hour })
           .andWhere(`EXTRACT(MINUTE FROM sale.createdAt ${tz}) = :minute`, {
             minute,
           })
@@ -604,7 +633,10 @@ export class SaleService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByClientName(paginationByClientNameDTO: PaginationByClientNameDTO) {
+  async FindByClientName(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByClientNameDTO: PaginationByClientNameDTO,
+  ) {
     const { limit, offset, value } = paginationByClientNameDTO;
 
     const [saleFindByClientName, total] =
@@ -616,6 +648,9 @@ export class SaleService {
         },
         where: {
           clientName: ILike(`${value}%`),
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,
@@ -650,7 +685,10 @@ export class SaleService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByAddress(paginationByAddressDTO: PaginationByAddressDTO) {
+  async FindByAddress(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByAddressDTO: PaginationByAddressDTO,
+  ) {
     const { limit, offset, value } = paginationByAddressDTO;
 
     const [saleFindByAddress, total] = await this.salesRepository.findAndCount({
@@ -661,6 +699,9 @@ export class SaleService {
       },
       where: {
         address: ILike(`${value}%`),
+        admin: {
+          id: tokenPayloadDTO.adminId,
+        },
       },
       relations: {
         employee: true,

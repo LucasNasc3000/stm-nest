@@ -50,6 +50,14 @@ export class Outflow {
   @Type(() => Employee)
   employee: Employee;
 
+  @ManyToOne(() => Employee, {
+    onDelete: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'adminId' })
+  @Type(() => Employee)
+  admin: Employee;
+
   @ManyToOne(
     () => SupplyRealTime,
     (supplyRealTime) => supplyRealTime.outflows,
