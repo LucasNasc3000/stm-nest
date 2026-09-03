@@ -226,17 +226,25 @@ export class SupplyController {
   @SkipThrottle({ write: true, auth: true })
   @Get('search/reason/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
-  FindByReason(@Query() paginationByReasonDto: PaginationByReasonDTO) {
-    return this.supplyFindService.FindByReason(paginationByReasonDto);
+  FindByReason(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Query() paginationByReasonDto: PaginationByReasonDTO,
+  ) {
+    return this.supplyFindService.FindByReason(
+      tokenPayloadDTO,
+      paginationByReasonDto,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/totalWeightPerRegister/')
   @SetRoutePolicy({ resource: Resource.SUPPLIES, action: Action.READ })
   FindByTotalWeightPerRegister(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByTotalWeightDto: PaginationByTotalWeightDTO,
   ) {
     return this.supplyFindService.FindByTotalWeightPerRegister(
+      tokenPayloadDTO,
       paginationByTotalWeightDto,
     );
   }

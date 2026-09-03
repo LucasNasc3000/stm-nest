@@ -187,6 +187,9 @@ export class ProductService {
             where: {
               id: supply.supplyId,
               isActive: true,
+              admin: {
+                id: tokenPayloadDTO.adminId,
+              },
             },
           },
         );
@@ -315,6 +318,9 @@ export class ProductService {
             where: {
               id: supply.supplyId,
               isActive: true,
+              admin: {
+                id: tokenPayloadDTO.adminId,
+              },
             },
             lock: { mode: 'pessimistic_write' },
           },
@@ -446,6 +452,9 @@ export class ProductService {
         where: {
           id: productId,
           is_active: true,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         lock: { mode: 'pessimistic_write' },
       });
@@ -582,13 +591,20 @@ export class ProductService {
     }
   }
 
-  async UpdatePrice(idParam: string, priceParam: UpdatePriceProductDTO) {
+  async UpdatePrice(
+    tokenPayloadDTO: TokenPayloadDTO,
+    idParam: string,
+    priceParam: UpdatePriceProductDTO,
+  ) {
     const { price } = priceParam;
 
     const findProduct = await this.productRepository.findOne({
       where: {
         id: idParam,
         is_active: true,
+        admin: {
+          id: tokenPayloadDTO.adminId,
+        },
       },
     });
 
@@ -631,6 +647,8 @@ export class ProductService {
 
     let productUnities: number = product.unities;
     const outflows: Outflow[] = [];
+
+    const admin = employee.boss === null ? employee : employee.boss;
 
     // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
     if (useStockSupplies && addUnities > 0) {
@@ -719,6 +737,7 @@ export class ProductService {
           notes: updateProductUnitiesDTO.notes || null,
           quantity: updatedQuantityByAddUnities,
           employee,
+          admin,
           supplyRealTime: doesSupplyReallyExists,
           product,
           ingredient,
@@ -755,6 +774,7 @@ export class ProductService {
         notes: updateProductUnitiesDTO.notes || null,
         unities: takeUnities,
         employee,
+        admin,
         product,
       };
 
@@ -791,6 +811,7 @@ export class ProductService {
         useStockSupplies: updateProductUnitiesDTO.useStockSupplies,
         product: product,
         employee: employee,
+        admin,
         expirationDate:
           updateProductUnitiesDTO.expirationDate ||
           lastInflowData.expirationDate,
@@ -818,6 +839,8 @@ export class ProductService {
     employee: Employee,
     queryRunner: QueryRunner,
   ) {
+    const admin = employee.boss === null ? employee : employee.boss;
+
     for (const ingredient of productIngredient) {
       const findSupply = await queryRunner.manager.findOne(SupplyRealTime, {
         where: {
@@ -837,6 +860,7 @@ export class ProductService {
         supplyRealTime: findSupply,
         product,
         employee,
+        admin,
       };
 
       const createProductIngredient = queryRunner.manager.create(

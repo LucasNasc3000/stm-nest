@@ -540,8 +540,11 @@ export class EmployeeService {
     return [total, ...employeeFindByRole];
   }
 
-  async FindByBoss(paginationByBossDTO: PaginationByBossDTO) {
-    const { limit, offset, value } = paginationByBossDTO;
+  async FindByBoss(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByBossDTO: PaginationByBossDTO,
+  ) {
+    const { limit, offset } = paginationByBossDTO;
 
     const [employeeFindByBoss, total] =
       await this.employeeRepository.findAndCount({
@@ -552,7 +555,7 @@ export class EmployeeService {
         },
         where: {
           boss: {
-            id: value,
+            id: tokenPayloadDTO.adminId,
           },
           situation: EmployeeSituation.EMPLOYED,
         },

@@ -111,6 +111,9 @@ export class SupplyService {
           where: {
             name: createSupplyDTO.name,
             isActive: true,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
         },
       );
@@ -225,6 +228,9 @@ export class SupplyService {
           where: {
             id: supplyId,
             isActive: true,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
         },
       );
@@ -432,6 +438,9 @@ export class SupplyService {
           where: {
             id: supplyId,
             isActive: true,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
         },
       );

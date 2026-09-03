@@ -39,18 +39,24 @@ export class PlatformController {
   @SkipThrottle({ read: true, auth: true })
   @Patch(':id')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.UPDATE })
-  Update(@Param() id: UrlUuidDTO, @Body() body: UpdatePlatformDTO) {
-    return this.platformService.Update(id.id, body);
+  Update(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Param() id: UrlUuidDTO,
+    @Body() body: UpdatePlatformDTO,
+  ) {
+    return this.platformService.Update(tokenPayloadDTO, id.id, body);
   }
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/employee')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.READ })
   async FindByEmployee(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Res({ passthrough: true }) res: Response,
     @Query() paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ) {
     const findPlatforms = await this.platformService.FindByEmployee(
+      tokenPayloadDTO,
       paginationByEmployeeDTO,
     );
 
@@ -69,10 +75,14 @@ export class PlatformController {
   @Delete(':id')
   @SetRoutePolicy({ resource: Resource.PLATFORMS, action: Action.DELETE })
   async Delete(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Res({ passthrough: true }) res: Response,
     @Param() id: UrlUuidDTO,
   ) {
-    const deletePlatform = await this.platformService.Delete(id.id);
+    const deletePlatform = await this.platformService.Delete(
+      tokenPayloadDTO,
+      id.id,
+    );
 
     res.status(HttpStatus.NO_CONTENT);
 

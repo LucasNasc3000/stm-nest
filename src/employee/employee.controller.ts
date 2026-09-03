@@ -107,13 +107,15 @@ export class EmployeeController {
 
   @SkipThrottle({ write: true, auth: true })
   @Get('search/boss/')
-  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   async FindByBoss(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Res({ passthrough: true }) res: Response,
     @Query() paginationByBossDto: PaginationByBossDTO,
   ) {
-    const findByBoss =
-      await this.employeesService.FindByBoss(paginationByBossDto);
+    const findByBoss = await this.employeesService.FindByBoss(
+      tokenPayloadDTO,
+      paginationByBossDto,
+    );
 
     if (findByBoss.length === 0) {
       res.status(HttpStatus.NO_CONTENT);
@@ -127,9 +129,9 @@ export class EmployeeController {
   @Get('search/exemployees')
   @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.READ })
   async ListExEmployees(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Res({ passthrough: true }) res: Response,
     @Query() paginationExEmployeesDTO: PaginationExEmployeesDTO,
-    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
     const exEmployees = await this.employeesService.FindExEmployees(
       tokenPayloadDTO,

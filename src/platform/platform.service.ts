@@ -58,7 +58,24 @@ export class PlatformService {
     return newPlatform;
   }
 
-  async Update(id: string, updatePlatformDTO: UpdatePlatformDTO) {
+  async Update(
+    tokenPayloadDTO: TokenPayloadDTO,
+    id: string,
+    updatePlatformDTO: UpdatePlatformDTO,
+  ) {
+    const findPlatform = await this.platformRepository.findOne({
+      where: {
+        id,
+        admin: {
+          id: tokenPayloadDTO.adminId,
+        },
+      },
+    });
+
+    if (!findPlatform) {
+      throw new NotFoundException('Plataforma não encontrada');
+    }
+
     const platformUpdate = await this.platformRepository.preload({
       id,
       ...updatePlatformDTO,
@@ -79,10 +96,13 @@ export class PlatformService {
     return platformUpdated;
   }
 
-  async Delete(id: string) {
+  async Delete(tokenPayloadDTO: TokenPayloadDTO, id: string) {
     const findPlatform = await this.platformRepository.findOne({
       where: {
         id,
+        admin: {
+          id: tokenPayloadDTO.adminId,
+        },
       },
     });
 
@@ -100,6 +120,7 @@ export class PlatformService {
   }
 
   async FindByEmployee(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ): Promise<[number, Platform[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
@@ -114,6 +135,9 @@ export class PlatformService {
         where: {
           employee: {
             id: value,
+          },
+          admin: {
+            id: tokenPayloadDTO.adminId,
           },
         },
         relations: {

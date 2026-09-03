@@ -259,6 +259,7 @@ export class ProductFindService {
   }
 
   async FindByEmployee(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ): Promise<[number, ProductResponse[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
@@ -273,6 +274,9 @@ export class ProductFindService {
         where: {
           employee: {
             id: value,
+          },
+          admin: {
+            id: tokenPayloadDTO.adminId,
           },
           is_active: true,
         },
@@ -363,6 +367,7 @@ export class ProductFindService {
   }
 
   async FindInflowByEmployee(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByInflowDto: PaginationByInflowEmployeeDTO,
   ): Promise<[number, ProductInflowResponse[]]> {
     const { limit, offset, email, id, forDisplay } = paginationByInflowDto;
@@ -378,6 +383,9 @@ export class ProductFindService {
         },
         where: {
           employee: conditionalWhere,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           product: true,

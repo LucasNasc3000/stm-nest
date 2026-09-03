@@ -84,6 +84,9 @@ export class SaleService {
       const findProducts = await queryRunner.manager.find(Product, {
         where: {
           id: In(productsIds),
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
       });
 
@@ -287,6 +290,9 @@ export class SaleService {
       const findSale = await queryRunner.manager.findOne(Sale, {
         where: {
           id,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           saleItems: {
@@ -349,6 +355,9 @@ export class SaleService {
       const recoverUpdatedSaleData = await this.salesRepository.findOne({
         where: {
           id,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
       });
 
@@ -737,6 +746,7 @@ export class SaleService {
   }
 
   async FindByEmployee(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ): Promise<[number, SaleResponse[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
@@ -751,6 +761,9 @@ export class SaleService {
         where: {
           employee: {
             id: value,
+          },
+          admin: {
+            id: tokenPayloadDTO.adminId,
           },
         },
         relations: {

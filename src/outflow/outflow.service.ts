@@ -78,6 +78,9 @@ export class OutflowService {
           where: {
             name: createOutflowDTO.name,
             category: createOutflowDTO.category,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
           lock: { mode: 'pessimistic_write' },
         },
@@ -210,6 +213,9 @@ export class OutflowService {
           where: {
             name: createOutflowDTO.name,
             category: createOutflowDTO.category,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
           lock: { mode: 'pessimistic_write' },
         },
@@ -674,6 +680,7 @@ export class OutflowService {
   }
 
   async FindByEmployee(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByEmployeeDTO: PaginationByEmployeeDTO,
   ): Promise<[number, OutflowResponse[]]> {
     const { limit, offset, value, forDisplay } = paginationByEmployeeDTO;
@@ -688,6 +695,9 @@ export class OutflowService {
         where: {
           employee: {
             id: value,
+          },
+          admin: {
+            id: tokenPayloadDTO.adminId,
           },
         },
         relations: {

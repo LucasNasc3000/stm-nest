@@ -407,7 +407,10 @@ export class SupplyFindService {
     return [total, formattedCreatedAndUpdatedAt];
   }
 
-  async FindByReason(paginationByReasonDTO: PaginationByReasonDTO) {
+  async FindByReason(
+    tokenPayloadDTO: TokenPayloadDTO,
+    paginationByReasonDTO: PaginationByReasonDTO,
+  ) {
     const { limit, offset, value } = paginationByReasonDTO;
 
     const [supplyFindByReason, total] =
@@ -419,6 +422,9 @@ export class SupplyFindService {
         },
         where: {
           reason: value,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,
@@ -448,6 +454,7 @@ export class SupplyFindService {
   }
 
   async FindByTotalWeightPerRegister(
+    tokenPayloadDTO: TokenPayloadDTO,
     paginationByTotalWeightDTO: PaginationByTotalWeightDTO,
   ) {
     const { limit, offset, value } = paginationByTotalWeightDTO;
@@ -461,6 +468,9 @@ export class SupplyFindService {
         },
         where: {
           totalWeightPerRegister: value,
+          admin: {
+            id: tokenPayloadDTO.adminId,
+          },
         },
         relations: {
           employee: true,

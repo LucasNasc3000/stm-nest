@@ -103,10 +103,12 @@ export class SaleController {
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.SALES, action: Action.READ })
   async FindByEmployee(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
     const findSales = await this.salesService.FindByEmployee(
+      tokenPayloadDTO,
       paginationByEmployeeDto,
     );
 

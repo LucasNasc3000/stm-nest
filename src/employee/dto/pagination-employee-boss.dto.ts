@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, Max, Min } from 'class-validator';
 
 export class PaginationByBossDTO {
   @IsInt({
@@ -22,12 +22,4 @@ export class PaginationByBossDTO {
   })
   @Type(() => Number)
   offset: number;
-
-  @IsNotEmpty({
-    message: 'Id do administrador não fornecido',
-  })
-  @IsUUID(4, {
-    message: 'O id do administrador deve ser um uuid',
-  })
-  value: string;
 }

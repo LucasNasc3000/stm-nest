@@ -92,10 +92,15 @@ export class ProductController {
   @Patch('update/price/:id')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.EDIT_PRICES })
   UpdateProductPrice(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Param() id: UrlUuidDTO,
     @Body() updatePriceProductDTO: UpdatePriceProductDTO,
   ) {
-    return this.productService.UpdatePrice(id.id, updatePriceProductDTO);
+    return this.productService.UpdatePrice(
+      tokenPayloadDTO,
+      id.id,
+      updatePriceProductDTO,
+    );
   }
 
   @SkipThrottle({ write: true, auth: true })
@@ -149,10 +154,12 @@ export class ProductController {
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByEmployee(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
     const findProducts = await this.productFindService.FindByEmployee(
+      tokenPayloadDTO,
       paginationByEmployeeDto,
     );
 
@@ -209,10 +216,12 @@ export class ProductController {
   @Get('search/employee/inflows')
   @SetRoutePolicy({ resource: Resource.PRODUCTS, action: Action.READ })
   async FindByInflowsEmployee(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByInflowEmployeeDto: PaginationByInflowEmployeeDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
     const findInflows = await this.productFindService.FindInflowByEmployee(
+      tokenPayloadDTO,
       paginationByInflowEmployeeDto,
     );
 
