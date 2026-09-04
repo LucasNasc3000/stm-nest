@@ -132,10 +132,12 @@ export class OutflowController {
   @Get('search/employee/')
   @SetRoutePolicy({ resource: Resource.OUTFLOWS, action: Action.READ })
   async FindByEmployee(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() paginationByEmployeeDto: PaginationByEmployeeDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
     const findOutflows = await this.outflowsService.FindByEmployee(
+      tokenPayloadDTO,
       paginationByEmployeeDto,
     );
 
