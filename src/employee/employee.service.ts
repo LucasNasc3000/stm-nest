@@ -444,7 +444,7 @@ export class EmployeeService {
       email,
       situation: EmployeeSituation.EMPLOYED,
       boss: {
-        id: tokenPayloadDTO.sub,
+        id: tokenPayloadDTO.adminId,
       },
     });
 
@@ -485,7 +485,7 @@ export class EmployeeService {
           name: ILike(`${value}%`),
           situation: EmployeeSituation.EMPLOYED,
           boss: {
-            id: tokenPayloadDTO.sub,
+            id: tokenPayloadDTO.adminId,
           },
         },
       });
@@ -521,7 +521,7 @@ export class EmployeeService {
             id: value,
           },
           boss: {
-            id: tokenPayloadDTO.sub,
+            id: tokenPayloadDTO.adminId,
           },
           situation: EmployeeSituation.EMPLOYED,
         },
@@ -586,7 +586,7 @@ export class EmployeeService {
         where: {
           situation: EmployeeSituation.FIRED,
           boss: {
-            id: tokenPayloadDTO.sub,
+            id: tokenPayloadDTO.adminId,
           },
         },
       });

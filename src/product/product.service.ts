@@ -515,6 +515,7 @@ export class ProductService {
       if (updateProductDTO.updateProductIngredient) {
         await this.UpdateProductIngredient(
           updateProductDTO.updateProductIngredient,
+          findEmployee,
           queryRunner,
         );
       }
@@ -658,10 +659,6 @@ export class ProductService {
     const outflows: Outflow[] = [];
 
     const admin = employee.boss === null ? employee : employee.boss;
-
-    this.logger.log({ admin });
-
-    this.logger.log({ employee });
 
     // A diminuição das unidades do produto não vai devolver insumos ao estoque, eles já foram usados
     if (useStockSupplies && addUnities > 0) {
@@ -859,6 +856,7 @@ export class ProductService {
         where: {
           id: ingredient.supplyId,
           isActive: true,
+          admin,
         },
       });
 
@@ -890,8 +888,11 @@ export class ProductService {
 
   private async UpdateProductIngredient(
     productIngredient: UpdateProductIngredientDTO[],
+    employee: Employee,
     queryRunner: QueryRunner,
   ) {
+    const admin = employee.boss === null ? employee : employee.boss;
+
     for (const ingredient of productIngredient) {
       const findIngredient = await queryRunner.manager.findOne(
         ProductIngredient,
@@ -899,6 +900,7 @@ export class ProductService {
           where: {
             id: ingredient.id,
             isActive: true,
+            admin,
           },
           lock: { mode: 'pessimistic_write' },
         },
