@@ -856,7 +856,9 @@ export class ProductService {
         where: {
           id: ingredient.supplyId,
           isActive: true,
-          admin,
+          admin: {
+            id: admin.id,
+          },
         },
       });
 
@@ -900,7 +902,9 @@ export class ProductService {
           where: {
             id: ingredient.id,
             isActive: true,
-            admin,
+            admin: {
+              id: admin.id,
+            },
           },
           lock: { mode: 'pessimistic_write' },
         },

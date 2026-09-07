@@ -116,6 +116,9 @@ export class SaleService {
         foundPlatform = await queryRunner.manager.findOne(Platform, {
           where: {
             name: platform,
+            admin: {
+              id: tokenPayloadDTO.adminId,
+            },
           },
         });
 
