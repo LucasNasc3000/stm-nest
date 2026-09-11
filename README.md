@@ -340,7 +340,7 @@ Este projeto está licenciado sob a **AGPL-3.0-only**.
 
 <strong><--------------------------------------------- English Version -------------------------------------------------------></strong>
 
-# Storage Manager System - API v2.0
+# Grid Stock API - Storage Manager System API v2.0
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
