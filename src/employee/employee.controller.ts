@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
   Res,
   UseGuards,
@@ -33,10 +34,13 @@ export class EmployeeController {
   constructor(private readonly employeesService: EmployeeService) {}
 
   @SkipThrottle({ read: true, auth: true })
-  // @Post()
-  // @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
-  Create(@Body() body: CreateEmployeeDTO) {
-    return this.employeesService.Create(body);
+  @Post()
+  @SetRoutePolicy({ resource: Resource.EMPLOYEES, action: Action.CREATE })
+  Create(
+    @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
+    @Body() body: CreateEmployeeDTO,
+  ) {
+    return this.employeesService.Create(tokenPayloadDTO, body);
   }
 
   @SkipThrottle({ read: true, auth: true })

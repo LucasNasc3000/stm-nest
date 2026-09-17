@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 
 export class PaginationByRoleDTO {
   @IsInt({
@@ -26,8 +26,8 @@ export class PaginationByRoleDTO {
   @IsNotEmpty({
     message: 'Id do cargo não fornecido',
   })
-  @IsUUID(4, {
-    message: 'O id do cargo deve ser um uuid',
+  @IsString({
+    message: 'O nome do cargo deve estar em formato de texto',
   })
   value: string;
 }

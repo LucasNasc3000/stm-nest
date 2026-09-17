@@ -39,18 +39,18 @@ export class EmployeeService {
     private dataSource: DataSource,
   ) {}
 
-  private async IsEmployeeVerify(email: string) {
-    const findEmployee = await this.employeeRepository.findOne({
-      where: {
-        email,
-      },
-    });
+  async Create(
+    tokenPayloadDTO: TokenPayloadDTO,
+    createEmployeeDTO: CreateEmployeeDTO,
+  ) {
+    const searchEmailDTO: SearchByEmailDTO = {
+      value: createEmployeeDTO.email,
+    };
 
-    return findEmployee;
-  }
-
-  async Create(createEmployeeDTO: CreateEmployeeDTO) {
-    const employeeExists = await this.IsEmployeeVerify(createEmployeeDTO.email);
+    const employeeExists = await this.FindByEmail(
+      tokenPayloadDTO,
+      searchEmailDTO,
+    );
 
     if (employeeExists) {
       throw new BadRequestException('Funcionário já existe');
@@ -518,7 +518,7 @@ export class EmployeeService {
         },
         where: {
           role: {
-            id: value,
+            name: value,
           },
           boss: {
             id: tokenPayloadDTO.adminId,
