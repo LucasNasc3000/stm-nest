@@ -80,7 +80,7 @@ export class EmployeeController {
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
     @Query() email: SearchByEmailDTO,
   ) {
-    return this.employeesService.FindByEmail(tokenPayloadDTO, email);
+    return this.employeesService.FindByEmail(tokenPayloadDTO, email, false);
   }
 
   @SkipThrottle({ write: true, auth: true })

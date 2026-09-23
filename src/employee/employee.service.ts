@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -35,7 +34,6 @@ export class EmployeeService {
     private readonly employeeRepository: Repository<Employee>,
     private readonly roleService: RoleService,
     private readonly hashingService: HashingServiceProtocol,
-    private readonly logger: Logger,
     private dataSource: DataSource,
   ) {}
 
@@ -50,6 +48,7 @@ export class EmployeeService {
     const employeeExists = await this.FindByEmail(
       tokenPayloadDTO,
       searchEmailDTO,
+      true,
     );
 
     if (employeeExists) {
@@ -82,7 +81,15 @@ export class EmployeeService {
 
     const employeeCreate = this.employeeRepository.create(employeeCreateData);
 
+    console.log({
+      employeeCreate,
+    });
+
     const newEmployee = await this.employeeRepository.save(employeeCreate);
+
+    console.log({
+      newEmployee,
+    });
 
     if (!employeeCreate || !newEmployee) {
       throw new InternalServerErrorException('Erro ao cadastrar funcionário');
@@ -437,18 +444,35 @@ export class EmployeeService {
   async FindByEmail(
     tokenPayloadDTO: TokenPayloadDTO,
     emailDTO: SearchByEmailDTO,
+    forRegister: boolean,
   ) {
     const email = emailDTO.value;
 
-    const employeeFindByEmail = await this.employeeRepository.findOneBy({
-      email,
-      situation: EmployeeSituation.EMPLOYED,
-      boss: {
-        id: tokenPayloadDTO.adminId,
+    const employeeFindByEmail = await this.employeeRepository.findOne({
+      where: {
+        email,
+        situation: EmployeeSituation.EMPLOYED,
+        boss: {
+          id: tokenPayloadDTO.adminId,
+        },
+      },
+      relations: {
+        boss: true,
+        role: true,
+      },
+      select: {
+        boss: {
+          id: true,
+          email: true,
+        },
+        role: {
+          id: true,
+          name: true,
+        },
       },
     });
 
-    if (!employeeFindByEmail) {
+    if (!employeeFindByEmail && !forRegister) {
       throw new NotFoundException('Funcionário não encontrado');
     }
 
@@ -488,6 +512,20 @@ export class EmployeeService {
             id: tokenPayloadDTO.adminId,
           },
         },
+        relations: {
+          boss: true,
+          role: true,
+        },
+        select: {
+          boss: {
+            id: true,
+            email: true,
+          },
+          role: {
+            id: true,
+            name: true,
+          },
+        },
       });
 
     if (!employeeFindByName) {
@@ -525,6 +563,20 @@ export class EmployeeService {
           },
           situation: EmployeeSituation.EMPLOYED,
         },
+        relations: {
+          boss: true,
+          role: true,
+        },
+        select: {
+          boss: {
+            id: true,
+            email: true,
+          },
+          role: {
+            id: true,
+            name: true,
+          },
+        },
       });
 
     if (!employeeFindByRole) {
@@ -559,6 +611,20 @@ export class EmployeeService {
           },
           situation: EmployeeSituation.EMPLOYED,
         },
+        relations: {
+          boss: true,
+          role: true,
+        },
+        select: {
+          boss: {
+            id: true,
+            email: true,
+          },
+          role: {
+            id: true,
+            name: true,
+          },
+        },
       });
 
     if (!employeeFindByBoss) {
@@ -587,6 +653,20 @@ export class EmployeeService {
           situation: EmployeeSituation.FIRED,
           boss: {
             id: tokenPayloadDTO.adminId,
+          },
+        },
+        relations: {
+          boss: true,
+          role: true,
+        },
+        select: {
+          boss: {
+            id: true,
+            email: true,
+          },
+          role: {
+            id: true,
+            name: true,
           },
         },
       });
