@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
@@ -82,25 +83,40 @@ describe('EmployeeService', () => {
     const employeeSaveMock = MakeEmployeeSaveReturnMock();
     const employeeCreateServiceReturn = MakeEmployeeCreateServiceReturnMock();
 
+    const createEmployeeDTO: CreateEmployeeDTO = {
+      email: 'testAdminLocal@mail.com',
+      name: 'UsuarioTesteAdminLocal01',
+      currentPassword: '12ABcd@#',
+      role: {
+        roleId: 'addcbbe0-6932-457d-8fcb-a5cdef802cbe',
+        name: 'admin',
+      },
+    };
+
     // Testar com boss null e preenchido
-    // Testar o case de erro 409, quando um funcionário com o mesmo email é encontrado
     test('conflict error when an employee with same email is found', async () => {
       jest
-        .spyOn(employeeRepository, 'findOne')
+        .spyOn(employeeService, 'FindByEmail')
         .mockResolvedValue(employeeSearchMock);
+
+      await expect(
+        employeeService.Create(tokenPayloadDTOMock, createEmployeeDTO),
+      ).rejects.toThrow(ConflictException);
+
+      expect(employeeService.FindByEmail).toHaveBeenCalledWith(
+        tokenPayloadDTOMock,
+        {
+          value: createEmployeeDTO.email,
+        },
+        true,
+      );
+      expect(hashingService.Hash).not.toHaveBeenCalled();
+      expect(roleService.FindById).not.toHaveBeenCalled();
+      expect(employeeRepository.create).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
     });
 
     test('employee create', async () => {
-      const createEmployeeDTO: CreateEmployeeDTO = {
-        email: 'testAdminLocal@mail.com',
-        name: 'UsuarioTesteAdminLocal01',
-        currentPassword: '12ABcd@#',
-        role: {
-          roleId: 'addcbbe0-6932-457d-8fcb-a5cdef802cbe',
-          name: 'admin',
-        },
-      };
-
       const hash =
         '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu';
 
@@ -127,8 +143,20 @@ describe('EmployeeService', () => {
         createEmployeeDTO,
       );
 
+      expect(employeeService.FindByEmail).toHaveBeenCalledWith(
+        tokenPayloadDTOMock,
+        {
+          value: createEmployeeDTO.email,
+        },
+        true,
+      );
+
       expect(hashingService.Hash).toHaveBeenCalledWith(
         createEmployeeDTO.currentPassword,
+      );
+
+      expect(roleService.FindById).toHaveBeenCalledWith(
+        createEmployeeDTO.role.roleId,
       );
 
       expect(employeeRepository.create).toHaveBeenCalledWith(

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -52,7 +53,7 @@ export class EmployeeService {
     );
 
     if (employeeExists) {
-      throw new BadRequestException('Funcionário já existe');
+      throw new ConflictException('Funcionário já existe');
     }
 
     const password_hash = await this.hashingService.Hash(
@@ -81,15 +82,7 @@ export class EmployeeService {
 
     const employeeCreate = this.employeeRepository.create(employeeCreateData);
 
-    console.log({
-      employeeCreate,
-    });
-
     const newEmployee = await this.employeeRepository.save(employeeCreate);
-
-    console.log({
-      newEmployee,
-    });
 
     if (!employeeCreate || !newEmployee) {
       throw new InternalServerErrorException('Erro ao cadastrar funcionário');
