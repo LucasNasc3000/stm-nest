@@ -84,10 +84,6 @@ export class EmployeeService {
 
     const newEmployee = await this.employeeRepository.save(employeeCreate);
 
-    if (!employeeCreate || !newEmployee) {
-      throw new InternalServerErrorException('Erro ao cadastrar funcionário');
-    }
-
     const allowedData = {
       id: newEmployee.id,
       email: newEmployee.email,

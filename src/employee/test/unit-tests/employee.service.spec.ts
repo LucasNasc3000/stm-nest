@@ -1,21 +1,21 @@
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
 import { DataSource, Repository } from 'typeorm';
-import { CreateEmployeeDTO } from '../dto/create-employee.dto';
-import { EmployeeService } from '../employee.service';
-import { Employee } from '../entities/employee.entity';
+import { CreateEmployeeDTO } from '../../dto/create-employee.dto';
+import { EmployeeService } from '../../employee.service';
+import { Employee } from '../../entities/employee.entity';
 import {
   MakeEmployeeCreatePayloadMock,
   MakeEmployeeCreateReturnMock,
   MakeEmployeeCreateServiceReturnMock,
   MakeEmployeeSaveReturnMock,
   MakeEmployeeSearchMock,
-} from './mocks/employee.mock';
-import { MakeTokenPayloadDTOMock } from './mocks/token-payload-dto.mock';
+} from '../mocks/employee.mock';
+import { MakeTokenPayloadDTOMock } from '../mocks/token-payload-dto.mock';
 
 describe('EmployeeService', () => {
   let employeeService: EmployeeService;
@@ -116,13 +116,23 @@ describe('EmployeeService', () => {
       expect(employeeRepository.save).not.toHaveBeenCalled();
     });
 
+    test('bad request error when the role is not found', async () => {
+      jest.spyOn(roleService, 'FindById').mockResolvedValue(null);
+
+      await expect(
+        employeeService.Create(tokenPayloadDTOMock, createEmployeeDTO),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(employeeRepository.create).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
+    });
+
     test('employee create', async () => {
       const hash =
         '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu';
 
       jest.spyOn(employeeService, 'FindByEmail').mockResolvedValue(null);
 
-      // Testar com cargo não encontrado
       jest.spyOn(roleService, 'FindById').mockResolvedValue({
         id: 'addcbbe0-6932-457d-8fcb-a5cdef802cbe',
         name: 'admin',
@@ -154,17 +164,13 @@ describe('EmployeeService', () => {
       expect(hashingService.Hash).toHaveBeenCalledWith(
         createEmployeeDTO.currentPassword,
       );
-
       expect(roleService.FindById).toHaveBeenCalledWith(
         createEmployeeDTO.role.roleId,
       );
-
       expect(employeeRepository.create).toHaveBeenCalledWith(
         employeeCreateMockPayload,
       );
-
       expect(employeeRepository.save).toHaveBeenCalledWith(employeeCreateMock);
-
       expect(result).toEqual(employeeCreateServiceReturn);
     });
   });
