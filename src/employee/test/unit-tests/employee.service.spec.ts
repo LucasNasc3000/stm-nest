@@ -5,7 +5,6 @@ import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
 import { DataSource, Repository } from 'typeorm';
-import { CreateEmployeeDTO } from '../../dto/create-employee.dto';
 import { EmployeeService } from '../../employee.service';
 import { Employee } from '../../entities/employee.entity';
 import {
@@ -16,6 +15,7 @@ import {
   MakeEmployeeSearchMock,
 } from '../mocks/employee.mock';
 import { MakeTokenPayloadDTOMock } from '../mocks/token-payload-dto.mock';
+import { ADMIN, ADMIN_ROLE, SELLER, SELLER_ROLE } from '../mocks/uuids.mock';
 
 describe('EmployeeService', () => {
   let employeeService: EmployeeService;
@@ -77,18 +77,13 @@ describe('EmployeeService', () => {
     const employeeSearchMock = MakeEmployeeSearchMock();
     const tokenPayloadDTOMock = MakeTokenPayloadDTOMock();
 
-    // Para testar o cadastro de funcionários é necessário passar um uuid mockado no segundo parâmetro.
-    const employeeCreateMock = MakeEmployeeCreateReturnMock();
-    const employeeCreateMockPayload = MakeEmployeeCreatePayloadMock();
-    const employeeSaveMock = MakeEmployeeSaveReturnMock();
-    const employeeCreateServiceReturn = MakeEmployeeCreateServiceReturnMock();
-
-    const createEmployeeDTO: CreateEmployeeDTO = {
+    const createEmployeeDTO = {
       email: 'testAdminLocal@mail.com',
       name: 'UsuarioTesteAdminLocal01',
       currentPassword: '12ABcd@#',
+      boss: null,
       role: {
-        roleId: 'addcbbe0-6932-457d-8fcb-a5cdef802cbe',
+        roleId: ADMIN_ROLE,
         name: 'admin',
       },
     };
@@ -127,15 +122,58 @@ describe('EmployeeService', () => {
       expect(employeeRepository.save).not.toHaveBeenCalled();
     });
 
-    test('employee create', async () => {
+    // Apenas um cargo não-admin é usado como exemplo porque o propósito é apenas testar quando o campo boss
+    // null e preenchido
+    test.each([
+      {
+        roleId: ADMIN_ROLE,
+        name: 'admin',
+      },
+      {
+        roleId: SELLER_ROLE,
+        name: 'seller',
+      },
+    ])('employee create ($name)', async ({ roleId, name }) => {
+      const isAdmin = name === 'admin' ? null : ADMIN;
+      const isAdminId = name === 'admin' ? null : SELLER;
+
       const hash =
         '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu';
+
+      const tokenPayloadDTOMockForCreate = MakeTokenPayloadDTOMock({
+        sub: isAdminId,
+        roleId,
+      });
+
+      const employeeCreateMock = MakeEmployeeCreateReturnMock(
+        {},
+        { id: roleId, name: name },
+        isAdmin,
+      );
+
+      const employeeSaveMock = MakeEmployeeSaveReturnMock(
+        {},
+        { id: roleId, name: name },
+        isAdmin,
+      );
+
+      const employeeCreateMockPayload = MakeEmployeeCreatePayloadMock(
+        {},
+        { id: roleId, name: name },
+        isAdmin,
+      );
+
+      const employeeCreateServiceReturn = MakeEmployeeCreateServiceReturnMock(
+        {},
+        { id: roleId, name: name },
+        isAdmin,
+      );
 
       jest.spyOn(employeeService, 'FindByEmail').mockResolvedValue(null);
 
       jest.spyOn(roleService, 'FindById').mockResolvedValue({
-        id: 'addcbbe0-6932-457d-8fcb-a5cdef802cbe',
-        name: 'admin',
+        id: roleId,
+        name: name,
       } as any as Role);
 
       jest.spyOn(hashingService, 'Hash').mockResolvedValue(hash);
@@ -148,13 +186,20 @@ describe('EmployeeService', () => {
         .spyOn(employeeRepository, 'save')
         .mockResolvedValue(employeeSaveMock as never);
 
+      createEmployeeDTO.role.name = name;
+      createEmployeeDTO.role.roleId = roleId;
+
+      if (name !== 'admin') createEmployeeDTO.boss = ADMIN;
+
+      console.log(createEmployeeDTO);
+
       const result = await employeeService.Create(
-        tokenPayloadDTOMock,
+        tokenPayloadDTOMockForCreate,
         createEmployeeDTO,
       );
 
       expect(employeeService.FindByEmail).toHaveBeenCalledWith(
-        tokenPayloadDTOMock,
+        tokenPayloadDTOMockForCreate,
         {
           value: createEmployeeDTO.email,
         },
