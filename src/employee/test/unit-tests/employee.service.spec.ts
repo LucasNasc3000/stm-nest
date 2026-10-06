@@ -1,13 +1,20 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
+import { UpdateEmployeeDTO } from 'src/employee/dto/update-employee.dto';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
 import { DataSource, Repository } from 'typeorm';
 import { EmployeeService } from '../../employee.service';
 import { Employee } from '../../entities/employee.entity';
 import {
+  EmployeeGenericMockForInternalOperations,
   MakeEmployeeCreatePayloadMock,
   MakeEmployeeCreateReturnMock,
   MakeEmployeeCreateServiceReturnMock,
@@ -34,6 +41,7 @@ describe('EmployeeService', () => {
           useValue: {
             findOne: jest.fn(),
             create: jest.fn(),
+            preload: jest.fn(),
             save: jest.fn(),
           },
         },
@@ -41,6 +49,7 @@ describe('EmployeeService', () => {
           provide: HashingServiceProtocol,
           useValue: {
             Hash: jest.fn(),
+            Compare: jest.fn(),
           },
         },
         {
@@ -191,8 +200,6 @@ describe('EmployeeService', () => {
 
       if (name !== 'admin') createEmployeeDTO.boss = ADMIN;
 
-      console.log(createEmployeeDTO);
-
       const result = await employeeService.Create(
         tokenPayloadDTOMockForCreate,
         createEmployeeDTO,
@@ -217,6 +224,114 @@ describe('EmployeeService', () => {
       );
       expect(employeeRepository.save).toHaveBeenCalledWith(employeeCreateMock);
       expect(result).toEqual(employeeCreateServiceReturn);
+    });
+  });
+
+  describe('update self', () => {
+    const tokenPayloadDTOMock = MakeTokenPayloadDTOMock();
+
+    const updateEmployeeDTOWithoutPassword: UpdateEmployeeDTO = {
+      email: 'testAdminLocal@mail.com',
+      name: 'UsuarioTesteAdminLocal01',
+      currentPassword: '12ABcd@#',
+    };
+
+    // const updateEmployeeDTOWithPassword: UpdateEmployeeDTO = {
+    //   email: 'testAdminLocal@mail.com',
+    //   name: 'UsuarioTesteAdminLocal01',
+    //   currentPassword: '12ABcd@#',
+    //   newPassword: '34CDef$%',
+    // };
+
+    test('not found error when the employee is not found', async () => {
+      jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(null);
+
+      console.log(tokenPayloadDTOMock.sub);
+
+      await expect(
+        employeeService.UpdateSelf(
+          updateEmployeeDTOWithoutPassword,
+          tokenPayloadDTOMock,
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: tokenPayloadDTOMock.sub,
+        },
+      });
+      expect(hashingService.Compare).not.toHaveBeenCalled();
+      expect(hashingService.Hash).not.toHaveBeenCalled();
+      expect(employeeRepository.preload).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
+    });
+
+    test('unauthorized error when credenctials are wrong', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      jest.spyOn(hashingService, 'Compare').mockResolvedValue(false);
+
+      await expect(
+        employeeService.UpdateSelf(
+          updateEmployeeDTOWithoutPassword,
+          tokenPayloadDTOMock,
+        ),
+      ).rejects.toThrow(UnauthorizedException);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: tokenPayloadDTOMock.sub,
+        },
+      });
+      expect(hashingService.Compare).toHaveBeenCalledWith(
+        updateEmployeeDTOWithoutPassword.currentPassword,
+        EmployeeGenericMockForInternalOperations.password_hash,
+      );
+      expect(hashingService.Hash).not.toHaveBeenCalled();
+      expect(employeeRepository.preload).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
+    });
+
+    test('self update without password', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      jest.spyOn(hashingService, 'Compare').mockResolvedValue(true);
+
+      jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
+        id: tokenPayloadDTOMock.sub,
+        ...EmployeeGenericMockForInternalOperations,
+      });
+
+      jest
+        .spyOn(employeeRepository, 'save')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      const result = await employeeService.UpdateSelf(
+        updateEmployeeDTOWithoutPassword,
+        tokenPayloadDTOMock,
+      );
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: tokenPayloadDTOMock.sub,
+        },
+      });
+      expect(hashingService.Compare).toHaveBeenCalledWith(
+        updateEmployeeDTOWithoutPassword.currentPassword,
+        EmployeeGenericMockForInternalOperations.password_hash,
+      );
+      expect(employeeRepository.preload).toHaveBeenCalledWith({
+        id: tokenPayloadDTOMock.sub,
+        ...updateEmployeeDTOWithoutPassword,
+      });
+      expect(employeeRepository.save).toHaveBeenCalledWith(
+        EmployeeGenericMockForInternalOperations,
+      );
+      expect(result).toEqual(EmployeeGenericMockForInternalOperations);
     });
   });
 });

@@ -110,3 +110,13 @@ export function MakeEmployeeCreateServiceReturnMock(
     } as Role,
   } as Employee;
 }
+
+export const EmployeeGenericMockForInternalOperations = {
+  id: '4cb295bd-99cd-4ff4-a59d-f4936da89c70',
+  email: 'testAdminLocal@mail.com',
+  name: 'UsuarioTesteAdminLocal01',
+  password_hash: '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu',
+  situation: EmployeeSituation.EMPLOYED,
+  createdAt: '2026-03-04T16:05:29.578Z',
+  updatedAt: '2026-09-04T17:05:55.058Z',
+} as any as Employee;

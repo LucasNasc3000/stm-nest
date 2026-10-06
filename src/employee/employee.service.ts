@@ -141,12 +141,6 @@ export class EmployeeService {
 
     const employeeUpdated = await this.employeeRepository.save(employeeUpdate);
 
-    if (!employeeUpdate || !employeeUpdated) {
-      throw new InternalServerErrorException(
-        'Erro ao tentar atualizar funcionário',
-      );
-    }
-
     return employeeUpdated;
   }
 
