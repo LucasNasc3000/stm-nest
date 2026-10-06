@@ -133,6 +133,7 @@ export class EmployeeService {
 
       allowedData.password_hash = passwordHash;
     }
+    console.log('a');
 
     const employeeUpdate = await this.employeeRepository.preload({
       id: tokenPayloadDTO.sub,
