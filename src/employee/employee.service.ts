@@ -133,12 +133,23 @@ export class EmployeeService {
 
       allowedData.password_hash = passwordHash;
     }
-    console.log('a');
 
-    const employeeUpdate = await this.employeeRepository.preload({
-      id: tokenPayloadDTO.sub,
-      ...allowedData,
-    });
+    let employeeUpdate: Employee;
+
+    if (updateEmployeeDTO.newPassword) {
+      employeeUpdate = await this.employeeRepository.preload({
+        id: tokenPayloadDTO.sub,
+        ...allowedData,
+      });
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password_hash, ...rest } = allowedData;
+
+      employeeUpdate = await this.employeeRepository.preload({
+        id: tokenPayloadDTO.sub,
+        ...rest,
+      });
+    }
 
     const employeeUpdated = await this.employeeRepository.save(employeeUpdate);
 

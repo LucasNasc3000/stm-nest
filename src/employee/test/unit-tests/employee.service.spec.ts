@@ -243,6 +243,11 @@ describe('EmployeeService', () => {
     //   newPassword: '34CDef$%',
     // };
 
+    const refinedDataForPreloadWithoutPassword = {
+      email: 'testAdminLocal@mail.com',
+      name: 'UsuarioTesteAdminLocal01',
+    };
+
     test('not found error when the employee is not found', async () => {
       jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(null);
 
@@ -326,7 +331,7 @@ describe('EmployeeService', () => {
       );
       expect(employeeRepository.preload).toHaveBeenCalledWith({
         id: tokenPayloadDTOMock.sub,
-        ...updateEmployeeDTOWithoutPassword,
+        ...refinedDataForPreloadWithoutPassword,
       });
       expect(employeeRepository.save).toHaveBeenCalledWith(
         EmployeeGenericMockForInternalOperations,
