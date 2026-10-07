@@ -52,7 +52,7 @@ export class ProductIngredient {
   @Type(() => Outflow)
   outflows: Outflow[];
 
-  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'numeric', precision: 10, scale: 2 })
   quantity: string;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })
