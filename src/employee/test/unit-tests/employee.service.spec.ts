@@ -393,4 +393,6 @@ describe('EmployeeService', () => {
       expect(result).toEqual(EmployeeGenericMockForInternalOperations);
     });
   });
+
+  describe('update admin', () => {});
 });
