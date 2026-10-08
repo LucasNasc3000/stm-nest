@@ -236,22 +236,27 @@ describe('EmployeeService', () => {
       currentPassword: '12ABcd@#',
     };
 
-    // const updateEmployeeDTOWithPassword: UpdateEmployeeDTO = {
-    //   email: 'testAdminLocal@mail.com',
-    //   name: 'UsuarioTesteAdminLocal01',
-    //   currentPassword: '12ABcd@#',
-    //   newPassword: '34CDef$%',
-    // };
+    const updateEmployeeDTOWithPassword: UpdateEmployeeDTO = {
+      email: 'testAdminLocal@mail.com',
+      name: 'UsuarioTesteAdminLocal01',
+      currentPassword: '12ABcd@#',
+      newPassword: '34CDef$%',
+    };
 
     const refinedDataForPreloadWithoutPassword = {
       email: 'testAdminLocal@mail.com',
       name: 'UsuarioTesteAdminLocal01',
     };
 
+    const refinedDataForPreloadWithPassword = {
+      email: 'testAdminLocal@mail.com',
+      name: 'UsuarioTesteAdminLocal01',
+      password_hash:
+        '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu',
+    };
+
     test('not found error when the employee is not found', async () => {
       jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(null);
-
-      console.log(tokenPayloadDTOMock.sub);
 
       await expect(
         employeeService.UpdateSelf(
@@ -332,6 +337,55 @@ describe('EmployeeService', () => {
       expect(employeeRepository.preload).toHaveBeenCalledWith({
         id: tokenPayloadDTOMock.sub,
         ...refinedDataForPreloadWithoutPassword,
+      });
+      expect(employeeRepository.save).toHaveBeenCalledWith(
+        EmployeeGenericMockForInternalOperations,
+      );
+      expect(result).toEqual(EmployeeGenericMockForInternalOperations);
+    });
+
+    test('self update with password', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      jest.spyOn(hashingService, 'Compare').mockResolvedValue(true);
+
+      jest
+        .spyOn(hashingService, 'Hash')
+        .mockResolvedValue(
+          '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu',
+        );
+
+      jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
+        id: tokenPayloadDTOMock.sub,
+        ...EmployeeGenericMockForInternalOperations,
+      });
+
+      jest
+        .spyOn(employeeRepository, 'save')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      const result = await employeeService.UpdateSelf(
+        updateEmployeeDTOWithPassword,
+        tokenPayloadDTOMock,
+      );
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: tokenPayloadDTOMock.sub,
+        },
+      });
+      expect(hashingService.Compare).toHaveBeenCalledWith(
+        updateEmployeeDTOWithoutPassword.currentPassword,
+        EmployeeGenericMockForInternalOperations.password_hash,
+      );
+      expect(hashingService.Hash).toHaveBeenCalledWith(
+        updateEmployeeDTOWithPassword.newPassword,
+      );
+      expect(employeeRepository.preload).toHaveBeenCalledWith({
+        id: tokenPayloadDTOMock.sub,
+        ...refinedDataForPreloadWithPassword,
       });
       expect(employeeRepository.save).toHaveBeenCalledWith(
         EmployeeGenericMockForInternalOperations,
