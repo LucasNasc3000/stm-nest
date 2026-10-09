@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -171,6 +170,9 @@ export class EmployeeService {
     const findEmployeeById = await this.employeeRepository.findOne({
       where: {
         id,
+        boss: {
+          id: tokenPayloadDTO.adminId,
+        },
       },
       relations: {
         boss: true,
@@ -188,21 +190,6 @@ export class EmployeeService {
 
     if (!findEmployeeById) {
       throw new NotFoundException('Funcionário não encontrado');
-    }
-
-    // Não deixa atualizar outros admins
-    for (let i = 0; i < findEmployeeById.role.permissions.length; i++) {
-      if (
-        tokenPayloadDTO.sub !== id &&
-        findEmployeeById.role.permissions[i].resource === Resource.EMPLOYEES
-      ) {
-        throw new ForbiddenException('Ação não permitida');
-      }
-    }
-
-    // Não deixa atualizar funcionários de outros admins
-    if (findEmployeeById.boss.id !== tokenPayloadDTO.sub) {
-      throw new ForbiddenException('Ação não permitida');
     }
 
     const employeeUpdate = await this.employeeRepository.preload({

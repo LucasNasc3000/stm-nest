@@ -1,6 +1,5 @@
 import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
-import { Employee } from '../entities/employee.entity';
 import { RoleIdDTO } from './role.dto';
 
 export class UpdateEmployeeAdminDTO {
@@ -16,5 +15,5 @@ export class UpdateEmployeeAdminDTO {
   @IsUUID(4, {
     message: 'O id do administrador deve ser um uuid',
   })
-  readonly boss?: Employee;
+  readonly boss?: string;
 }

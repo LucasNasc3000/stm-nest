@@ -7,6 +7,8 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
+import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
+import { UpdateEmployeeAdminDTO } from 'src/employee/dto/update-employee-admin.dto';
 import { UpdateEmployeeDTO } from 'src/employee/dto/update-employee.dto';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
@@ -394,5 +396,9 @@ describe('EmployeeService', () => {
     });
   });
 
-  describe('update admin', () => {});
+  describe('update admin', () => {
+    const updateAdminOnlySituationField: UpdateEmployeeAdminDTO = {
+      situation: EmployeeSituation.FIRED,
+    };
+  });
 });
