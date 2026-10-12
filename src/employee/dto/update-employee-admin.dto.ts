@@ -1,9 +1,12 @@
 import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
-import { RoleIdDTO } from './role.dto';
 
 export class UpdateEmployeeAdminDTO {
-  readonly role?: RoleIdDTO;
+  @IsOptional()
+  @IsUUID(4, {
+    message: 'O id do cargo deve ser um uuid',
+  })
+  roleId?: string;
 
   @IsOptional()
   @IsEnum(EmployeeSituation, {

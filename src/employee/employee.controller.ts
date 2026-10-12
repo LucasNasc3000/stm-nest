@@ -61,7 +61,7 @@ export class EmployeeController {
     @TokenPayloadParam() tokenPayloadDTO: TokenPayloadDTO,
   ) {
     return this.employeesService.UpdateAdmin(
-      id,
+      id.id,
       updateEmployeeAdminDTO,
       tokenPayloadDTO,
     );

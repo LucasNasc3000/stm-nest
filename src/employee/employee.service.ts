@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
-import { UrlUuidDTO } from 'src/common/dto/url-uuid.dto';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
 import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
 import { Action, Resource } from 'src/common/enums/permissions.enum';
@@ -156,16 +155,12 @@ export class EmployeeService {
   }
 
   async UpdateAdmin(
-    employeeIdDTO: UrlUuidDTO,
+    id: string,
     updateEmployeeAdminDTO: UpdateEmployeeAdminDTO,
     tokenPayloadDTO: TokenPayloadDTO,
   ) {
-    const id = employeeIdDTO.id;
-
-    const allowedData = {
-      role: updateEmployeeAdminDTO.role,
-      situation: updateEmployeeAdminDTO.situation,
-    };
+    const { boss, roleId, situation } = updateEmployeeAdminDTO;
+    const preloadUpdateObject = {};
 
     const findEmployeeById = await this.employeeRepository.findOne({
       where: {
@@ -192,9 +187,42 @@ export class EmployeeService {
       throw new NotFoundException('Funcionário não encontrado');
     }
 
+    let employeeUpdateRole: Role;
+
+    switch (true) {
+      case roleId && typeof roleId === 'string':
+        employeeUpdateRole = await this.roleService.FindById(
+          updateEmployeeAdminDTO.roleId,
+        );
+
+        if (!employeeUpdateRole) {
+          throw new NotFoundException('Cargo não encontrado');
+        }
+
+        preloadUpdateObject['role'] = { id: updateEmployeeAdminDTO.roleId };
+        break;
+
+      case situation && typeof situation === 'string':
+        preloadUpdateObject['situation'] = updateEmployeeAdminDTO.situation;
+        break;
+
+      case boss && typeof boss === 'string':
+        const findBoss = await this.employeeRepository.findOne({
+          where: {
+            id: updateEmployeeAdminDTO.boss,
+          },
+        });
+
+        if (!findBoss) {
+          throw new NotFoundException('Admin não encontrado');
+        }
+
+        preloadUpdateObject['boss'] = { id: updateEmployeeAdminDTO.boss };
+    }
+
     const employeeUpdate = await this.employeeRepository.preload({
       id,
-      ...allowedData,
+      ...preloadUpdateObject,
     });
 
     const employeeUpdated = await this.employeeRepository.save(employeeUpdate);
