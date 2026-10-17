@@ -15,16 +15,26 @@ import { RoleService } from 'src/role/role.service';
 import { DataSource, Repository } from 'typeorm';
 import { EmployeeService } from '../../employee.service';
 import { Employee } from '../../entities/employee.entity';
+import { ADMIN, ADMIN_02, ADMIN_ROLE } from '../mocks/admins-data';
 import {
+  DefaultPasswordHash,
   EmployeeGenericMockForInternalOperations,
+  EmployeeUpdateAdminInternalSearch,
   MakeEmployeeCreatePayloadMock,
   MakeEmployeeCreateReturnMock,
   MakeEmployeeCreateServiceReturnMock,
   MakeEmployeeSaveReturnMock,
   MakeEmployeeSearchMock,
+  MakeUpdateAdminFindOneQuery,
 } from '../mocks/employee.mock';
+import {
+  GENERAL_SUPPLIES_STOCK_CLERK,
+  SELLER,
+  SELLER_ROLE,
+} from '../mocks/employees-data';
 import { MakeTokenPayloadDTOMock } from '../mocks/token-payload-dto.mock';
-import { ADMIN, ADMIN_ROLE, SELLER, SELLER_ROLE } from '../mocks/uuids.mock';
+
+const tokenPayloadDTOMock = MakeTokenPayloadDTOMock();
 
 describe('EmployeeService', () => {
   let employeeService: EmployeeService;
@@ -33,7 +43,6 @@ describe('EmployeeService', () => {
   let employeeRepository: Repository<Employee>;
   let hashingService: HashingServiceProtocol;
 
-  // No módulo original é importado o RoleModule inteiro, não o service. Precisa disso aqui também?
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,10 +95,9 @@ describe('EmployeeService', () => {
 
   describe('create', () => {
     const employeeSearchMock = MakeEmployeeSearchMock();
-    const tokenPayloadDTOMock = MakeTokenPayloadDTOMock();
 
     const createEmployeeDTO = {
-      email: 'testAdminLocal@mail.com',
+      email: 'testAdminLocal01@mail.com',
       name: 'UsuarioTesteAdminLocal01',
       currentPassword: '12ABcd@#',
       boss: null,
@@ -148,8 +156,7 @@ describe('EmployeeService', () => {
       const isAdmin = name === 'admin' ? null : ADMIN;
       const isAdminId = name === 'admin' ? null : SELLER;
 
-      const hash =
-        '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu';
+      const hash = DefaultPasswordHash;
 
       const tokenPayloadDTOMockForCreate = MakeTokenPayloadDTOMock({
         sub: isAdminId,
@@ -230,8 +237,6 @@ describe('EmployeeService', () => {
   });
 
   describe('update self', () => {
-    const tokenPayloadDTOMock = MakeTokenPayloadDTOMock();
-
     const updateEmployeeDTOWithoutPassword: UpdateEmployeeDTO = {
       email: 'testAdminLocal@mail.com',
       name: 'UsuarioTesteAdminLocal01',
@@ -253,8 +258,7 @@ describe('EmployeeService', () => {
     const refinedDataForPreloadWithPassword = {
       email: 'testAdminLocal@mail.com',
       name: 'UsuarioTesteAdminLocal01',
-      password_hash:
-        '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu',
+      password_hash: DefaultPasswordHash,
     };
 
     test('not found error when the employee is not found', async () => {
@@ -353,11 +357,7 @@ describe('EmployeeService', () => {
 
       jest.spyOn(hashingService, 'Compare').mockResolvedValue(true);
 
-      jest
-        .spyOn(hashingService, 'Hash')
-        .mockResolvedValue(
-          '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu',
-        );
+      jest.spyOn(hashingService, 'Hash').mockResolvedValue(DefaultPasswordHash);
 
       jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
         id: tokenPayloadDTOMock.sub,
@@ -397,8 +397,147 @@ describe('EmployeeService', () => {
   });
 
   describe('update admin', () => {
+    const updateAdminFindOneQuery =
+      MakeUpdateAdminFindOneQuery(tokenPayloadDTOMock);
+
     const updateAdminOnlySituationField: UpdateEmployeeAdminDTO = {
       situation: EmployeeSituation.FIRED,
     };
+
+    const udpateAdminBossAndRoleFields: UpdateEmployeeAdminDTO = {
+      boss: ADMIN_02,
+      roleId: GENERAL_SUPPLIES_STOCK_CLERK,
+    };
+
+    test('not found error when the employee is not found', async () => {
+      jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        employeeService.UpdateAdmin(
+          SELLER,
+          updateAdminOnlySituationField,
+          tokenPayloadDTOMock,
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(
+        updateAdminFindOneQuery,
+      );
+      expect(employeeRepository.preload).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
+    });
+
+    test('not found error when role is not found for role update', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeUpdateAdminInternalSearch);
+
+      jest.spyOn(roleService, 'FindById').mockResolvedValue(null);
+
+      await expect(
+        employeeService.UpdateAdmin(
+          SELLER,
+          udpateAdminBossAndRoleFields,
+          tokenPayloadDTOMock,
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(
+        updateAdminFindOneQuery,
+      );
+      expect(roleService.FindById).toHaveBeenCalledWith(
+        udpateAdminBossAndRoleFields.roleId,
+      );
+      expect(employeeRepository.preload).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
+    });
+
+    test('not found error when admin/boss is not found for admin/boss update', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeUpdateAdminInternalSearch);
+
+      jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        employeeService.UpdateAdmin(
+          SELLER,
+          udpateAdminBossAndRoleFields,
+          tokenPayloadDTOMock,
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(
+        updateAdminFindOneQuery,
+      );
+      expect(employeeRepository.preload).not.toHaveBeenCalled();
+      expect(employeeRepository.save).not.toHaveBeenCalled();
+    });
+
+    test('update of situation field only', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeUpdateAdminInternalSearch);
+
+      jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
+        id: SELLER,
+        ...EmployeeGenericMockForInternalOperations,
+      });
+
+      jest
+        .spyOn(employeeRepository, 'save')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      const result = await employeeService.UpdateAdmin(
+        SELLER,
+        updateAdminOnlySituationField,
+        tokenPayloadDTOMock,
+      );
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(
+        updateAdminFindOneQuery,
+      );
+      expect(employeeRepository.preload).toHaveBeenCalledWith({
+        id: SELLER,
+        ...updateAdminOnlySituationField,
+      });
+      expect(employeeRepository.save).toHaveBeenCalledWith(
+        EmployeeGenericMockForInternalOperations,
+      );
+      expect(result).toEqual(EmployeeGenericMockForInternalOperations);
+    });
+
+    test('update of role and boss/admin fields', async () => {
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeUpdateAdminInternalSearch);
+
+      jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
+        id: SELLER,
+        ...EmployeeGenericMockForInternalOperations,
+      });
+
+      jest
+        .spyOn(employeeRepository, 'save')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
+      const result = await employeeService.UpdateAdmin(
+        SELLER,
+        updateAdminOnlySituationField,
+        tokenPayloadDTOMock,
+      );
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(
+        updateAdminFindOneQuery,
+      );
+      expect(employeeRepository.preload).toHaveBeenCalledWith({
+        id: SELLER,
+        ...updateAdminOnlySituationField,
+      });
+      expect(employeeRepository.save).toHaveBeenCalledWith(
+        EmployeeGenericMockForInternalOperations,
+      );
+      expect(result).toEqual(EmployeeGenericMockForInternalOperations);
+    });
   });
 });

@@ -189,35 +189,34 @@ export class EmployeeService {
 
     let employeeUpdateRole: Role;
 
-    switch (true) {
-      case roleId && typeof roleId === 'string':
-        employeeUpdateRole = await this.roleService.FindById(
-          updateEmployeeAdminDTO.roleId,
-        );
+    if (roleId && typeof roleId === 'string') {
+      employeeUpdateRole = await this.roleService.FindById(
+        updateEmployeeAdminDTO.roleId,
+      );
 
-        if (!employeeUpdateRole) {
-          throw new NotFoundException('Cargo não encontrado');
-        }
+      if (!employeeUpdateRole) {
+        throw new NotFoundException('Cargo não encontrado');
+      }
 
-        preloadUpdateObject['role'] = { id: updateEmployeeAdminDTO.roleId };
-        break;
+      preloadUpdateObject['role'] = { id: updateEmployeeAdminDTO.roleId };
+    }
 
-      case situation && typeof situation === 'string':
-        preloadUpdateObject['situation'] = updateEmployeeAdminDTO.situation;
-        break;
+    if (situation && typeof situation === 'string') {
+      preloadUpdateObject['situation'] = updateEmployeeAdminDTO.situation;
+    }
 
-      case boss && typeof boss === 'string':
-        const findBoss = await this.employeeRepository.findOne({
-          where: {
-            id: updateEmployeeAdminDTO.boss,
-          },
-        });
+    if (boss && typeof boss === 'string') {
+      const findBoss = await this.employeeRepository.findOne({
+        where: {
+          id: updateEmployeeAdminDTO.boss,
+        },
+      });
 
-        if (!findBoss) {
-          throw new NotFoundException('Admin não encontrado');
-        }
+      if (!findBoss) {
+        throw new NotFoundException('Admin não encontrado');
+      }
 
-        preloadUpdateObject['boss'] = { id: updateEmployeeAdminDTO.boss };
+      preloadUpdateObject['boss'] = { id: updateEmployeeAdminDTO.boss };
     }
 
     const employeeUpdate = await this.employeeRepository.preload({
