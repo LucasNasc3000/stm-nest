@@ -15,11 +15,18 @@ import { RoleService } from 'src/role/role.service';
 import { DataSource, Repository } from 'typeorm';
 import { EmployeeService } from '../../employee.service';
 import { Employee } from '../../entities/employee.entity';
-import { ADMIN, ADMIN_02, ADMIN_ROLE } from '../mocks/admins-data';
 import {
-  DefaultPasswordHash,
+  ADMIN,
+  ADMIN_02,
+  ADMIN_EMAIL,
+  ADMIN_NAME,
+  ADMIN_ROLE,
+} from '../mocks/admins-data';
+import {
+  DEFAULT_PASSWORD_HASH,
   EmployeeGenericMockForInternalOperations,
   EmployeeUpdateAdminInternalSearch,
+  EmployeeUpdateAdminRoleAndAdminFields,
   MakeEmployeeCreatePayloadMock,
   MakeEmployeeCreateReturnMock,
   MakeEmployeeCreateServiceReturnMock,
@@ -28,6 +35,7 @@ import {
   MakeUpdateAdminFindOneQuery,
 } from '../mocks/employee.mock';
 import {
+  EMPLOYEE,
   GENERAL_SUPPLIES_STOCK_CLERK,
   SELLER,
   SELLER_ROLE,
@@ -97,8 +105,8 @@ describe('EmployeeService', () => {
     const employeeSearchMock = MakeEmployeeSearchMock();
 
     const createEmployeeDTO = {
-      email: 'testAdminLocal01@mail.com',
-      name: 'UsuarioTesteAdminLocal01',
+      email: ADMIN_EMAIL,
+      name: ADMIN_NAME,
       currentPassword: '12ABcd@#',
       boss: null,
       role: {
@@ -156,7 +164,7 @@ describe('EmployeeService', () => {
       const isAdmin = name === 'admin' ? null : ADMIN;
       const isAdminId = name === 'admin' ? null : SELLER;
 
-      const hash = DefaultPasswordHash;
+      const hash = DEFAULT_PASSWORD_HASH;
 
       const tokenPayloadDTOMockForCreate = MakeTokenPayloadDTOMock({
         sub: isAdminId,
@@ -238,27 +246,27 @@ describe('EmployeeService', () => {
 
   describe('update self', () => {
     const updateEmployeeDTOWithoutPassword: UpdateEmployeeDTO = {
-      email: 'testAdminLocal@mail.com',
-      name: 'UsuarioTesteAdminLocal01',
+      email: ADMIN_NAME,
+      name: ADMIN_NAME,
       currentPassword: '12ABcd@#',
     };
 
     const updateEmployeeDTOWithPassword: UpdateEmployeeDTO = {
-      email: 'testAdminLocal@mail.com',
-      name: 'UsuarioTesteAdminLocal01',
+      email: ADMIN_NAME,
+      name: ADMIN_NAME,
       currentPassword: '12ABcd@#',
       newPassword: '34CDef$%',
     };
 
     const refinedDataForPreloadWithoutPassword = {
-      email: 'testAdminLocal@mail.com',
-      name: 'UsuarioTesteAdminLocal01',
+      email: ADMIN_NAME,
+      name: ADMIN_NAME,
     };
 
     const refinedDataForPreloadWithPassword = {
-      email: 'testAdminLocal@mail.com',
-      name: 'UsuarioTesteAdminLocal01',
-      password_hash: DefaultPasswordHash,
+      email: ADMIN_NAME,
+      name: ADMIN_NAME,
+      password_hash: DEFAULT_PASSWORD_HASH,
     };
 
     test('not found error when the employee is not found', async () => {
@@ -357,7 +365,9 @@ describe('EmployeeService', () => {
 
       jest.spyOn(hashingService, 'Compare').mockResolvedValue(true);
 
-      jest.spyOn(hashingService, 'Hash').mockResolvedValue(DefaultPasswordHash);
+      jest
+        .spyOn(hashingService, 'Hash')
+        .mockResolvedValue(DEFAULT_PASSWORD_HASH);
 
       jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
         id: tokenPayloadDTOMock.sub,
@@ -414,7 +424,7 @@ describe('EmployeeService', () => {
 
       await expect(
         employeeService.UpdateAdmin(
-          SELLER,
+          EMPLOYEE,
           updateAdminOnlySituationField,
           tokenPayloadDTOMock,
         ),
@@ -436,7 +446,7 @@ describe('EmployeeService', () => {
 
       await expect(
         employeeService.UpdateAdmin(
-          SELLER,
+          EMPLOYEE,
           udpateAdminBossAndRoleFields,
           tokenPayloadDTOMock,
         ),
@@ -461,7 +471,7 @@ describe('EmployeeService', () => {
 
       await expect(
         employeeService.UpdateAdmin(
-          SELLER,
+          EMPLOYEE,
           udpateAdminBossAndRoleFields,
           tokenPayloadDTOMock,
         ),
@@ -480,7 +490,7 @@ describe('EmployeeService', () => {
         .mockResolvedValue(EmployeeUpdateAdminInternalSearch);
 
       jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
-        id: SELLER,
+        id: EMPLOYEE,
         ...EmployeeGenericMockForInternalOperations,
       });
 
@@ -489,7 +499,7 @@ describe('EmployeeService', () => {
         .mockResolvedValue(EmployeeGenericMockForInternalOperations);
 
       const result = await employeeService.UpdateAdmin(
-        SELLER,
+        EMPLOYEE,
         updateAdminOnlySituationField,
         tokenPayloadDTOMock,
       );
@@ -498,7 +508,7 @@ describe('EmployeeService', () => {
         updateAdminFindOneQuery,
       );
       expect(employeeRepository.preload).toHaveBeenCalledWith({
-        id: SELLER,
+        id: EMPLOYEE,
         ...updateAdminOnlySituationField,
       });
       expect(employeeRepository.save).toHaveBeenCalledWith(
@@ -508,36 +518,62 @@ describe('EmployeeService', () => {
     });
 
     test('update of role and boss/admin fields', async () => {
+      const preloadObject = {
+        boss: {
+          id: udpateAdminBossAndRoleFields.boss,
+        },
+        role: {
+          id: udpateAdminBossAndRoleFields.roleId,
+        },
+      };
+
       jest
         .spyOn(employeeRepository, 'findOne')
         .mockResolvedValue(EmployeeUpdateAdminInternalSearch);
 
+      jest.spyOn(roleService, 'FindById').mockResolvedValue({
+        id: GENERAL_SUPPLIES_STOCK_CLERK,
+        name: 'general supplies stock clerk',
+      } as any as Role);
+
+      jest
+        .spyOn(employeeRepository, 'findOne')
+        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+
       jest.spyOn(employeeRepository, 'preload').mockResolvedValue({
-        id: SELLER,
+        id: EMPLOYEE,
         ...EmployeeGenericMockForInternalOperations,
       });
 
       jest
         .spyOn(employeeRepository, 'save')
-        .mockResolvedValue(EmployeeGenericMockForInternalOperations);
+        .mockResolvedValue(EmployeeUpdateAdminRoleAndAdminFields);
 
       const result = await employeeService.UpdateAdmin(
-        SELLER,
-        updateAdminOnlySituationField,
+        EMPLOYEE,
+        udpateAdminBossAndRoleFields,
         tokenPayloadDTOMock,
       );
 
       expect(employeeRepository.findOne).toHaveBeenCalledWith(
         updateAdminFindOneQuery,
       );
+      expect(roleService.FindById).toHaveBeenCalledWith(
+        udpateAdminBossAndRoleFields.roleId,
+      );
+      expect(employeeRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: udpateAdminBossAndRoleFields.boss,
+        },
+      });
       expect(employeeRepository.preload).toHaveBeenCalledWith({
-        id: SELLER,
-        ...updateAdminOnlySituationField,
+        id: EMPLOYEE,
+        ...preloadObject,
       });
       expect(employeeRepository.save).toHaveBeenCalledWith(
         EmployeeGenericMockForInternalOperations,
       );
-      expect(result).toEqual(EmployeeGenericMockForInternalOperations);
+      expect(result).toEqual(EmployeeUpdateAdminRoleAndAdminFields);
     });
   });
 });

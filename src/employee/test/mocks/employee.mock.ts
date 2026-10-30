@@ -10,17 +10,17 @@ import {
   ADMIN_EMAIL,
   ADMIN_EMAIL_02,
   ADMIN_NAME,
-  ADMIN_NAME_02,
   ADMIN_ROLE,
 } from './admins-data';
 import {
   EMPLOYEE,
   EMPLOYEE_EMAIL,
   EMPLOYEE_NAME,
+  GENERAL_SUPPLIES_STOCK_CLERK,
   SELLER,
 } from './employees-data';
 
-export const DefaultPasswordHash =
+export const DEFAULT_PASSWORD_HASH =
   '$2b$10$Z.L6d2ydhs53krYMPhsVZe8Opcy8krSrkgkugAEy/G62nKg4zG9Xu';
 
 // A chave boss pode ser alterada pelo override. Se não vier nada permanecerá null
@@ -54,7 +54,7 @@ export function MakeEmployeeCreatePayloadMock(
   return {
     email: ADMIN_EMAIL,
     name: ADMIN_NAME,
-    password_hash: DefaultPasswordHash,
+    password_hash: DEFAULT_PASSWORD_HASH,
     situation: EmployeeSituation.EMPLOYED,
     boss,
     subordinates: null,
@@ -75,7 +75,7 @@ export function MakeEmployeeCreateReturnMock(
   return {
     email: ADMIN_EMAIL,
     name: ADMIN_NAME,
-    password_hash: DefaultPasswordHash,
+    password_hash: DEFAULT_PASSWORD_HASH,
     situation: EmployeeSituation.EMPLOYED,
     boss,
     ...overrides,
@@ -96,7 +96,7 @@ export function MakeEmployeeSaveReturnMock(
     id: ADMIN,
     email: ADMIN_EMAIL,
     name: ADMIN_NAME,
-    password_hash: DefaultPasswordHash,
+    password_hash: DEFAULT_PASSWORD_HASH,
     situation: EmployeeSituation.EMPLOYED,
     boss,
     createdAt: '2026-09-23T16:20:33.829Z',
@@ -135,7 +135,7 @@ export function MakeUpdateAdminFindOneQuery(
 ): FindOneOptions<Employee> {
   return {
     where: {
-      id: SELLER,
+      id: EMPLOYEE,
       boss: {
         id: tokenPayloadDTOMock.adminId,
       },
@@ -156,44 +156,36 @@ export function MakeUpdateAdminFindOneQuery(
   } as FindOneOptions<Employee>;
 }
 
-export const EmployeeUpdateAdminBossField = {
+export const EmployeeUpdateAdminRoleAndAdminFields = {
   id: EMPLOYEE,
-  email: EMPLOYEE_NAME,
-  name: EMPLOYEE_EMAIL,
+  email: EMPLOYEE_EMAIL,
+  name: EMPLOYEE_NAME,
+  password_hash: DEFAULT_PASSWORD_HASH,
   situation: EmployeeSituation.EMPLOYED,
-  createdAt: '2026-09-23T16:20:33.829Z',
-  updatedAt: '2026-09-23T16:20:33.829Z',
-  boss: {
-    id: ADMIN_02,
-    email: ADMIN_EMAIL_02,
-    name: ADMIN_NAME_02,
-    situation: EmployeeSituation.EMPLOYED,
-    createdAt: '2026-10-09T23:25:16.572Z',
-    updatedAt: '2026-10-09T23:25:16.572Z',
-  },
-} as any as Employee;
-
-export const EmployeeUpdateAdminRoleField = {
-  id: '81394758-ceed-4fe4-b038-268a7c261447',
-  email: 'olivia@mail.com',
-  name: 'Olivia Paula',
-  situation: EmployeeSituation.EMPLOYED,
-  createdAt: '2026-09-23T16:20:33.829Z',
-  updatedAt: '2026-09-23T16:20:33.829Z',
+  createdAt: '2026-09-22T20:21:37.484Z',
+  updatedAt: '2026-10-17T15:14:28.395Z',
   role: {
-    id: SELLER,
-    name: 'seller',
+    id: GENERAL_SUPPLIES_STOCK_CLERK,
+    name: 'general supplies stock clerk',
+  },
+  boss: {
+    id: ADMIN,
+    email: ADMIN_EMAIL,
+    name: ADMIN_NAME,
+    situation: EmployeeSituation.EMPLOYED,
+    createdAt: '2026-03-04T16:05:29.578Z',
+    updatedAt: '2026-10-16T23:26:09.501Z',
   },
 } as any as Employee;
 
 export const EmployeeUpdateAdminInternalSearch = {
-  id: '81394758-ceed-4fe4-b038-268a7c261447',
-  email: 'olivia@mail.com',
-  name: 'Olivia Paula',
-  password_hash: DefaultPasswordHash,
+  id: EMPLOYEE,
+  email: EMPLOYEE_EMAIL,
+  name: EMPLOYEE_NAME,
+  password_hash: DEFAULT_PASSWORD_HASH,
   situation: EmployeeSituation.EMPLOYED,
   createdAt: '2026-09-23T16:20:33.829Z',
-  updatedAt: '2026-09-23T16:20:33.829Z',
+  updatedAt: '2026-10-16T23:26:09.501Z',
   boss: {
     id: ADMIN_02,
     email: ADMIN_EMAIL_02,
@@ -213,7 +205,7 @@ export const EmployeeGenericMockForInternalOperations = {
   id: ADMIN,
   email: ADMIN_EMAIL,
   name: ADMIN_NAME,
-  password_hash: DefaultPasswordHash,
+  password_hash: DEFAULT_PASSWORD_HASH,
   situation: EmployeeSituation.EMPLOYED,
   createdAt: '2026-09-23T16:20:33.829Z',
   updatedAt: '2026-09-23T16:20:33.829Z',
