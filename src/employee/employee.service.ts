@@ -10,12 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { EmployeeSituation } from 'src/common/enums/employee-situation.enum';
-import { GeneralErrorType } from 'src/common/enums/general-error-type.enum';
-import { Action, Resource } from 'src/common/enums/permissions.enum';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
-import { ErrorManagement } from 'src/utils/error.util';
-import { DataSource, ILike, QueryRunner, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
 import { PaginationByBossDTO } from './dto/pagination-employee-boss.dto';
 import { PaginationByRoleDTO } from './dto/pagination-employee-role.dto';
@@ -33,7 +30,6 @@ export class EmployeeService {
     private readonly employeeRepository: Repository<Employee>,
     private readonly roleService: RoleService,
     private readonly hashingService: HashingServiceProtocol,
-    private dataSource: DataSource,
   ) {}
 
   async Create(
@@ -229,199 +225,6 @@ export class EmployeeService {
     return employeeUpdated;
   }
 
-  async UpdateBoss(
-    previousBossId: string,
-    newBossId?: string,
-    createEmployeeDTO?: CreateEmployeeDTO,
-  ) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const findPreviousBoss = await queryRunner.manager.findOne(Employee, {
-        where: {
-          id: previousBossId,
-        },
-      });
-
-      if (findPreviousBoss.role.name !== 'admin') {
-        throw new BadRequestException(
-          'Funcionário não possui cargo de administrador',
-        );
-      }
-
-      const findNewBoss = await queryRunner.manager.findOne(Employee, {
-        where: {
-          id: newBossId,
-        },
-      });
-
-      if (!findPreviousBoss || !findNewBoss) {
-        throw new NotFoundException(
-          'Administrador ou funcionário não encontrado',
-        );
-      }
-
-      if (createEmployeeDTO) {
-        const newBoss = await this.CreateNewBoss(
-          createEmployeeDTO,
-          queryRunner,
-        );
-
-        await this.UpdatePreviousEmployees(
-          findPreviousBoss,
-          newBoss,
-          queryRunner,
-        );
-      }
-
-      await this.UpdateBossPreviousEmployee(
-        findPreviousBoss,
-        findNewBoss,
-        queryRunner,
-      );
-
-      const updatePreviousBoss = await queryRunner.manager.update(
-        Employee,
-        findPreviousBoss.id,
-        {
-          situation: EmployeeSituation.FIRED,
-        },
-      );
-
-      if (!updatePreviousBoss || updatePreviousBoss.affected === 0) {
-        throw new InternalServerErrorException(
-          'Erro ao atualizar status do administrador anterior',
-        );
-      }
-
-      const newBossData = await this.employeeRepository.findOne({
-        where: {
-          id: newBossId,
-        },
-      });
-
-      if (!newBossData) {
-        throw new NotFoundException(
-          'Não foi possível encontrar novo adminstrador',
-        );
-      }
-
-      return newBossData;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-
-      ErrorManagement(error, GeneralErrorType.INTERNAL, {
-        logger: 'Erro ao atualizar administrador:',
-        queryFailedError: 'Erro ao atualizar dados de funcionários',
-        internalServerError: 'Erro interno ao atualizar administrador',
-        generalError:
-          'Falha ao processar transação na atualização de administrador',
-      });
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  async CreateNewBoss(
-    createEmployeeDTO: CreateEmployeeDTO,
-    queryRunner: QueryRunner,
-  ) {
-    const createNewBoss = queryRunner.manager.create(
-      Employee,
-      createEmployeeDTO,
-    );
-
-    const findAdminRole = await queryRunner.manager.findOne(Role, {
-      where: {
-        name: 'admin',
-        permissions: {
-          action: Action.UPDATE,
-          resource: Resource.EMPLOYEES,
-        },
-      },
-    });
-
-    if (!findAdminRole) {
-      throw new NotFoundException('Cargo de admin não encontrado');
-    }
-
-    createNewBoss.role = findAdminRole;
-
-    const newBoss = await queryRunner.manager.save(Employee, createNewBoss);
-
-    return newBoss;
-  }
-
-  async UpdateBossPreviousEmployee(
-    previousBoss: Employee,
-    newBoss: Employee,
-    queryRunnerSub: QueryRunner,
-  ) {
-    const findAdminRole = await queryRunnerSub.manager.findOne(Role, {
-      where: {
-        name: 'admin',
-        permissions: {
-          action: Action.UPDATE,
-          resource: Resource.EMPLOYEES,
-        },
-      },
-    });
-
-    if (!findAdminRole) {
-      throw new NotFoundException('Cargo de administrador não encontrado');
-    }
-
-    const updateEmployeeRole = await queryRunnerSub.manager.update(
-      Employee,
-      newBoss.id,
-      {
-        role: findAdminRole,
-      },
-    );
-
-    if (!updateEmployeeRole || updateEmployeeRole.affected === 0) {
-      throw new InternalServerErrorException(
-        'Erro ao atualizar cargo de funcionário',
-      );
-    }
-
-    await this.UpdatePreviousEmployees(previousBoss, newBoss, queryRunnerSub);
-
-    // await this.cacheManager.del(`role_permissions_${newRoleId}`);
-  }
-
-  private async UpdatePreviousEmployees(
-    previousBoss: Employee,
-    newBoss: Employee,
-    queryRunnerSub: QueryRunner,
-  ) {
-    const findEmployeesPerBoss = await queryRunnerSub.manager.find(Employee, {
-      where: {
-        boss: previousBoss,
-      },
-    });
-
-    if (findEmployeesPerBoss.length > 0) {
-      for (const employee of findEmployeesPerBoss) {
-        const updateBossFK = await queryRunnerSub.manager.update(
-          Employee,
-          employee.id,
-          {
-            boss: newBoss,
-          },
-        );
-
-        if (!updateBossFK || updateBossFK.affected === 0) {
-          throw new InternalServerErrorException(
-            `Erro ao atualizar administrador do funcionário ${employee.email}`,
-          );
-        }
-      }
-    }
-  }
-
   async FindSelf(tokenPayloadDTO: TokenPayloadDTO) {
     const employeeFindSelf = await this.employeeRepository.findOne({
       where: {
@@ -432,8 +235,10 @@ export class EmployeeService {
         boss: true,
       },
       select: {
-        id: true,
-        email: true,
+        boss: {
+          id: true,
+          email: true,
+        },
       },
     });
 

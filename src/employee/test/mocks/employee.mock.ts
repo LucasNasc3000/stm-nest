@@ -156,6 +156,41 @@ export function MakeUpdateAdminFindOneQuery(
   } as FindOneOptions<Employee>;
 }
 
+export function MakeFindSelfMock(overrides: Partial<Employee> = {}): Employee {
+  return {
+    id: ADMIN,
+    email: ADMIN_EMAIL,
+    name: ADMIN_NAME,
+    situation: EmployeeSituation.EMPLOYED,
+    createdAt: '2026-09-23T16:20:33.829Z',
+    updatedAt: '2026-09-23T16:20:33.829Z',
+    boss: null,
+    ...overrides,
+  } as Employee;
+}
+
+export function MakeFindSelfQuery(
+  tokenPayloadDTOMock: TokenPayloadDTO,
+  overrides: FindOneOptions<Employee> = {},
+): FindOneOptions<Employee> {
+  return {
+    where: {
+      id: tokenPayloadDTOMock.sub,
+      situation: EmployeeSituation.EMPLOYED,
+    },
+    relations: {
+      boss: true,
+    },
+    select: {
+      boss: {
+        id: true,
+        email: true,
+      },
+    },
+    ...overrides,
+  } as FindOneOptions<Employee>;
+}
+
 export const EmployeeUpdateAdminRoleAndAdminFields = {
   id: EMPLOYEE,
   email: EMPLOYEE_EMAIL,
@@ -198,6 +233,56 @@ export const EmployeeUpdateAdminInternalSearch = {
       { action: Action.READ, resource: Resource.SALES },
       { action: Action.UPDATE, resource: Resource.SALES },
     ],
+  },
+} as any as Employee;
+
+export const EmployeeAdminFindSelfMock = {
+  id: ADMIN,
+  email: ADMIN_EMAIL,
+  name: ADMIN_NAME,
+  password_hash: DEFAULT_PASSWORD_HASH,
+  situation: EmployeeSituation.EMPLOYED,
+  createdAt: '2026-09-23T16:20:33.829Z',
+  updatedAt: '2026-09-23T16:20:33.829Z',
+  boss: null,
+} as any as Employee;
+
+export const EmployeeFindSelfMock = {
+  id: EMPLOYEE,
+  email: EMPLOYEE_EMAIL,
+  name: EMPLOYEE_NAME,
+  password_hash: DEFAULT_PASSWORD_HASH,
+  situation: EmployeeSituation.EMPLOYED,
+  createdAt: '2026-09-23T16:20:33.829Z',
+  updatedAt: '2026-09-23T16:20:33.829Z',
+  boss: {
+    id: ADMIN,
+    email: ADMIN_EMAIL,
+  },
+} as any as Employee;
+
+export const EmployeeAdminFindSelfMockResult = {
+  id: ADMIN,
+  email: ADMIN_EMAIL,
+  name: ADMIN_NAME,
+  password_hash: DEFAULT_PASSWORD_HASH,
+  situation: EmployeeSituation.EMPLOYED,
+  createdAt: '2026-09-23T16:20:33.829Z',
+  updatedAt: '2026-09-23T16:20:33.829Z',
+  boss: null,
+} as any as Employee;
+
+export const EmployeeFindSelfMockResult = {
+  id: EMPLOYEE,
+  email: EMPLOYEE_EMAIL,
+  name: EMPLOYEE_NAME,
+  password_hash: DEFAULT_PASSWORD_HASH,
+  situation: EmployeeSituation.EMPLOYED,
+  createdAt: '2026-09-23T16:20:33.829Z',
+  updatedAt: '2026-09-23T16:20:33.829Z',
+  boss: {
+    id: ADMIN,
+    email: ADMIN_EMAIL,
   },
 } as any as Employee;
 

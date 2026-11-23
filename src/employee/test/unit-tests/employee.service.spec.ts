@@ -12,7 +12,7 @@ import { UpdateEmployeeAdminDTO } from 'src/employee/dto/update-employee-admin.d
 import { UpdateEmployeeDTO } from 'src/employee/dto/update-employee.dto';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { EmployeeService } from '../../employee.service';
 import { Employee } from '../../entities/employee.entity';
 import {
@@ -24,6 +24,10 @@ import {
 } from '../mocks/admins-data';
 import {
   DEFAULT_PASSWORD_HASH,
+  EmployeeAdminFindSelfMock,
+  EmployeeAdminFindSelfMockResult,
+  EmployeeFindSelfMock,
+  EmployeeFindSelfMockResult,
   EmployeeGenericMockForInternalOperations,
   EmployeeUpdateAdminInternalSearch,
   EmployeeUpdateAdminRoleAndAdminFields,
@@ -32,6 +36,7 @@ import {
   MakeEmployeeCreateServiceReturnMock,
   MakeEmployeeSaveReturnMock,
   MakeEmployeeSearchMock,
+  MakeFindSelfQuery,
   MakeUpdateAdminFindOneQuery,
 } from '../mocks/employee.mock';
 import {
@@ -47,7 +52,6 @@ const tokenPayloadDTOMock = MakeTokenPayloadDTOMock();
 describe('EmployeeService', () => {
   let employeeService: EmployeeService;
   let roleService: RoleService;
-  // let dataSource: DataSource;
   let employeeRepository: Repository<Employee>;
   let hashingService: HashingServiceProtocol;
 
@@ -77,16 +81,11 @@ describe('EmployeeService', () => {
             FindById: jest.fn(),
           },
         },
-        {
-          provide: DataSource,
-          useValue: {},
-        },
       ],
     }).compile();
 
     employeeService = module.get<EmployeeService>(EmployeeService);
     roleService = module.get<RoleService>(RoleService);
-    // dataSource = module.get<DataSource>(DataSource);
     employeeRepository = module.get<Repository<Employee>>(
       getRepositoryToken(Employee),
     );
@@ -574,6 +573,50 @@ describe('EmployeeService', () => {
         EmployeeGenericMockForInternalOperations,
       );
       expect(result).toEqual(EmployeeUpdateAdminRoleAndAdminFields);
+    });
+  });
+
+  describe('find self', () => {
+    test('not found error', async () => {
+      const findSelfQuery = MakeFindSelfQuery(tokenPayloadDTOMock);
+
+      jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        employeeService.FindSelf(tokenPayloadDTOMock),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(findSelfQuery);
+    });
+
+    test.each([
+      {
+        id: EMPLOYEE,
+        role: 'employee',
+      },
+      {
+        id: ADMIN,
+        role: 'admin',
+      },
+    ])('employee create ($role)', async ({ id }) => {
+      const localTokenPayloadDTOMock = MakeTokenPayloadDTOMock({ sub: id });
+
+      const findSelfQuery = MakeFindSelfQuery(localTokenPayloadDTOMock);
+
+      const isAdmin =
+        id === ADMIN ? EmployeeAdminFindSelfMock : EmployeeFindSelfMock;
+
+      const isAdminResult =
+        id === ADMIN
+          ? EmployeeAdminFindSelfMockResult
+          : EmployeeFindSelfMockResult;
+
+      jest.spyOn(employeeRepository, 'findOne').mockResolvedValue(isAdmin);
+
+      const result = await employeeService.FindSelf(localTokenPayloadDTOMock);
+
+      expect(employeeRepository.findOne).toHaveBeenCalledWith(findSelfQuery);
+      expect(result).toEqual(isAdminResult);
     });
   });
 });
